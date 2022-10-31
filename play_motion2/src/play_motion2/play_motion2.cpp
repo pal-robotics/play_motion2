@@ -13,9 +13,6 @@
 // limitations under the License.
 
 #include "play_motion2/play_motion2.hpp"
-#include "rclcpp/logging.hpp"
-#include "trajectory_msgs/msg/joint_trajectory.hpp"
-#include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 
 namespace play_motion2
 {
@@ -38,6 +35,19 @@ PlayMotion2::PlayMotion2()
 void PlayMotion2::init()
 {
   parse_motions(shared_from_this(), motion_keys_, motions_);
+
+  list_motions_service_ = create_service<ListMotions>(
+    "play_motion2/list_motions",
+    std::bind(
+      &PlayMotion2::list_motions_callback,
+      this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void PlayMotion2::list_motions_callback(
+  const std::shared_ptr<ListMotions::Request>,
+  std::shared_ptr<ListMotions::Response> response)
+{
+  response->motion_keys = motion_keys_;
 }
 
 }  // namespace play_motion2

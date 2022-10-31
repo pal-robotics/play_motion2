@@ -8,10 +8,12 @@ find_package(ament_cmake_pal QUIET)
 
 find_package(rclcpp REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(play_motion2_msgs REQUIRED)
 
 set(dependencies
   rclcpp
   trajectory_msgs
+  play_motion2_msgs
 )
 
 include_directories(include)

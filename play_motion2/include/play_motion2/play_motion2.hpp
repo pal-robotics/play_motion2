@@ -21,10 +21,13 @@
 #include <vector>
 
 #include "play_motion2/play_motion2_helpers.hpp"
+#include "play_motion2_msgs/srv/list_motions.hpp"
 #include "rclcpp/node.hpp"
 
 namespace play_motion2
 {
+
+using ListMotions = play_motion2_msgs::srv::ListMotions;
 
 class PlayMotion2 : public rclcpp::Node
 {
@@ -32,9 +35,16 @@ public:
   PlayMotion2();
   void init();
 
+  void list_motions_callback(
+    const std::shared_ptr<ListMotions::Request>,
+    std::shared_ptr<ListMotions::Response> response);
+
 private:
   MotionKeys motion_keys_;
   std::map<std::string, MotionInfo> motions_;
+
+  rclcpp::Service<ListMotions>::SharedPtr
+    list_motions_service_;
 };
 }  // namespace play_motion2
 
