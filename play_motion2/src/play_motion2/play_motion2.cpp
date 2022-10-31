@@ -14,21 +14,30 @@
 
 #include "play_motion2/play_motion2.hpp"
 #include "rclcpp/logging.hpp"
+#include "trajectory_msgs/msg/joint_trajectory.hpp"
+#include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 
 namespace play_motion2
 {
 
+// there has to be a better way to do it
+rclcpp::NodeOptions get_pm_node_options()
+{
+  rclcpp::NodeOptions node_options;
+  node_options.allow_undeclared_parameters(true);
+  node_options.automatically_declare_parameters_from_overrides(true);
+  return node_options;
+}
+
 PlayMotion2::PlayMotion2()
-: Node("play_motion2")
+: Node("play_motion2", get_pm_node_options()),
+  motion_keys_({}), motions_({})
 {
 }
 
-bool PlayMotion2::read_motion_name()
+void PlayMotion2::init()
 {
-  this->declare_parameter<std::string>("motion_name", "");
-  this->get_parameter_or<std::string>("motion_name", motion_name_, "");
-  RCLCPP_INFO(get_logger(), "MOTION NAME: %s", motion_name_.c_str());
-  return 0;
+  parse_motions(shared_from_this(), motion_keys_, motions_);
 }
 
 }  // namespace play_motion2

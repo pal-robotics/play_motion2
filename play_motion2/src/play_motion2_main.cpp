@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "play_motion2//play_motion2.hpp"
+#include "play_motion2/play_motion2.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
@@ -21,7 +21,10 @@ int main(int argc, char ** argv)
 
   std::shared_ptr<play_motion2::PlayMotion2> play_motion2 =
     std::make_shared<play_motion2::PlayMotion2>();
-  play_motion2->read_motion_name();
+
+  play_motion2->init();
+
+  rclcpp::spin(play_motion2);
 
   rclcpp::shutdown();
 

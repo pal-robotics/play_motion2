@@ -7,30 +7,24 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_pal QUIET)
 
 find_package(rclcpp REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
 set(dependencies
   rclcpp
+  trajectory_msgs
 )
 
 include_directories(include)
 
-add_library(${PROJECT_NAME} SHARED
+add_executable(play_motion2
+  src/play_motion2/play_motion2_helpers.cpp
   src/play_motion2/play_motion2.cpp
-)
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-
-add_executable(play_motion2_main
   src/play_motion2_main.cpp
 )
 
-ament_target_dependencies(play_motion2_main ${dependencies})
-target_link_libraries(play_motion2_main ${PROJECT_NAME})
+ament_target_dependencies(play_motion2 ${dependencies})
 
-install(TARGETS
-  ${PROJECT_NAME}
-  play_motion2_main
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
+install(TARGETS play_motion2
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

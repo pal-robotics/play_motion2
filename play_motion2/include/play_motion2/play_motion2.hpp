@@ -16,11 +16,12 @@
 #define PLAY_MOTION2__PLAY_MOTION2_HPP_
 
 #include <map>
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "rclcpp/rclcpp.hpp"
+#include "play_motion2/play_motion2_helpers.hpp"
+#include "rclcpp/node.hpp"
 
 namespace play_motion2
 {
@@ -29,10 +30,11 @@ class PlayMotion2 : public rclcpp::Node
 {
 public:
   PlayMotion2();
-  bool read_motion_name();
+  void init();
 
 private:
-  std::string motion_name_;
+  MotionKeys motion_keys_;
+  std::map<std::string, MotionInfo> motions_;
 };
 }  // namespace play_motion2
 
