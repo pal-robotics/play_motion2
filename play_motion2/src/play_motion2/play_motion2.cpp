@@ -17,18 +17,13 @@
 namespace play_motion2
 {
 
-// there has to be a better way to do it
-rclcpp::NodeOptions get_pm_node_options()
-{
-  rclcpp::NodeOptions node_options;
-  node_options.allow_undeclared_parameters(true);
-  node_options.automatically_declare_parameters_from_overrides(true);
-  return node_options;
-}
-
 PlayMotion2::PlayMotion2()
-: Node("play_motion2", get_pm_node_options()),
-  motion_keys_({}), motions_({})
+: Node("play_motion2",
+    rclcpp::NodeOptions()
+    .allow_undeclared_parameters(true)
+    .automatically_declare_parameters_from_overrides(true)),
+  motion_keys_({}),
+  motions_({})
 {
 }
 
