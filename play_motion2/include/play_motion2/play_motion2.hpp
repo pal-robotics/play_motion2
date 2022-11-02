@@ -42,6 +42,7 @@ public:
     std::shared_ptr<ListMotions::Response> response);
 
 private:
+  ControllerList controllers_;
   MotionKeys motion_keys_;
   std::map<std::string, MotionInfo> motions_;
 

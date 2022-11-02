@@ -22,6 +22,7 @@
 #include "rclcpp/node.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 
+typedef std::vector<std::string> ControllerList;
 typedef std::vector<std::string> MotionKeys;
 typedef std::vector<std::string> MotionJoints;
 typedef trajectory_msgs::msg::JointTrajectory Trajectory;
@@ -40,6 +41,10 @@ struct MotionInfo
   MotionJoints joints;
   Trajectory trajectory;
 };
+
+void parse_controllers(
+  const rclcpp::Node::SharedPtr node,
+  ControllerList & controllers);
 
 // methods to parse motions
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node);

@@ -17,6 +17,13 @@
 namespace play_motion2
 {
 
+void parse_controllers(
+  const rclcpp::Node::SharedPtr node,
+  ControllerList & controllers)
+{
+  node->get_parameter_or("controllers", controllers, {});
+}
+
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
 {
   MotionKeys motion_keys;

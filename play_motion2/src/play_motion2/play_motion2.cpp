@@ -29,6 +29,7 @@ PlayMotion2::PlayMotion2()
 
 void PlayMotion2::init()
 {
+  parse_controllers(shared_from_this(), controllers_);
   parse_motions(shared_from_this(), motion_keys_, motions_);
 
   list_motions_service_ = create_service<ListMotions>(
