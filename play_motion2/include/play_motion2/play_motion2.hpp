@@ -33,6 +33,8 @@ class PlayMotion2 : public rclcpp::Node
 {
 public:
   PlayMotion2();
+  ~PlayMotion2() = default;
+
   void init();
 
   void list_motions_callback(
