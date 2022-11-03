@@ -19,8 +19,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  std::shared_ptr<play_motion2::PlayMotion2> play_motion2 =
-    std::make_shared<play_motion2::PlayMotion2>();
+  auto play_motion2 = std::make_shared<play_motion2::PlayMotion2>();
 
   play_motion2->init();
 

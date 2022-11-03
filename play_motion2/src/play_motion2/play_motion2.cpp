@@ -40,8 +40,8 @@ void PlayMotion2::init()
 }
 
 void PlayMotion2::list_motions_callback(
-  const std::shared_ptr<ListMotions::Request>,
-  std::shared_ptr<ListMotions::Response> response)
+  ListMotions::Request::ConstSharedPtr,
+  ListMotions::Response::SharedPtr response)
 {
   response->motion_keys = motion_keys_;
 }

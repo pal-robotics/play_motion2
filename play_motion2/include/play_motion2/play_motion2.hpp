@@ -38,16 +38,15 @@ public:
   void init();
 
   void list_motions_callback(
-    const std::shared_ptr<ListMotions::Request>,
-    std::shared_ptr<ListMotions::Response> response);
+    ListMotions::Request::ConstSharedPtr,
+    ListMotions::Response::SharedPtr response);
 
 private:
   ControllerList controllers_;
   MotionKeys motion_keys_;
-  std::map<std::string, MotionInfo> motions_;
+  MotionsMap motions_;
 
-  rclcpp::Service<ListMotions>::SharedPtr
-    list_motions_service_;
+  rclcpp::Service<ListMotions>::SharedPtr list_motions_service_;
 };
 }  // namespace play_motion2
 

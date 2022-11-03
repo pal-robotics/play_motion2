@@ -32,7 +32,7 @@ MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
 
   const int init_position = std::string("motions.").size();
   std::unordered_set<std::string> unique_names;
-  for (auto & param : params.names) {
+  for (const auto & param : params.names) {
     // find the motion key: after 'motions.', and before the next '.'
     motion_key = param.substr(
       init_position,
@@ -100,7 +100,7 @@ Trajectory parse_motion_trajectory(
 
   auto joint_init = joint_positions.begin();
 
-  for (int i = 0; i < times_from_start.size(); i++) {
+  for (unsigned int i = 0; i < times_from_start.size(); i++) {
     trajectory_msgs::msg::JointTrajectoryPoint jtc_point;
     jtc_point.positions.resize(joints_size);
     std::copy(joint_init, joint_init + joints_size, jtc_point.positions.begin());
@@ -118,11 +118,11 @@ Trajectory parse_motion_trajectory(
 void parse_motions(
   const rclcpp::Node::SharedPtr node,
   MotionKeys & motion_keys,
-  std::map<std::string, MotionInfo> & motions)
+  MotionsMap & motions)
 {
   motion_keys = parse_motion_keys(node);
 
-  for (auto & key : motion_keys) {
+  for (const auto & key : motion_keys) {
     motions[key] = parse_motion_info(node, key);
   }
 }

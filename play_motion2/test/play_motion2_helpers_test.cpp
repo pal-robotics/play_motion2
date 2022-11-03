@@ -55,7 +55,7 @@ void PlayMotion2HelpersTest::TearDown()
 
 TEST_F(PlayMotion2HelpersTest, ParseControllersTest)
 {
-  ControllerList controllers;
+  play_motion2::ControllerList controllers;
   play_motion2::parse_controllers(node_, controllers);
 
   ASSERT_EQ(controllers.size(), 1);
@@ -64,7 +64,7 @@ TEST_F(PlayMotion2HelpersTest, ParseControllersTest)
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 {
-  MotionKeys keys = play_motion2::parse_motion_keys(node_);
+  play_motion2::MotionKeys keys = play_motion2::parse_motion_keys(node_);
 
   ASSERT_EQ(keys.size(), 1);
   ASSERT_EQ(keys[0], "sample");
