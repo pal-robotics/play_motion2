@@ -50,9 +50,33 @@ install(DIRECTORY include/
   DESTINATION include/)
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
   find_package(ament_lint_auto REQUIRED)
+
   ament_lint_auto_find_test_dependencies()
-#  add_subdirectory(test)
+
+  set(test_dependencies
+    ament_cmake_gtest
+    ament_index_cpp
+  )
+
+  # test configuration files
+  install(
+    FILES
+      test/config.yaml
+    DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  # play_motion2_helpers_test
+  ament_add_gtest(play_motion2_helpers_test
+    test/play_motion2_helpers_test.cpp
+  )
+  ament_target_dependencies(play_motion2_helpers_test ${test_dependencies})
+  target_link_libraries(play_motion2_helpers_test
+    play_motion2
+  )
+
 endif()
 
 ament_export_include_directories(include)

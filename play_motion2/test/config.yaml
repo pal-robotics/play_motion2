@@ -1,0 +1,14 @@
+/play_motion2:
+  ros__parameters:
+    controllers: [my_controller]
+    motions:
+      sample:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: Sample
+          usage: sample
+          description: 'Sample'
