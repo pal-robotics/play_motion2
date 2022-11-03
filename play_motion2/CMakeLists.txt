@@ -18,15 +18,31 @@ set(dependencies
 
 include_directories(include)
 
-add_executable(play_motion2
+# play_motion2
+add_library(play_motion2 SHARED
   src/play_motion2/play_motion2_helpers.cpp
   src/play_motion2/play_motion2.cpp
-  src/play_motion2_main.cpp
 )
 
 ament_target_dependencies(play_motion2 ${dependencies})
 
 install(TARGETS play_motion2
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+)
+
+# play_motion2_node
+add_executable(play_motion2_node
+  src/play_motion2_main.cpp
+)
+
+ament_target_dependencies(play_motion2_node ${dependencies})
+
+target_link_libraries(play_motion2_node
+  play_motion2
+)
+install(TARGETS play_motion2_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
