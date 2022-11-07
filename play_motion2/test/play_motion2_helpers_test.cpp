@@ -44,7 +44,7 @@ void PlayMotion2HelpersTest::SetUp()
   auto params = rcl_yaml_node_struct_init(allocator);
   if (rcl_parse_yaml_file(file_path.c_str(), params)) {
     auto param_map = rclcpp::parameter_map_from(params);
-    node_->set_parameters(param_map["/play_motion2"]);
+    node_->set_parameters(param_map["/play_motion2_helpers_test"]);
   }
 }
 

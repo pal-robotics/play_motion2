@@ -1,4 +1,4 @@
-/play_motion2:
+/play_motion2_helpers_test:
   ros__parameters:
     controllers: [my_controller]
     motions:
