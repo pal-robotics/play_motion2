@@ -40,12 +40,9 @@ void PlayMotion2HelpersTest::SetUp()
   const auto pkg_path = ament_index_cpp::get_package_share_directory("play_motion2");
   const std::string file_path = pkg_path + "/test/config.yaml";
 
-  auto allocator = rcl_get_default_allocator();
-  auto params = rcl_yaml_node_struct_init(allocator);
-  if (rcl_parse_yaml_file(file_path.c_str(), params)) {
-    auto param_map = rclcpp::parameter_map_from(params);
-    node_->set_parameters(param_map["/play_motion2_helpers_test"]);
-  }
+  auto synchronous_client =
+    std::make_shared<rclcpp::SyncParametersClient>(node_);
+  auto load_future = synchronous_client->load_parameters(file_path);
 }
 
 void PlayMotion2HelpersTest::TearDown()
