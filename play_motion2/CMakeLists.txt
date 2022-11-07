@@ -65,6 +65,7 @@ if(BUILD_TESTING)
   install(
     FILES
       test/config.yaml
+      test/play_motion2_config.yaml
     DESTINATION share/${PROJECT_NAME}/test
   )
 
@@ -74,6 +75,15 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(play_motion2_helpers_test ${test_dependencies})
   target_link_libraries(play_motion2_helpers_test
+    play_motion2
+  )
+
+  # play_motion2_test
+  ament_add_gtest(play_motion2_test
+    test/play_motion2_test.cpp
+  )
+  ament_target_dependencies(play_motion2_test ${test_dependencies})
+  target_link_libraries(play_motion2_test
     play_motion2
   )
 

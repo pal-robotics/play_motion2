@@ -1,0 +1,25 @@
+/play_motion2:
+  ros__parameters:
+    controllers: [my_controller]
+
+    motions:
+      home:
+        joints:
+          - joint1
+          - joint2
+        positions: [0.0, 0.0]
+        times_from_start: [0.0]
+        meta:
+          name: home
+          usage: home
+          description: 'home'
+      pose1:
+        joints:
+          - joint1
+          - joint2
+        positions: [1.8, 1.8]
+        times_from_start: [0.0]
+        meta:
+          name: pose1
+          usage: pose1
+          description: 'pose1'
