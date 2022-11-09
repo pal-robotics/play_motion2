@@ -43,7 +43,7 @@ bool check_params(
     if (!node->has_parameter(full_param)) {
       RCLCPP_ERROR_STREAM(
         node->get_logger(),
-        "Motion " << motion_key << " is not valid, parameter " << param << " is not defined.");
+        "Motion '" << motion_key << "' is not valid: parameter '" << param << "' is not defined.");
       return false;
     }
   }
@@ -119,11 +119,9 @@ bool parse_motion_trajectory(
   if (joint_positions.size() != times_from_start.size() * joints_size) {
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
-      "Positions size (" << joint_positions.size() <<
-        ") is not compatible with number of joints (" <<
-        joints_size <<
-        ") and times (" << times_from_start.size() <<
-        ") for motion '" << motion_key << "'");
+      "Motion '" << motion_key <<
+        "' is not valid: 'positions', 'joints' and 'times_from_start' sizes are not compatible (" <<
+        joint_positions.size() << " != " << times_from_start.size() << "*" << joints_size << ")");
     return false;
   }
 
