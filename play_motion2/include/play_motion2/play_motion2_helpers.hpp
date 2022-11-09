@@ -49,14 +49,18 @@ void parse_controllers(
   ControllerList & controllers);
 
 // methods to parse motions
-MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node);
-MotionInfo parse_motion_info(
+bool check_params(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key);
-Trajectory parse_motion_trajectory(
+MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node);
+bool parse_motion_info(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key,
-  const MotionJoints & joints);
+  MotionInfo & motion);
+bool parse_motion_trajectory(
+  const rclcpp::Node::SharedPtr node,
+  const std::string & motion_key,
+  MotionInfo & motion);
 void parse_motions(
   const rclcpp::Node::SharedPtr node,
   MotionKeys & motion_keys,

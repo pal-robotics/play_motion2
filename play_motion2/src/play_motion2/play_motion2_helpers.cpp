@@ -24,6 +24,32 @@ void parse_controllers(
   node->get_parameter_or("controllers", controllers, {});
 }
 
+bool check_params(
+  const rclcpp::Node::SharedPtr node,
+  const std::string & motion_key)
+{
+  std::vector<std::string> motion_params = {
+    "meta.name",
+    "meta.description",
+    "meta.usage",
+    "joints",
+    "positions",
+    "times_from_start"
+  };
+
+  std::string full_param;
+  for (const auto & param : motion_params) {
+    full_param = "motions." + motion_key + "." + param;
+    if (!node->has_parameter(full_param)) {
+      RCLCPP_ERROR_STREAM(
+        node->get_logger(),
+        "Motion " << motion_key << " is not valid, parameter " << param << " is not defined.");
+      return false;
+    }
+  }
+  return true;
+}
+
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
 {
   MotionKeys motion_keys;
@@ -45,12 +71,17 @@ MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
   return motion_keys;
 }
 
-MotionInfo parse_motion_info(
+bool parse_motion_info(
   const rclcpp::Node::SharedPtr node,
-  const std::string & motion_key)
+  const std::string & motion_key,
+  MotionInfo & motion)
 {
-  MotionInfo motion;
+  if (!check_params(node, motion_key)) {
+    return false;
+  }
+
   std::string param;
+  bool valid = true;
 
   // Get meta data
   param = "motions." + motion_key + ".meta.name";
@@ -67,22 +98,22 @@ MotionInfo parse_motion_info(
   motion.joints = node->get_parameter(param).as_string_array();
 
   // Get trajectory
-  motion.trajectory = parse_motion_trajectory(node, motion_key, motion.joints);
+  valid = parse_motion_trajectory(node, motion_key, motion);
 
-  return motion;
+  return valid;
 }
 
-Trajectory parse_motion_trajectory(
+bool parse_motion_trajectory(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key,
-  const MotionJoints & joints)
+  MotionInfo & motion)
 {
   const std::string positions_param = "motions." + motion_key + ".positions";
   const std::string times_param = "motions." + motion_key + ".times_from_start";
 
   const auto joint_positions = node->get_parameter(positions_param).as_double_array();
   const auto times_from_start = node->get_parameter(times_param).as_double_array();
-  const int joints_size = joints.size();
+  const int joints_size = motion.joints.size();
 
   // check correct size
   if (joint_positions.size() != times_from_start.size() * joints_size) {
@@ -93,13 +124,12 @@ Trajectory parse_motion_trajectory(
         joints_size <<
         ") and times (" << times_from_start.size() <<
         ") for motion '" << motion_key << "'");
+    return false;
   }
 
-  Trajectory trajectory;
-  trajectory.joint_names = joints;
+  motion.trajectory.joint_names = motion.joints;
 
   auto joint_init = joint_positions.begin();
-
   for (unsigned int i = 0; i < times_from_start.size(); i++) {
     trajectory_msgs::msg::JointTrajectoryPoint jtc_point;
     jtc_point.positions.resize(joints_size);
@@ -109,10 +139,10 @@ Trajectory parse_motion_trajectory(
     jtc_point.time_from_start.sec = my_time.to_rmw_time().sec;
     jtc_point.time_from_start.nanosec = my_time.to_rmw_time().nsec;
 
-    trajectory.points.push_back(jtc_point);
+    motion.trajectory.points.push_back(jtc_point);
     joint_init += joints_size;
   }
-  return trajectory;
+  return true;
 }
 
 void parse_motions(
@@ -120,10 +150,14 @@ void parse_motions(
   MotionKeys & motion_keys,
   MotionsMap & motions)
 {
-  motion_keys = parse_motion_keys(node);
+  const MotionKeys all_motion_keys = parse_motion_keys(node);
 
-  for (const auto & key : motion_keys) {
-    motions[key] = parse_motion_info(node, key);
+  MotionInfo motion;
+  for (const auto & key : all_motion_keys) {
+    if (parse_motion_info(node, key, motion)) {
+      motion_keys.emplace_back(key);
+      motions[key] = motion;
+    }
   }
 }
 

@@ -69,7 +69,8 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
 {
-  play_motion2::MotionInfo info = play_motion2::parse_motion_info(node_, "sample");
+  play_motion2::MotionInfo info;
+  ASSERT_TRUE(play_motion2::parse_motion_info(node_, "sample", info));
 
   ASSERT_EQ(info.name, "Sample");
   ASSERT_EQ(info.usage, "sample");
