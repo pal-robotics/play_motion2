@@ -41,7 +41,7 @@ void PlayMotion2Test::SetUp()
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(play_motion2_);
-  auto load_future = synchronous_client->load_parameters(pm2_config_path);
+  synchronous_client->load_parameters(pm2_config_path);
 
   play_motion2_->init();
   executor_.add_node(play_motion2_);

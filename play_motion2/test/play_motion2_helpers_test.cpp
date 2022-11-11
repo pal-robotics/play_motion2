@@ -42,7 +42,7 @@ void PlayMotion2HelpersTest::SetUp()
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(node_);
-  auto load_future = synchronous_client->load_parameters(config_path);
+  synchronous_client->load_parameters(config_path);
 }
 
 void PlayMotion2HelpersTest::TearDown()
