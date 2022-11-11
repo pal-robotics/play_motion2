@@ -25,6 +25,9 @@
 class PlayMotion2Test : public ::testing::Test
 {
 public:
+  PlayMotion2Test() = default;
+  ~PlayMotion2Test() = default;
+
   static void SetUpTestSuite();
   static void TearDownTestSuite();
 
