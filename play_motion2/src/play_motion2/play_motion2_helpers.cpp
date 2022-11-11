@@ -28,7 +28,7 @@ bool check_params(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key)
 {
-  std::vector<std::string> motion_params = {
+  const std::vector<std::string> motion_params = {
     "meta.name",
     "meta.description",
     "meta.usage",
@@ -113,7 +113,7 @@ bool parse_motion_trajectory(
 
   const auto joint_positions = node->get_parameter(positions_param).as_double_array();
   const auto times_from_start = node->get_parameter(times_param).as_double_array();
-  const int joints_size = motion.joints.size();
+  const size_t joints_size = motion.joints.size();
 
   // check correct size
   if (joint_positions.size() != times_from_start.size() * joints_size) {
@@ -127,15 +127,15 @@ bool parse_motion_trajectory(
 
   motion.trajectory.joint_names = motion.joints;
 
-  auto joint_init = joint_positions.begin();
+  auto joint_init = joint_positions.cbegin();
   for (unsigned int i = 0; i < times_from_start.size(); i++) {
     trajectory_msgs::msg::JointTrajectoryPoint jtc_point;
     jtc_point.positions.resize(joints_size);
     std::copy(joint_init, joint_init + joints_size, jtc_point.positions.begin());
 
-    auto my_time = rclcpp::Duration::from_seconds(times_from_start[i]);
-    jtc_point.time_from_start.sec = my_time.to_rmw_time().sec;
-    jtc_point.time_from_start.nanosec = my_time.to_rmw_time().nsec;
+    const auto trajectory_time = rclcpp::Duration::from_seconds(times_from_start[i]);
+    jtc_point.time_from_start.sec = trajectory_time.to_rmw_time().sec;
+    jtc_point.time_from_start.nanosec = trajectory_time.to_rmw_time().nsec;
 
     motion.trajectory.points.push_back(jtc_point);
     joint_init += joints_size;

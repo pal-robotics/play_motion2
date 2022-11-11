@@ -37,11 +37,11 @@ void PlayMotion2Test::SetUp()
 
   // load parameters
   const auto pkg_path = ament_index_cpp::get_package_share_directory("play_motion2");
-  const std::string file_path = pkg_path + "/test/play_motion2_config.yaml";
+  const std::string pm2_config_path = pkg_path + "/test/play_motion2_config.yaml";
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(play_motion2_);
-  auto load_future = synchronous_client->load_parameters(file_path);
+  auto load_future = synchronous_client->load_parameters(pm2_config_path);
 
   play_motion2_->init();
   executor_.add_node(play_motion2_);
