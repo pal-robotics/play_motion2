@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(play_motion2)
 
+set(CMAKE_CXX_STANDARD 17)
+
 find_package(ament_cmake REQUIRED)
 
 # PAL Robotics stricter build flags, other developers should not worry about this
