@@ -131,7 +131,7 @@ bool parse_motion_trajectory(
   for (unsigned int i = 0; i < times_from_start.size(); i++) {
     trajectory_msgs::msg::JointTrajectoryPoint jtc_point;
     jtc_point.positions.resize(joints_size);
-    std::copy(joint_init, joint_init + joints_size, jtc_point.positions.begin());
+    std::copy_n(joint_init, joints_size, jtc_point.positions.begin());
 
     const auto jtc_point_time = rclcpp::Duration::from_seconds(times_from_start[i]);
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
