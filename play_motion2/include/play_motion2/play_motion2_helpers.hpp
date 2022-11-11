@@ -52,15 +52,19 @@ void parse_controllers(
 bool check_params(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key);
+
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node);
+
 bool parse_motion_info(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion);
+
 bool parse_motion_trajectory(
   const rclcpp::Node::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion);
+
 void parse_motions(
   const rclcpp::Node::SharedPtr node,
   MotionKeys & motion_keys,

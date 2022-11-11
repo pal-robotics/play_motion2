@@ -38,7 +38,7 @@ public:
   void init();
 
   void list_motions_callback(
-    ListMotions::Request::ConstSharedPtr,
+    ListMotions::Request::ConstSharedPtr request,
     ListMotions::Response::SharedPtr response);
 
 private:
