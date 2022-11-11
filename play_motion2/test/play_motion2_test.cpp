@@ -50,9 +50,9 @@ void PlayMotion2Test::SetUp()
 
 void PlayMotion2Test::TearDown()
 {
-  play_motion2_.reset();
   executor_.cancel();
   runner_.join();
+  play_motion2_.reset();
 }
 
 TEST_F(PlayMotion2Test, ListMotionsSrvTest)
