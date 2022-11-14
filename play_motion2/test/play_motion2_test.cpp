@@ -60,6 +60,29 @@ void PlayMotion2Test::TearDown()
   play_motion2_.reset();
 }
 
+TEST_F(PlayMotion2Test, WrongControllersConfigTest)
+{
+  // controllers controllers declared empty
+  play_motion2_->set_parameter(
+    rclcpp::Parameter(
+      "controllers",
+      std::vector<std::string>{}));
+  ASSERT_FALSE(play_motion2_->init());
+
+  // controllers not declared
+  play_motion2_->undeclare_parameter("controllers");
+  ASSERT_FALSE(play_motion2_->init());
+}
+
+TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
+{
+  // void valid motions
+  play_motion2_->undeclare_parameter("motions.home.meta.name");
+  play_motion2_->undeclare_parameter("motions.pose1.meta.name");
+
+  ASSERT_FALSE(play_motion2_->init());
+}
+
 TEST_F(PlayMotion2Test, ListMotionsSrvTest)
 {
   auto client_node = rclcpp::Node::make_shared("client_node");
