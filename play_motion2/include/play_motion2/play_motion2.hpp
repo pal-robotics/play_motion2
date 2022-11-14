@@ -35,7 +35,7 @@ public:
   PlayMotion2();
   ~PlayMotion2() = default;
 
-  void init();
+  bool init();
 
   void list_motions_callback(
     ListMotions::Request::ConstSharedPtr request,

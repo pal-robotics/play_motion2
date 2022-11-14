@@ -26,16 +26,23 @@ PlayMotion2::PlayMotion2()
 {
 }
 
-void PlayMotion2::init()
+bool PlayMotion2::init()
 {
-  parse_controllers(shared_from_this(), controllers_);
-  parse_motions(shared_from_this(), motion_keys_, motions_);
+  bool ok = parse_controllers(shared_from_this(), controllers_);
+  ok = ok && parse_motions(shared_from_this(), motion_keys_, motions_);
 
-  list_motions_service_ = create_service<ListMotions>(
-    "play_motion2/list_motions",
-    std::bind(
-      &PlayMotion2::list_motions_callback,
-      this, std::placeholders::_1, std::placeholders::_2));
+  if (ok) {
+    list_motions_service_ = create_service<ListMotions>(
+      "play_motion2/list_motions",
+      std::bind(
+        &PlayMotion2::list_motions_callback,
+        this, std::placeholders::_1, std::placeholders::_2));
+  } else {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Failed to initialize play_motion2");
+  }
+  return ok;
 }
 
 void PlayMotion2::list_motions_callback(

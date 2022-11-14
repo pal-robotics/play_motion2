@@ -21,9 +21,9 @@ int main(int argc, char ** argv)
 
   auto play_motion2 = std::make_shared<play_motion2::PlayMotion2>();
 
-  play_motion2->init();
-
-  rclcpp::spin(play_motion2);
+  if (play_motion2->init()) {
+    rclcpp::spin(play_motion2);
+  }
 
   rclcpp::shutdown();
 

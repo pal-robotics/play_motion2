@@ -17,11 +17,27 @@
 namespace play_motion2
 {
 
-void parse_controllers(
+bool parse_controllers(
   const rclcpp::Node::SharedPtr node,
   ControllerList & controllers)
 {
+  if (!node->has_parameter("controllers")) {
+    RCLCPP_ERROR(
+      node->get_logger(),
+      "Controllers are not defined in configuration file.");
+    return false;
+  }
+
   node->get_parameter_or("controllers", controllers, {});
+
+  if (controllers.empty()) {
+    RCLCPP_ERROR(
+      node->get_logger(),
+      "Controllers not defined, parameter is empty.");
+    return false;
+  }
+
+  return true;
 }
 
 bool check_params(
@@ -146,7 +162,7 @@ bool parse_motion_trajectory(
   return true;
 }
 
-void parse_motions(
+bool parse_motions(
   const rclcpp::Node::SharedPtr node,
   MotionKeys & motion_keys,
   MotionsMap & motions)
@@ -160,6 +176,14 @@ void parse_motions(
       motions[key] = motion;
     }
   }
+
+  if (motion_keys.empty()) {
+    RCLCPP_ERROR(
+      node->get_logger(),
+      "No valid motions defined in configuration file.");
+    return false;
+  }
+  return true;
 }
 
 }  // namespace play_motion2

@@ -44,7 +44,7 @@ struct MotionInfo
 
 using MotionsMap = std::map<std::string, MotionInfo>;
 
-void parse_controllers(
+bool parse_controllers(
   const rclcpp::Node::SharedPtr node,
   ControllerList & controllers);
 
@@ -65,7 +65,7 @@ bool parse_motion_trajectory(
   const std::string & motion_key,
   MotionInfo & motion);
 
-void parse_motions(
+bool parse_motions(
   const rclcpp::Node::SharedPtr node,
   MotionKeys & motion_keys,
   MotionsMap & motions);
