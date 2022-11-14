@@ -56,16 +56,17 @@ bool check_params(
   };
 
   std::string full_param;
+  bool valid_motion = true;
   for (const auto & param : motion_params) {
     full_param = "motions." + motion_key + "." + param;
     if (!node->has_parameter(full_param)) {
       RCLCPP_ERROR_STREAM(
         node->get_logger(),
         "Motion '" << motion_key << "' is not valid: parameter '" << param << "' is not defined.");
-      return false;
+      valid_motion = false;
     }
   }
-  return true;
+  return valid_motion;
 }
 
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
