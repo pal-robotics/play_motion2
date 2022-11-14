@@ -53,8 +53,11 @@ bool check_params(
 MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
 {
   MotionKeys motion_keys;
-  const auto params = node->list_parameters({"motions"}, 0);
   std::string motion_key = "";
+
+  // list parameters with the prefix "motions" and with any depth
+  constexpr unsigned int ANY_DEPTH = 0;
+  const auto params = node->list_parameters({"motions"}, ANY_DEPTH);
 
   const int init_position = std::string("motions.").size();
   std::unordered_set<std::string> unique_names;
