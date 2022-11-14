@@ -15,9 +15,17 @@
 #ifndef PLAY_MOTION2_HELPERS_TEST_HPP_
 #define PLAY_MOTION2_HELPERS_TEST_HPP_
 
-#include "gtest/gtest.h"
-#include "play_motion2/play_motion2_helpers.hpp"
+#include <memory>
 
+#include "gtest/gtest.h"
+
+namespace rclcpp
+{
+class Node;
+}
+
+namespace play_motion2
+{
 
 class PlayMotion2HelpersTest : public ::testing::Test
 {
@@ -32,7 +40,8 @@ public:
   void TearDown();
 
 protected:
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<rclcpp::Node> node_;
 };
+}  // namespace play_motion2
 
 #endif  // PLAY_MOTION2_HELPERS_TEST_HPP_

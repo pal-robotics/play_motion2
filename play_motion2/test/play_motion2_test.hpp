@@ -18,9 +18,11 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "play_motion2/play_motion2.hpp"
-#include "play_motion2_msgs/srv/list_motions.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/executors.hpp"
+
+namespace play_motion2
+{
+class PlayMotion2;
 
 class PlayMotion2Test : public ::testing::Test
 {
@@ -35,9 +37,10 @@ public:
   void TearDown();
 
 protected:
-  std::shared_ptr<play_motion2::PlayMotion2> play_motion2_;
+  std::shared_ptr<PlayMotion2> play_motion2_;
   rclcpp::executors::SingleThreadedExecutor executor_;
   std::thread runner_;
 };
+}  // namespace play_motion2
 
 #endif  // PLAY_MOTION2_TEST_HPP_

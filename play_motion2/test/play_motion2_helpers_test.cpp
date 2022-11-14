@@ -16,7 +16,13 @@
 #include "gtest/gtest.h"
 
 #include "play_motion2_helpers_test.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "play_motion2/play_motion2_helpers.hpp"
+#include "rclcpp/node.hpp"
+#include "rclcpp/parameter_client.hpp"
+#include "rclcpp/utilities.hpp"
+
+namespace play_motion2
+{
 
 void PlayMotion2HelpersTest::SetUpTestSuite()
 {
@@ -52,8 +58,8 @@ void PlayMotion2HelpersTest::TearDown()
 
 TEST_F(PlayMotion2HelpersTest, ParseControllersTest)
 {
-  play_motion2::ControllerList controllers;
-  play_motion2::parse_controllers(node_, controllers);
+  ControllerList controllers;
+  parse_controllers(node_, controllers);
 
   ASSERT_EQ(controllers.size(), 1);
   ASSERT_EQ(controllers[0], "my_controller");
@@ -61,7 +67,7 @@ TEST_F(PlayMotion2HelpersTest, ParseControllersTest)
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 {
-  play_motion2::MotionKeys keys = play_motion2::parse_motion_keys(node_);
+  MotionKeys keys = parse_motion_keys(node_);
 
   ASSERT_EQ(keys.size(), 1);
   ASSERT_EQ(keys[0], "sample");
@@ -69,8 +75,8 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
 {
-  play_motion2::MotionInfo info;
-  ASSERT_TRUE(play_motion2::parse_motion_info(node_, "sample", info));
+  MotionInfo info;
+  ASSERT_TRUE(parse_motion_info(node_, "sample", info));
 
   ASSERT_EQ(info.name, "Sample");
   ASSERT_EQ(info.usage, "sample");
@@ -98,3 +104,5 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(info.trajectory.points[2].positions[0], 2.0);
   ASSERT_EQ(info.trajectory.points[2].positions[1], 1.0);
 }
+
+}  // namespace play_motion2

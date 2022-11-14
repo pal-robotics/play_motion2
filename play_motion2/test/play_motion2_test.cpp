@@ -17,9 +17,14 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 
+#include "play_motion2/play_motion2.hpp"
 #include "play_motion2_test.hpp"
+#include "rclcpp/parameter_client.hpp"
 
 using namespace std::chrono_literals;
+
+namespace play_motion2
+{
 
 void PlayMotion2Test::SetUpTestSuite()
 {
@@ -79,3 +84,5 @@ TEST_F(PlayMotion2Test, ListMotionsSrvTest)
   ASSERT_EQ(result->motion_keys[0], "home");
   ASSERT_EQ(result->motion_keys[1], "pose1");
 }
+
+}  // namespace play_motion2
