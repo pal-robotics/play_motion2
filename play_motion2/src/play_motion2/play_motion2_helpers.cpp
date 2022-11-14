@@ -102,8 +102,6 @@ bool parse_motion_info(
   }
 
   std::string param;
-  bool valid = true;
-
   // Get meta data
   param = "motions." + motion_key + ".meta.name";
   motion.name = node->get_parameter(param).as_string();
@@ -119,7 +117,7 @@ bool parse_motion_info(
   motion.joints = node->get_parameter(param).as_string_array();
 
   // Get trajectory
-  valid = parse_motion_trajectory(node, motion_key, motion);
+  bool valid = parse_motion_trajectory(node, motion_key, motion);
 
   return valid;
 }
