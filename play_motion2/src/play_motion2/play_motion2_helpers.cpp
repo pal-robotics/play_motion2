@@ -21,6 +21,8 @@ bool parse_controllers(
   const rclcpp::Node::SharedPtr node,
   ControllerList & controllers)
 {
+  controllers.clear();
+
   if (!node->has_parameter("controllers")) {
     RCLCPP_ERROR(
       node->get_logger(),
@@ -168,6 +170,9 @@ bool parse_motions(
   MotionsMap & motions)
 {
   const MotionKeys all_motion_keys = parse_motion_keys(node);
+
+  motions.clear();
+  motion_keys.clear();
 
   MotionInfo motion;
   for (const auto & key : all_motion_keys) {
