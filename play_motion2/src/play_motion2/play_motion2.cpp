@@ -46,7 +46,7 @@ bool PlayMotion2::init()
 }
 
 void PlayMotion2::list_motions_callback(
-  ListMotions::Request::ConstSharedPtr,
+  ListMotions::Request::ConstSharedPtr /*request*/,
   ListMotions::Response::SharedPtr response)
 {
   response->motion_keys = motion_keys_;
