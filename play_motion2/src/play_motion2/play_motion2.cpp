@@ -28,8 +28,9 @@ PlayMotion2::PlayMotion2()
 
 bool PlayMotion2::init()
 {
-  bool ok = parse_controllers(shared_from_this(), controllers_);
-  ok = ok && parse_motions(shared_from_this(), motion_keys_, motions_);
+  const bool ok =
+    parse_controllers(shared_from_this(), controllers_) &&
+    parse_motions(shared_from_this(), motion_keys_, motions_);
 
   if (ok) {
     list_motions_service_ = create_service<ListMotions>(
