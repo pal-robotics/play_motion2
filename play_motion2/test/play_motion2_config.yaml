@@ -1,0 +1,92 @@
+/play_motion2:
+  ros__parameters:
+    controllers: [my_controller]
+
+    motions:
+      home:
+        joints:
+          - joint1
+          - joint2
+        positions: [0.0, 0.0]
+        times_from_start: [0.0]
+        meta:
+          name: home
+          usage: test
+          description: 'home'
+      pose1:
+        joints:
+          - joint1
+          - joint2
+        positions: [1.8, 1.8]
+        times_from_start: [0.0]
+        meta:
+          name: pose1
+          usage: test
+          description: 'pose1'
+
+      # no valid motions
+      no_name:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          usage: test
+          description: 'No name motion'
+
+      no_description:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: No description
+          usage: test
+
+      no_meta:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+
+      no_joints:
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: No Joints
+          usage: test
+          description: 'No joints motion'
+
+      no_positions:
+        joints: [joint1, joint2]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: No Positions
+          usage: test
+          description: 'No positions motion'
+
+      no_times_from_start:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        meta:
+          name: No Times
+          usage: test
+          description: 'No times_from_start motion'
+
+      malformed_motion:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    1.0, 2.0, 1.1,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: Malformed Motion
+          usage: test
+          description: 'Malformed motion'
