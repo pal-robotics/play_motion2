@@ -52,9 +52,6 @@ void PlayMotion2Test::SetUp()
 
   executor_.add_node(play_motion2_->get_node_base_interface());
   runner_ = std::thread([&]() {executor_.spin();});
-
-  play_motion2_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  play_motion2_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 }
 
 void PlayMotion2Test::TearDown()
@@ -66,13 +63,6 @@ void PlayMotion2Test::TearDown()
 
 TEST_F(PlayMotion2Test, WrongControllersConfigTest)
 {
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE).label(), "inactive");
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP).label(), "unconfigured");
-
   // controllers declared empty
   play_motion2_->set_parameter(
     rclcpp::Parameter(
@@ -93,13 +83,6 @@ TEST_F(PlayMotion2Test, WrongControllersConfigTest)
 
 TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
 {
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE).label(), "inactive");
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP).label(), "unconfigured");
-
   // void valid motions
   play_motion2_->undeclare_parameter("motions.home.meta.name");
   play_motion2_->undeclare_parameter("motions.pose1.meta.name");
@@ -113,6 +96,16 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
 
 TEST_F(PlayMotion2Test, ListMotionsSrvTest)
 {
+  ASSERT_EQ(play_motion2_->get_current_state().label(), "unconfigured");
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "inactive");
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE).label(), "active");
+
   auto client_node = rclcpp::Node::make_shared("client_node");
   auto list_motions_client =
     client_node->create_client<play_motion2_msgs::srv::ListMotions>("play_motion2/list_motions");
