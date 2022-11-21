@@ -19,6 +19,7 @@
 
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "play_motion2/play_motion2.hpp"
+#include "play_motion2_msgs/srv/list_motions.hpp"
 #include "play_motion2_test.hpp"
 #include "rclcpp/parameter_client.hpp"
 

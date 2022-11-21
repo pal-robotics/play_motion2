@@ -13,6 +13,10 @@
 // limitations under the License.
 
 #include "play_motion2/play_motion2.hpp"
+#include "play_motion2/play_motion2_helpers.hpp"
+
+#include "rclcpp/node_options.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace play_motion2
 {

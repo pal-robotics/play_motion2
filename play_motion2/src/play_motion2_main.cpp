@@ -15,6 +15,7 @@
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "play_motion2/play_motion2.hpp"
 #include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/utilities.hpp"
 
 int main(int argc, char ** argv)
 {

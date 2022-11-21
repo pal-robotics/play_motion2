@@ -22,8 +22,9 @@
 
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
-#include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
+#include "rclcpp_lifecycle/state.hpp"
 
 namespace play_motion2
 {
