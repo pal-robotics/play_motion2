@@ -36,8 +36,8 @@ PlayMotion2::PlayMotion2()
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
 {
   const bool ok =
-    parse_controllers(shared_from_this(), controllers_) &&
-    parse_motions(shared_from_this(), motion_keys_, motions_);
+    parse_controllers(get_node_parameters_interface(), get_logger(), controllers_) &&
+    parse_motions(get_node_parameters_interface(), get_logger(), motion_keys_, motions_);
 
   RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
 

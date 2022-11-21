@@ -30,6 +30,9 @@ using MotionKeys = std::vector<std::string>;
 using MotionJoints = std::vector<std::string>;
 using Trajectory = trajectory_msgs::msg::JointTrajectory;
 
+using NodeParametersInterfaceSharedPtr =
+  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr;
+
 struct MotionInfo
 {
   // meta
@@ -45,28 +48,33 @@ struct MotionInfo
 using MotionsMap = std::map<std::string, MotionInfo>;
 
 bool parse_controllers(
-  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  const NodeParametersInterfaceSharedPtr node_parameters_interface,
+  const rclcpp::Logger & logger,
   ControllerList & controllers);
 
 // methods to parse motions
 bool check_params(
-  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  const NodeParametersInterfaceSharedPtr node_parameters_interface,
+  const rclcpp::Logger & logger,
   const std::string & motion_key);
 
-MotionKeys parse_motion_keys(const rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+MotionKeys parse_motion_keys(const NodeParametersInterfaceSharedPtr node_parameters_interface);
 
 bool parse_motion_info(
-  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  const NodeParametersInterfaceSharedPtr node_parameters_interface,
+  const rclcpp::Logger & logger,
   const std::string & motion_key,
   MotionInfo & motion);
 
 bool parse_motion_trajectory(
-  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  const NodeParametersInterfaceSharedPtr node_parameters_interface,
+  const rclcpp::Logger & logger,
   const std::string & motion_key,
   MotionInfo & motion);
 
 bool parse_motions(
-  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  const NodeParametersInterfaceSharedPtr node_parameters_interface,
+  const rclcpp::Logger & logger,
   MotionKeys & motion_keys,
   MotionsMap & motions);
 
