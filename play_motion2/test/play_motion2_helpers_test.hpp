@@ -19,9 +19,9 @@
 
 #include "gtest/gtest.h"
 
-namespace rclcpp
+namespace rclcpp_lifecycle
 {
-class Node;
+class LifecycleNode;
 }
 
 namespace play_motion2
@@ -40,7 +40,7 @@ public:
   void TearDown();
 
 protected:
-  std::shared_ptr<rclcpp::Node> node_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
 };
 }  // namespace play_motion2
 

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "lifecycle_msgs/msg/transition.hpp"
 #include "play_motion2/play_motion2.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/executors/single_threaded_executor.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -21,9 +22,14 @@ int main(int argc, char ** argv)
 
   auto play_motion2 = std::make_shared<play_motion2::PlayMotion2>();
 
-  if (play_motion2->init()) {
-    rclcpp::spin(play_motion2);
-  }
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(play_motion2->get_node_base_interface());
+
+  play_motion2->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor.spin_some();
+
+  play_motion2->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor.spin();
 
   rclcpp::shutdown();
 

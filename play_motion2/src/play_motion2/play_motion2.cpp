@@ -18,32 +18,66 @@ namespace play_motion2
 {
 
 PlayMotion2::PlayMotion2()
-: Node("play_motion2",
+: LifecycleNode("play_motion2",
     rclcpp::NodeOptions()
     .allow_undeclared_parameters(true)
     .automatically_declare_parameters_from_overrides(true)),
-  motion_keys_({}), motions_({}), list_motions_service_(nullptr)
+  motion_keys_({}),
+  motions_({}),
+  list_motions_service_(nullptr)
 {
 }
 
-bool PlayMotion2::init()
+CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
 {
   const bool ok =
     parse_controllers(shared_from_this(), controllers_) &&
     parse_motions(shared_from_this(), motion_keys_, motions_);
 
   if (ok) {
-    list_motions_service_ = create_service<ListMotions>(
-      "play_motion2/list_motions",
-      std::bind(
-        &PlayMotion2::list_motions_callback,
-        this, std::placeholders::_1, std::placeholders::_2));
-  } else {
-    RCLCPP_ERROR(
-      get_logger(),
-      "Failed to initialize play_motion2");
+    return CallbackReturn::SUCCESS;
   }
-  return ok;
+
+  RCLCPP_ERROR(
+    get_logger(),
+    "Failed to initialize Play Motion 2");
+
+  return CallbackReturn::FAILURE;
+}
+
+CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
+{
+  list_motions_service_ = create_service<ListMotions>(
+    "play_motion2/list_motions",
+    std::bind(
+      &PlayMotion2::list_motions_callback,
+      this, std::placeholders::_1, std::placeholders::_2));
+
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
+{
+  list_motions_service_.reset();
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
+{
+  controllers_.clear();
+  motion_keys_.clear();
+  motions_.clear();
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & state)
+{
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & state)
+{
+  return CallbackReturn::SUCCESS;
 }
 
 void PlayMotion2::list_motions_callback(

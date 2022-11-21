@@ -17,9 +17,9 @@
 
 #include "play_motion2_helpers_test.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
-#include "rclcpp/node.hpp"
 #include "rclcpp/parameter_client.hpp"
 #include "rclcpp/utilities.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace play_motion2
 {
@@ -36,7 +36,7 @@ void PlayMotion2HelpersTest::TearDownTestSuite()
 
 void PlayMotion2HelpersTest::SetUp()
 {
-  node_ = std::make_shared<rclcpp::Node>(
+  node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(
     "play_motion2_helpers_test",
     rclcpp::NodeOptions()
     .allow_undeclared_parameters(true)

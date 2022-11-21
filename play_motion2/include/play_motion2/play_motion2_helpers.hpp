@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp/node.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 
 namespace play_motion2
@@ -45,28 +45,28 @@ struct MotionInfo
 using MotionsMap = std::map<std::string, MotionInfo>;
 
 bool parse_controllers(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   ControllerList & controllers);
 
 // methods to parse motions
 bool check_params(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key);
 
-MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node);
+MotionKeys parse_motion_keys(const rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
 bool parse_motion_info(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion);
 
 bool parse_motion_trajectory(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion);
 
 bool parse_motions(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   MotionKeys & motion_keys,
   MotionsMap & motions);
 

@@ -18,7 +18,7 @@ namespace play_motion2
 {
 
 bool parse_controllers(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   ControllerList & controllers)
 {
   controllers.clear();
@@ -43,7 +43,7 @@ bool parse_controllers(
 }
 
 bool check_params(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key)
 {
   const std::vector<std::string> motion_params = {
@@ -69,7 +69,7 @@ bool check_params(
   return valid_motion;
 }
 
-MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
+MotionKeys parse_motion_keys(const rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 {
   MotionKeys motion_keys;
   std::string motion_key = "";
@@ -94,7 +94,7 @@ MotionKeys parse_motion_keys(const rclcpp::Node::SharedPtr node)
 }
 
 bool parse_motion_info(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion)
 {
@@ -124,7 +124,7 @@ bool parse_motion_info(
 }
 
 bool parse_motion_trajectory(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   const std::string & motion_key,
   MotionInfo & motion)
 {
@@ -164,7 +164,7 @@ bool parse_motion_trajectory(
 }
 
 bool parse_motions(
-  const rclcpp::Node::SharedPtr node,
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr node,
   MotionKeys & motion_keys,
   MotionsMap & motions)
 {

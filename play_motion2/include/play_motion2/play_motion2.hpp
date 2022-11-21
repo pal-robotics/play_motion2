@@ -23,17 +23,26 @@
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace play_motion2
 {
 
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
 
-class PlayMotion2 : public rclcpp::Node
+class PlayMotion2 : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   PlayMotion2();
   ~PlayMotion2() = default;
+
+  CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
 
   bool init();
 
