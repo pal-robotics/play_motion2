@@ -90,8 +90,6 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
   ASSERT_EQ(
     play_motion2_->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
-
-  ASSERT_EQ(play_motion2_->get_current_state().label(), "unconfigured");
 }
 
 TEST_F(PlayMotion2Test, ListMotionsSrvTest)
