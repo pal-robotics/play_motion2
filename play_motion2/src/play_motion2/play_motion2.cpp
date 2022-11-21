@@ -15,6 +15,7 @@
 #include "play_motion2/play_motion2.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 
+#include "rclcpp/logging.hpp"
 #include "rclcpp/node_options.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
@@ -38,15 +39,9 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
     parse_controllers(shared_from_this(), controllers_) &&
     parse_motions(shared_from_this(), motion_keys_, motions_);
 
-  if (ok) {
-    return CallbackReturn::SUCCESS;
-  }
+  RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
 
-  RCLCPP_ERROR(
-    get_logger(),
-    "Failed to initialize Play Motion 2");
-
-  return CallbackReturn::FAILURE;
+  return ok ? CallbackReturn::SUCCESS : CallbackReturn::FAILURE;
 }
 
 CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
