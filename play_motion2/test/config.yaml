@@ -12,3 +12,18 @@
           name: Sample
           usage: sample
           description: 'Sample'
+
+/play_motion2_lifecycle_helpers_test:
+  ros__parameters:
+    controllers: [my_controller2]
+    motions:
+      sample2:
+        joints: [joint3, joint4]
+        positions: [0.0, 0.0,
+                    1.0, 2.0,
+                    2.0, 1.0]
+        times_from_start: [0.5, 3.1, 5.8]
+        meta:
+          name: Sample2
+          usage: sample2
+          description: 'Sample2'

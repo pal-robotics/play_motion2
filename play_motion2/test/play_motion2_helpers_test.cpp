@@ -36,8 +36,14 @@ void PlayMotion2HelpersTest::TearDownTestSuite()
 
 void PlayMotion2HelpersTest::SetUp()
 {
-  node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(
+  node_ = std::make_shared<rclcpp::Node>(
     "play_motion2_helpers_test",
+    rclcpp::NodeOptions()
+    .allow_undeclared_parameters(true)
+    .automatically_declare_parameters_from_overrides(true));
+
+  lifecycle_node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>(
+    "play_motion2_lifecycle_helpers_test",
     rclcpp::NodeOptions()
     .allow_undeclared_parameters(true)
     .automatically_declare_parameters_from_overrides(true));
@@ -49,6 +55,10 @@ void PlayMotion2HelpersTest::SetUp()
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(node_);
   synchronous_client->load_parameters(config_path);
+
+  auto synchronous_client_lifecycle =
+    std::make_shared<rclcpp::SyncParametersClient>(lifecycle_node_);
+  synchronous_client_lifecycle->load_parameters(config_path);
 }
 
 void PlayMotion2HelpersTest::TearDown()
@@ -59,27 +69,40 @@ void PlayMotion2HelpersTest::TearDown()
 TEST_F(PlayMotion2HelpersTest, ParseControllersTest)
 {
   ControllerList controllers;
-  parse_controllers(node_->get_node_parameters_interface(), node_->get_logger(), controllers);
+  parse_controllers(node_, controllers);
 
   ASSERT_EQ(controllers.size(), 1);
   ASSERT_EQ(controllers[0], "my_controller");
+
+  controllers.clear();
+
+  ASSERT_TRUE(controllers.empty());
+
+  parse_controllers(lifecycle_node_, controllers);
+
+  ASSERT_EQ(controllers.size(), 1);
+  ASSERT_EQ(controllers[0], "my_controller2");
 }
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 {
-  MotionKeys keys = parse_motion_keys(node_->get_node_parameters_interface());
+  MotionKeys keys = parse_motion_keys(node_);
 
   ASSERT_EQ(keys.size(), 1);
   ASSERT_EQ(keys[0], "sample");
+
+  keys.clear();
+
+  keys = parse_motion_keys(lifecycle_node_);
+
+  ASSERT_EQ(keys.size(), 1);
+  ASSERT_EQ(keys[0], "sample2");
 }
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
 {
   MotionInfo info;
-  ASSERT_TRUE(
-    parse_motion_info(
-      node_->get_node_parameters_interface(), node_->get_logger(),
-      "sample", info));
+  ASSERT_TRUE(parse_motion_info(node_, "sample", info));
 
   ASSERT_EQ(info.name, "Sample");
   ASSERT_EQ(info.usage, "sample");
@@ -106,6 +129,45 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(info.trajectory.points[2].positions.size(), info.joints.size());
   ASSERT_EQ(info.trajectory.points[2].positions[0], 2.0);
   ASSERT_EQ(info.trajectory.points[2].positions[1], 1.0);
+
+  MotionInfo lifecycle_info;
+  ASSERT_TRUE(parse_motion_info(lifecycle_node_, "sample2", lifecycle_info));
+
+  ASSERT_EQ(lifecycle_info.name, "Sample2");
+  ASSERT_EQ(lifecycle_info.usage, "sample2");
+  ASSERT_EQ(lifecycle_info.description, "Sample2");
+
+  ASSERT_EQ(lifecycle_info.joints.size(), 2);
+  ASSERT_EQ(lifecycle_info.joints[0], "joint3");
+  ASSERT_EQ(lifecycle_info.joints[1], "joint4");
+
+  ASSERT_EQ(lifecycle_info.trajectory.joint_names, lifecycle_info.joints);
+  ASSERT_EQ(lifecycle_info.trajectory.points.size(), 3);
+
+  ASSERT_EQ(
+    lifecycle_info.trajectory.points[0].time_from_start,
+    rclcpp::Duration::from_seconds(0.5));
+
+  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions.size(), lifecycle_info.joints.size());
+  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions[0], 0.0);
+  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions[1], 0.0);
+
+  ASSERT_EQ(
+    lifecycle_info.trajectory.points[1].time_from_start,
+    rclcpp::Duration::from_seconds(3.1));
+
+  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions.size(), lifecycle_info.joints.size());
+  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions[0], 1.0);
+  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions[1], 2.0);
+
+  ASSERT_EQ(
+    lifecycle_info.trajectory.points[2].time_from_start,
+    rclcpp::Duration::from_seconds(5.8));
+
+  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions.size(), lifecycle_info.joints.size());
+  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions[0], 2.0);
+  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions[1], 1.0);
 }
+
 
 }  // namespace play_motion2

@@ -52,13 +52,35 @@ bool parse_controllers(
   const rclcpp::Logger & logger,
   ControllerList & controllers);
 
+template<typename NodeT>
+bool parse_controllers(
+  const NodeT & node,
+  ControllerList & controllers)
+{
+  return parse_controllers(node->get_node_parameters_interface(), node->get_logger(), controllers);
+}
+
 // methods to parse motions
 bool check_params(
   const NodeParametersInterfaceSharedPtr node_parameters_interface,
   const rclcpp::Logger & logger,
   const std::string & motion_key);
 
+template<typename NodeT>
+bool check_params(
+  const NodeT & node,
+  const std::string & motion_key)
+{
+  return check_params(node->get_node_parameters_interface(), node->get_logger(), motion_key);
+}
+
 MotionKeys parse_motion_keys(const NodeParametersInterfaceSharedPtr node_parameters_interface);
+
+template<typename NodeT>
+MotionKeys parse_motion_keys(const NodeT & node)
+{
+  return parse_motion_keys(node->get_node_parameters_interface());
+}
 
 bool parse_motion_info(
   const NodeParametersInterfaceSharedPtr node_parameters_interface,
@@ -66,17 +88,48 @@ bool parse_motion_info(
   const std::string & motion_key,
   MotionInfo & motion);
 
+template<typename NodeT>
+bool parse_motion_info(
+  const NodeT & node,
+  const std::string & motion_key,
+  MotionInfo & motion)
+{
+  return parse_motion_info(
+    node->get_node_parameters_interface(),
+    node->get_logger(), motion_key, motion);
+}
+
 bool parse_motion_trajectory(
   const NodeParametersInterfaceSharedPtr node_parameters_interface,
   const rclcpp::Logger & logger,
   const std::string & motion_key,
   MotionInfo & motion);
 
+template<typename NodeT>
+bool parse_motion_trajectory(
+  const NodeT & node,
+  const std::string & motion_key,
+  MotionInfo & motion)
+{
+  return parse_motion_trajectory(node->get_node_parameters_interface(), node->get_logger(), motion);
+}
+
 bool parse_motions(
   const NodeParametersInterfaceSharedPtr node_parameters_interface,
   const rclcpp::Logger & logger,
   MotionKeys & motion_keys,
   MotionsMap & motions);
+
+template<typename NodeT>
+bool parse_motions(
+  const NodeT & node,
+  MotionKeys & motion_keys,
+  MotionsMap & motions)
+{
+  return parse_motions(
+    node->get_node_parameters_interface(),
+    node->get_logger(), motion_keys, motions);
+}
 
 }  // namespace play_motion2
 
