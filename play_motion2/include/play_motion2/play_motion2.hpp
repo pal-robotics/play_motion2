@@ -21,7 +21,9 @@
 #include <vector>
 
 #include "play_motion2/play_motion2_helpers.hpp"
+#include "play_motion2_msgs/action/play_motion2.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
@@ -31,6 +33,9 @@ namespace play_motion2
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
+
+using PlayMotion2Action = play_motion2_msgs::action::PlayMotion2;
+using GoalHandlePM2 = rclcpp_action::ServerGoalHandle<PlayMotion2Action>;
 
 class PlayMotion2 : public rclcpp_lifecycle::LifecycleNode
 {
@@ -52,11 +57,23 @@ public:
     ListMotions::Response::SharedPtr response);
 
 private:
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
+    std::shared_ptr<const PlayMotion2Action::Goal> goal);
+
+  rclcpp_action::CancelResponse handle_cancel(
+    const std::shared_ptr<GoalHandlePM2> goal_handle);
+
+  void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
+  void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
+
+private:
   ControllerList controllers_;
   MotionKeys motion_keys_;
   MotionsMap motions_;
 
   rclcpp::Service<ListMotions>::SharedPtr list_motions_service_;
+  rclcpp_action::Server<PlayMotion2Action>::SharedPtr pm2_action_;
 };
 }  // namespace play_motion2
 

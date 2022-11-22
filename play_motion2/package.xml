@@ -17,6 +17,7 @@
   <depend>lifecycle_msgs</depend>
   <depend>play_motion2_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>trajectory_msgs</depend>
 

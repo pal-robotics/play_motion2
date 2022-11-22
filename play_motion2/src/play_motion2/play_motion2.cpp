@@ -22,6 +22,9 @@
 namespace play_motion2
 {
 
+using std::placeholders::_1;
+using std::placeholders::_2;
+
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
     rclcpp::NodeOptions()
@@ -29,7 +32,8 @@ PlayMotion2::PlayMotion2()
     .automatically_declare_parameters_from_overrides(true)),
   motion_keys_({}),
   motions_({}),
-  list_motions_service_(nullptr)
+  list_motions_service_(nullptr),
+  pm2_action_(nullptr)
 {
 }
 
@@ -48,9 +52,14 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
 {
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
-    std::bind(
-      &PlayMotion2::list_motions_callback,
-      this, std::placeholders::_1, std::placeholders::_2));
+    std::bind(&PlayMotion2::list_motions_callback, this, _1, _2));
+
+  pm2_action_ = rclcpp_action::create_server<PlayMotion2Action>(
+    shared_from_this(), "play_motion2",
+    std::bind(&PlayMotion2::handle_goal, this, _1, _2),
+    std::bind(&PlayMotion2::handle_cancel, this, _1),
+    std::bind(&PlayMotion2::handle_accepted, this, _1)
+  );
 
   return CallbackReturn::SUCCESS;
 }
@@ -85,5 +94,46 @@ void PlayMotion2::list_motions_callback(
 {
   response->motion_keys = motion_keys_;
 }
+
+rclcpp_action::GoalResponse PlayMotion2::handle_goal(
+  const rclcpp_action::GoalUUID & /*uuid*/,
+  std::shared_ptr<const PlayMotion2Action::Goal> goal)
+{
+  RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
+
+  // reject goal if the motion is not in the list
+  if (std::find(
+      motion_keys_.begin(), motion_keys_.end(),
+      goal->motion_name) == motion_keys_.end())
+  {
+    return rclcpp_action::GoalResponse::REJECT;
+  }
+
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+}
+
+rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
+  const std::shared_ptr<GoalHandlePM2> goal_handle)
+{
+  return rclcpp_action::CancelResponse::ACCEPT;
+}
+
+void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle)
+{
+  std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle}.detach();
+}
+
+void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
+{
+  auto feedback = std::make_shared<PlayMotion2Action::Feedback>();
+  auto result = std::make_shared<PlayMotion2Action::Result>();
+  auto goal = goal_handle->get_goal();
+
+  result->success = true;
+  RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
+
+  goal_handle->succeed(result);
+}
+
 
 }  // namespace play_motion2
