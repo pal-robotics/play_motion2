@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
@@ -33,6 +34,7 @@ namespace play_motion2
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
+using ListControllers = controller_manager_msgs::srv::ListControllers;
 
 using PlayMotion2Action = play_motion2_msgs::action::PlayMotion2;
 using GoalHandlePM2 = rclcpp_action::ServerGoalHandle<PlayMotion2Action>;
@@ -67,13 +69,18 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
   void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
 
+  bool is_executable(const std::string & motion_name);
+
 private:
   ControllerList controllers_;
   MotionKeys motion_keys_;
   MotionsMap motions_;
 
+  rclcpp::Node::SharedPtr client_node_;
   rclcpp::Service<ListMotions>::SharedPtr list_motions_service_;
   rclcpp_action::Server<PlayMotion2Action>::SharedPtr pm2_action_;
+
+  rclcpp::Client<ListControllers>::SharedPtr list_controllers_client_;
 };
 }  // namespace play_motion2
 
