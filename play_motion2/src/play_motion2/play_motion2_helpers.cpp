@@ -71,8 +71,8 @@ bool check_params(
         "Motion '" << motion_key << "' is not valid: parameter '" << param <<
           "' is not defined.");
       valid_motion = false;
-    }
-    if (node_parameters_interface->get_parameter_types({full_param})[0] != param_type) {
+    } else if (node_parameters_interface->get_parameter_types({full_param})[0] != param_type) {
+      // check parameter type, get_parameter_types always return one param here
       RCLCPP_ERROR_STREAM(
         logger,
         "Motion '" << motion_key << "' is not valid: parameter '" << param <<
