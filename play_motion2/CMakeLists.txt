@@ -8,14 +8,18 @@ find_package(ament_cmake REQUIRED)
 # PAL Robotics stricter build flags, other developers should not worry about this
 find_package(ament_cmake_pal QUIET)
 
-find_package(rclcpp REQUIRED)
-find_package(trajectory_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 find_package(play_motion2_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
 set(dependencies
-  rclcpp
-  trajectory_msgs
+  lifecycle_msgs
   play_motion2_msgs
+  rclcpp
+  rclcpp_lifecycle
+  trajectory_msgs
 )
 
 include_directories(include)

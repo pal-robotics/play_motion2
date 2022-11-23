@@ -19,9 +19,12 @@
 
 #include "gtest/gtest.h"
 
-namespace rclcpp
+#include "rclcpp/node.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+namespace rclcpp_lifecycle
 {
-class Node;
+class LifecycleNode;
 }
 
 namespace play_motion2
@@ -41,6 +44,7 @@ public:
 
 protected:
   std::shared_ptr<rclcpp::Node> node_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> lifecycle_node_;
 };
 }  // namespace play_motion2
 

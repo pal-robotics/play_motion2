@@ -17,7 +17,9 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 
+#include "lifecycle_msgs/msg/transition.hpp"
 #include "play_motion2/play_motion2.hpp"
+#include "play_motion2_msgs/srv/list_motions.hpp"
 #include "play_motion2_test.hpp"
 #include "rclcpp/parameter_client.hpp"
 
@@ -48,8 +50,7 @@ void PlayMotion2Test::SetUp()
     std::make_shared<rclcpp::SyncParametersClient>(play_motion2_);
   synchronous_client->load_parameters(pm2_config_path);
 
-  play_motion2_->init();
-  executor_.add_node(play_motion2_);
+  executor_.add_node(play_motion2_->get_node_base_interface());
   runner_ = std::thread([&]() {executor_.spin();});
 }
 
@@ -62,16 +63,22 @@ void PlayMotion2Test::TearDown()
 
 TEST_F(PlayMotion2Test, WrongControllersConfigTest)
 {
-  // controllers controllers declared empty
+  // controllers declared empty
   play_motion2_->set_parameter(
     rclcpp::Parameter(
       "controllers",
       std::vector<std::string>{}));
-  ASSERT_FALSE(play_motion2_->init());
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
 
   // controllers not declared
   play_motion2_->undeclare_parameter("controllers");
-  ASSERT_FALSE(play_motion2_->init());
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
 }
 
 TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
@@ -80,11 +87,23 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
   play_motion2_->undeclare_parameter("motions.home.meta.name");
   play_motion2_->undeclare_parameter("motions.pose1.meta.name");
 
-  ASSERT_FALSE(play_motion2_->init());
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
 }
 
 TEST_F(PlayMotion2Test, ListMotionsSrvTest)
 {
+  ASSERT_EQ(play_motion2_->get_current_state().label(), "unconfigured");
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "inactive");
+
+  ASSERT_EQ(
+    play_motion2_->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE).label(), "active");
+
   auto client_node = rclcpp::Node::make_shared("client_node");
   auto list_motions_client =
     client_node->create_client<play_motion2_msgs::srv::ListMotions>("play_motion2/list_motions");
