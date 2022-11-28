@@ -67,19 +67,45 @@ if(BUILD_TESTING)
   find_package(ament_index_cpp REQUIRED)
   find_package(ament_lint_auto REQUIRED)
 
-  ament_lint_auto_find_test_dependencies()
+  find_package(hardware_interface REQUIRED)
+  find_package(launch_testing_ament_cmake REQUIRED)
+  find_package(pluginlib REQUIRED)
 
-  set(test_dependencies
-    ament_cmake_gtest
-    ament_index_cpp
-  )
+  ament_lint_auto_find_test_dependencies()
 
   # test configuration files
   install(
     FILES
       test/config.yaml
       test/play_motion2_config.yaml
+      test/rrbot/controller_manager.yaml
+      test/rrbot/controllers.launch.py
+      test/rrbot/joint_state_broadcaster.launch.py
+      test/rrbot/joint_state_broadcaster.yaml
+      test/rrbot/joint_trajectory_controller.launch.py
+      test/rrbot/joint_trajectory_controller.yaml
+      test/rrbot/rrbot.launch.py
+      test/rrbot/rrbot.rviz
+      test/rrbot/rrbot.xacro
     DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  # rrbot_system
+  add_library(rrbot_system SHARED
+    test/rrbot/rrbot_system.cpp
+  )
+  target_include_directories(rrbot_system PRIVATE
+    include
+  )
+  ament_target_dependencies(rrbot_system
+    hardware_interface
+    pluginlib
+    rclcpp
+  )
+  pluginlib_export_plugin_description_file(hardware_interface test/rrbot/rrbot_system.xml)
+  install(
+    TARGETS rrbot_system
+    DESTINATION lib
   )
 
   # play_motion2_helpers_test
@@ -95,9 +121,31 @@ if(BUILD_TESTING)
   ament_add_gtest(play_motion2_test
     test/play_motion2_test.cpp
   )
-  ament_target_dependencies(play_motion2_test ${test_dependencies})
+  ament_target_dependencies(play_motion2_test
+    ament_cmake_gtest
+    ament_index_cpp
+  )
   target_link_libraries(play_motion2_test
     play_motion2
+  )
+
+  # play_motion2_node_test
+  ament_add_gtest_executable(play_motion2_node_test
+    test/play_motion2_node_test.cpp
+  )
+  ament_target_dependencies(play_motion2_node_test
+    launch_testing_ament_cmake
+    play_motion2_msgs
+    rclcpp
+  )
+
+  install(
+    TARGETS play_motion2_node_test
+    DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  add_launch_test(
+    test/play_motion2_node_test.launch.py
   )
 
 endif()

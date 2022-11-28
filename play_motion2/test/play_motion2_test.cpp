@@ -23,8 +23,6 @@
 #include "play_motion2_test.hpp"
 #include "rclcpp/parameter_client.hpp"
 
-using namespace std::chrono_literals;
-
 namespace play_motion2
 {
 
@@ -90,41 +88,6 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
   ASSERT_EQ(
     play_motion2_->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
-}
-
-TEST_F(PlayMotion2Test, ListMotionsSrvTest)
-{
-  ASSERT_EQ(play_motion2_->get_current_state().label(), "unconfigured");
-
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "inactive");
-
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE).label(), "active");
-
-  auto client_node = rclcpp::Node::make_shared("client_node");
-  auto list_motions_client =
-    client_node->create_client<play_motion2_msgs::srv::ListMotions>("play_motion2/list_motions");
-
-  ASSERT_TRUE(list_motions_client->wait_for_service(1s));
-
-  auto request = std::make_shared<play_motion2_msgs::srv::ListMotions::Request>();
-  auto future_result = list_motions_client->async_send_request(request);
-
-  ASSERT_EQ(
-    rclcpp::spin_until_future_complete(
-      client_node, future_result,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
-
-  auto result = future_result.get();
-
-  ASSERT_EQ(result->motion_keys.size(), 2);
-
-  std::sort(result->motion_keys.begin(), result->motion_keys.end());
-  ASSERT_EQ(result->motion_keys[0], "home");
-  ASSERT_EQ(result->motion_keys[1], "pose1");
 }
 
 }  // namespace play_motion2
