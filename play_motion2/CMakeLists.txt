@@ -59,6 +59,9 @@ install(TARGETS play_motion2_node
 install(DIRECTORY include/
   DESTINATION include/)
 
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)
