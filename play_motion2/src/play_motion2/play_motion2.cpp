@@ -59,6 +59,10 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
     "play_motion2/list_motions",
     std::bind(&PlayMotion2::list_motions_callback, this, _1, _2));
 
+  is_motion_ready_service_ = create_service<IsMotionReady>(
+    "play_motion2/is_motion_ready",
+    std::bind(&PlayMotion2::is_motion_ready_callback, this, _1, _2));
+
   pm2_action_ = rclcpp_action::create_server<PlayMotion2Action>(
     shared_from_this(), "play_motion2",
     std::bind(&PlayMotion2::handle_goal, this, _1, _2),
@@ -105,6 +109,13 @@ void PlayMotion2::list_motions_callback(
   ListMotions::Response::SharedPtr response)
 {
   response->motion_keys = motion_keys_;
+}
+
+void PlayMotion2::is_motion_ready_callback(
+  IsMotionReady::Request::ConstSharedPtr request,
+  IsMotionReady::Response::SharedPtr response)
+{
+  response->is_ready = is_executable(request->motion_key);
 }
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(

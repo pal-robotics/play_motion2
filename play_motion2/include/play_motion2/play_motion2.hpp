@@ -23,6 +23,7 @@
 #include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
+#include "play_motion2_msgs/srv/is_motion_ready.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -33,6 +34,7 @@ namespace play_motion2
 {
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
 using ListControllers = controller_manager_msgs::srv::ListControllers;
 
@@ -54,11 +56,15 @@ public:
 
   bool init();
 
+private:
   void list_motions_callback(
     ListMotions::Request::ConstSharedPtr request,
     ListMotions::Response::SharedPtr response);
 
-private:
+  void is_motion_ready_callback(
+    IsMotionReady::Request::ConstSharedPtr request,
+    IsMotionReady::Response::SharedPtr response);
+
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const PlayMotion2Action::Goal> goal);
@@ -77,6 +83,7 @@ private:
   MotionsMap motions_;
 
   rclcpp::Node::SharedPtr client_node_;
+  rclcpp::Service<IsMotionReady>::SharedPtr is_motion_ready_service_;
   rclcpp::Service<ListMotions>::SharedPtr list_motions_service_;
   rclcpp_action::Server<PlayMotion2Action>::SharedPtr pm2_action_;
 
