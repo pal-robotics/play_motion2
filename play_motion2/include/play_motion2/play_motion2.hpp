@@ -75,7 +75,10 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
   void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
 
-  bool is_executable(const std::string & motion_name);
+  bool is_executable(const std::string & motion_key) const;
+
+  bool exists(const std::string & motion_key) const;
+  bool check_joints_and_controllers(const std::string & motion_key) const;
 
 private:
   ControllerList controllers_;

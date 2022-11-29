@@ -155,15 +155,28 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   goal_handle->succeed(result);
 }
 
-bool PlayMotion2::is_executable(const std::string & motion_name)
+bool PlayMotion2::is_executable(const std::string & motion_key) const
 {
-  // check the motion is in the list
-  if (std::find(motion_keys_.begin(), motion_keys_.end(), motion_name) == motion_keys_.end()) {
-    RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << motion_name << "' is not known");
-    return false;
-  }
+  const bool is_executable = exists(motion_key) &&
+    check_joints_and_controllers(motion_key);
 
-  // get the list of controller states available
+  return is_executable;
+}
+
+bool PlayMotion2::exists(const std::string & motion_key) const
+{
+  const bool exists =
+    std::find(motion_keys_.begin(), motion_keys_.end(), motion_key) != motion_keys_.end();
+
+  RCLCPP_ERROR_STREAM_EXPRESSION(
+    get_logger(), !exists,
+    "Motion '" << motion_key << "' is not known");
+
+  return exists;
+}
+
+bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
+{
   if (!list_controllers_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(get_logger(), "rclcpp interrupted while waiting for the service.");
@@ -189,47 +202,49 @@ bool PlayMotion2::is_executable(const std::string & motion_name)
   auto controller_states = result.get()->controller;
 
   // get available controllers and their claimed joints
-  ControllerList available_controllers;
-  std::unordered_set<std::string> available_joints;
+  std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
+  ControllerList jtc_active_controllers;
+  std::string joint_name;
   for (const auto & controller : controller_states) {
     if (std::find(
         controllers_.begin(), controllers_.end(),
         controller.name) != controllers_.end())
     {
-      available_controllers.push_back(controller.name);
+      if (controller.state == "active" &&
+        controller.type == "joint_trajectory_controller/JointTrajectoryController")
+      {
+        jtc_active_controllers.push_back(controller.name);
+      }
+
       for (const auto & interface : controller.claimed_interfaces) {
-        available_joints.insert(interface.substr(0, interface.find_first_of('/')));
+        joint_name = interface.substr(0, interface.find_first_of('/'));
+        joints_controllers[joint_name] = controller.name;
       }
     }
   }
 
-  // check all controllers are available
-  ControllerList controllers_diff;
-  std::set_difference(
-    controllers_.begin(), controllers_.end(),
-    available_controllers.begin(), available_controllers.end(),
-    back_inserter(controllers_diff));
-
-  if (controllers_diff.size() > 0) {
-    for (const auto & controller : controllers_diff) {
-      RCLCPP_ERROR_STREAM(get_logger(), "Controller '" << controller << "' is not available");
+  bool ok = true;
+  for (const auto & joint : motions_.at(motion_key).joints) {
+    // check joints are claimed by any controller
+    if (joints_controllers.find(joint) == joints_controllers.end()) {
+      RCLCPP_ERROR_STREAM(
+        get_logger(), "Joint '" << joint << "' is not claimed by any available controller");
+      ok = false;
+      continue;
     }
-    return false;
-  }
 
-  // check joints are claimed by any controller
-  for (const auto & joint : motions_[motion_name].joints) {
+    // check the corresponding controller is active
     if (std::find(
-        available_joints.begin(), available_joints.end(),
-        joint) == available_joints.end())
+        jtc_active_controllers.begin(), jtc_active_controllers.end(),
+        joints_controllers.at(joint)) == jtc_active_controllers.end())
     {
       RCLCPP_ERROR_STREAM(
-        get_logger(), "Joint '" << joint << "' is not claimed by any specified controller");
-      return false;
+        get_logger(), "Controller '" << joints_controllers.at(
+          joint) << "' is not active");
+      ok = false;
     }
   }
-  return true;
+  return ok;
 }
-
 
 }  // namespace play_motion2
