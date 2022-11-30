@@ -104,21 +104,21 @@ CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & state)
 
 void PlayMotion2::list_motions_callback(
   ListMotions::Request::ConstSharedPtr /*request*/,
-  ListMotions::Response::SharedPtr response)
+  ListMotions::Response::SharedPtr response) const
 {
   response->motion_keys = motion_keys_;
 }
 
 void PlayMotion2::is_motion_ready_callback(
   IsMotionReady::Request::ConstSharedPtr request,
-  IsMotionReady::Response::SharedPtr response)
+  IsMotionReady::Response::SharedPtr response) const
 {
   response->is_ready = is_executable(request->motion_key);
 }
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(
   const rclcpp_action::GoalUUID & /*uuid*/,
-  std::shared_ptr<const PlayMotion2Action::Goal> goal)
+  std::shared_ptr<const PlayMotion2Action::Goal> goal) const
 {
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
@@ -131,17 +131,17 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
 }
 
 rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
-  const std::shared_ptr<GoalHandlePM2> goal_handle)
+  const std::shared_ptr<GoalHandlePM2> goal_handle) const
 {
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle)
+void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle) const
 {
   std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle}.detach();
 }
 
-void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
+void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle) const
 {
   auto feedback = std::make_shared<PlayMotion2Action::Feedback>();
   auto result = std::make_shared<PlayMotion2Action::Result>();

@@ -59,21 +59,21 @@ public:
 private:
   void list_motions_callback(
     ListMotions::Request::ConstSharedPtr request,
-    ListMotions::Response::SharedPtr response);
+    ListMotions::Response::SharedPtr response) const;
 
   void is_motion_ready_callback(
     IsMotionReady::Request::ConstSharedPtr request,
-    IsMotionReady::Response::SharedPtr response);
+    IsMotionReady::Response::SharedPtr response) const;
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const PlayMotion2Action::Goal> goal);
+    std::shared_ptr<const PlayMotion2Action::Goal> goal) const;
 
   rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandlePM2> goal_handle);
+    const std::shared_ptr<GoalHandlePM2> goal_handle) const;
 
-  void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
-  void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
+  void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle) const;
+  void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle) const;
 
   bool is_executable(const std::string & motion_key) const;
 
