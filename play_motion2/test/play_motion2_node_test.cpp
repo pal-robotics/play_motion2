@@ -88,8 +88,8 @@ void PlayMotion2NodeTest::restore_controllers()
 
     ASSERT_EQ(
       rclcpp::spin_until_future_complete(
-        client_node_,
-        result), rclcpp::FutureReturnCode::SUCCESS);
+        client_node_, result,
+        TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
     ASSERT_TRUE(result.get()->ok);
   }
@@ -199,7 +199,7 @@ TEST_F(PlayMotion2NodeTest, ExecuteSuccessfulMotion)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, goal_handle_future,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   auto goal_handle = goal_handle_future.get();
 
@@ -211,7 +211,7 @@ TEST_F(PlayMotion2NodeTest, ExecuteSuccessfulMotion)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, result_future,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   auto result = result_future.get();
 
