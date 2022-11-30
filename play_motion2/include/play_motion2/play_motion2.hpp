@@ -81,7 +81,6 @@ private:
   bool check_joints_and_controllers(const std::string & motion_key) const;
 
 private:
-  ControllerList controllers_;
   MotionKeys motion_keys_;
   MotionsMap motions_;
 

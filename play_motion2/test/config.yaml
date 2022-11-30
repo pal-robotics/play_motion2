@@ -1,6 +1,5 @@
 /play_motion2_helpers_test:
   ros__parameters:
-    controllers: [my_controller]
     motions:
       sample:
         joints: [joint1, joint2]
@@ -15,7 +14,6 @@
 
 /play_motion2_lifecycle_helpers_test:
   ros__parameters:
-    controllers: [my_controller2]
     motions:
       sample2:
         joints: [joint3, joint4]

@@ -45,7 +45,6 @@ PlayMotion2::PlayMotion2()
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
 {
   const bool ok =
-    parse_controllers(shared_from_this(), controllers_) &&
     parse_motions(shared_from_this(), motion_keys_, motions_);
 
   RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
@@ -88,7 +87,6 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
 
 CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
 {
-  controllers_.clear();
   motion_keys_.clear();
   motions_.clear();
   return CallbackReturn::SUCCESS;
@@ -203,23 +201,18 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
 
   // get available controllers and their claimed joints
   std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
-  ControllerList jtc_active_controllers;
+  std::vector<std::string> jtc_active_controllers;
   std::string joint_name;
   for (const auto & controller : controller_states) {
-    if (std::find(
-        controllers_.begin(), controllers_.end(),
-        controller.name) != controllers_.end())
+    if (controller.state == "active" &&
+      controller.type == "joint_trajectory_controller/JointTrajectoryController")
     {
-      if (controller.state == "active" &&
-        controller.type == "joint_trajectory_controller/JointTrajectoryController")
-      {
-        jtc_active_controllers.push_back(controller.name);
-      }
+      jtc_active_controllers.push_back(controller.name);
+    }
 
-      for (const auto & interface : controller.claimed_interfaces) {
-        joint_name = interface.substr(0, interface.find_first_of('/'));
-        joints_controllers[joint_name] = controller.name;
-      }
+    for (const auto & interface : controller.claimed_interfaces) {
+      joint_name = interface.substr(0, interface.find_first_of('/'));
+      joints_controllers[joint_name] = controller.name;
     }
   }
 

@@ -59,26 +59,6 @@ void PlayMotion2Test::TearDown()
   play_motion2_.reset();
 }
 
-TEST_F(PlayMotion2Test, WrongControllersConfigTest)
-{
-  // controllers declared empty
-  play_motion2_->set_parameter(
-    rclcpp::Parameter(
-      "controllers",
-      std::vector<std::string>{}));
-
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
-
-  // controllers not declared
-  play_motion2_->undeclare_parameter("controllers");
-
-  ASSERT_EQ(
-    play_motion2_->trigger_transition(
-      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
-}
-
 TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
 {
   // void valid motions

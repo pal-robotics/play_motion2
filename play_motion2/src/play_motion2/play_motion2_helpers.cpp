@@ -17,36 +17,6 @@
 namespace play_motion2
 {
 
-bool parse_controllers(
-  const NodeParametersInterfaceSharedPtr node_parameters_interface,
-  const rclcpp::Logger & logger,
-  ControllerList & controllers)
-{
-  controllers.clear();
-
-  if (!node_parameters_interface->has_parameter("controllers")) {
-    RCLCPP_ERROR(logger, "Controllers are not defined in configuration file.");
-    return false;
-  }
-
-  if (node_parameters_interface->get_parameter_types({"controllers"})[0] !=
-    rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
-  {
-    RCLCPP_ERROR(logger, "Parameter controllers has a wrong type.");
-  }
-
-  controllers = node_parameters_interface->get_parameter("controllers").as_string_array();
-
-  if (controllers.empty()) {
-    RCLCPP_ERROR(
-      logger,
-      "Controllers not defined, parameter is empty.");
-    return false;
-  }
-
-  return true;
-}
-
 bool check_params(
   const NodeParametersInterfaceSharedPtr node_parameters_interface,
   const rclcpp::Logger & logger,

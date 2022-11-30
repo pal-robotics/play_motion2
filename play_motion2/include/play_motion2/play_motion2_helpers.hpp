@@ -25,7 +25,6 @@
 namespace play_motion2
 {
 
-using ControllerList = std::vector<std::string>;
 using MotionKeys = std::vector<std::string>;
 using MotionJoints = std::vector<std::string>;
 using Trajectory = trajectory_msgs::msg::JointTrajectory;
@@ -46,19 +45,6 @@ struct MotionInfo
 };
 
 using MotionsMap = std::map<std::string, MotionInfo>;
-
-bool parse_controllers(
-  const NodeParametersInterfaceSharedPtr node_parameters_interface,
-  const rclcpp::Logger & logger,
-  ControllerList & controllers);
-
-template<typename NodeT>
-bool parse_controllers(
-  const NodeT & node,
-  ControllerList & controllers)
-{
-  return parse_controllers(node->get_node_parameters_interface(), node->get_logger(), controllers);
-}
 
 // methods to parse motions
 bool check_params(
