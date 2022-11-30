@@ -110,7 +110,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
       client_node_, future_result,
       5s), rclcpp::FutureReturnCode::SUCCESS);
 
-  auto result = future_result.get();
+  const auto result = future_result.get();
 
   ASSERT_EQ(result->motion_keys.size(), 2);
 
@@ -132,7 +132,7 @@ TEST_F(PlayMotion2NodeTest, BadMotionName)
       client_node_, goal_handle_future,
       5s), rclcpp::FutureReturnCode::SUCCESS);
 
-  auto goal_handle = goal_handle_future.get();
+  const auto goal_handle = goal_handle_future.get();
 
   // no goal_handle means goal has been rejected
   ASSERT_FALSE(goal_handle);
@@ -183,7 +183,7 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
       client_node_, goal_handle_future,
       5s), rclcpp::FutureReturnCode::SUCCESS);
 
-  auto goal_handle = goal_handle_future.get();
+  const auto goal_handle = goal_handle_future.get();
 
   // no goal_handle means goal has been rejected
   ASSERT_FALSE(goal_handle);

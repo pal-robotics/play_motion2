@@ -199,7 +199,7 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
       "Cannot obtain " << list_controllers_client_->get_service_name() << " result");
     return false;
   }
-  auto controller_states = result.get()->controller;
+  const auto controller_states = result.get()->controller;
 
   // get available controllers and their claimed joints
   std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
