@@ -16,13 +16,28 @@
 #define PLAY_MOTION2_NODE_TEST_HPP_
 
 #include <memory>
-#include <thread>
+#include <string>
 
 #include "gtest/gtest.h"
-#include "rclcpp/executors/single_threaded_executor.hpp"
+
+#include "controller_manager_msgs/srv/list_controllers.hpp"
+#include "controller_manager_msgs/srv/switch_controller.hpp"
+#include "play_motion2_msgs/action/play_motion2.hpp"
+#include "play_motion2_msgs/srv/list_motions.hpp"
+#include "play_motion2_msgs/srv/is_motion_ready.hpp"
+#include "rclcpp_action/client.hpp"
+#include "rclcpp/client.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/node.hpp"
 
 namespace play_motion2
 {
+
+using SwitchController = controller_manager_msgs::srv::SwitchController;
+
+using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
+using ListMotions = play_motion2_msgs::srv::ListMotions;
+using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
 
 class PlayMotion2NodeTest : public ::testing::Test
 {
@@ -33,11 +48,34 @@ public:
   static void SetUpTestSuite();
   static void TearDownTestSuite();
 
-  void SetUp();
-  void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
 protected:
   rclcpp::Node::SharedPtr client_node_;
+  rclcpp::Client<SwitchController>::SharedPtr switch_controller_client_;
+  rclcpp_action::Client<PlayMotion2>::SharedPtr pm2_action_client_;
+
+private:
+  void restore_controllers();
+
+  template<typename ClientT>
+  void wait_for_controller_service(ClientT client)
+  {
+    if (!client->wait_for_service(std::chrono::seconds(10))) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(
+          client_node_->get_logger(),
+          "rclcpp interrupted while waiting for the service.");
+      } else {
+        RCLCPP_ERROR_STREAM(
+          client_node_->get_logger(),
+          "Service " << client->get_service_name() <<
+            " not available. Waiting again...");
+      }
+      FAIL();
+    }
+  }
 };
 }  // namespace play_motion2
 
