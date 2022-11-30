@@ -37,11 +37,13 @@ void PlayMotion2NodeTest::SetUpTestSuite()
   request->motion_key = "home";
   auto future_result = client->async_send_request(request);
 
-  while (rclcpp::spin_until_future_complete(
+  unsigned int retries = 3u;
+  while (retries > 0 && rclcpp::spin_until_future_complete(
       node, future_result,
       TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS)
   {
     future_result = client->async_send_request(request);
+    retries--;
   }
 }
 
