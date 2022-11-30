@@ -22,8 +22,6 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp_action/create_client.hpp"
 
-using namespace std::chrono_literals;
-
 namespace play_motion2
 {
 
@@ -41,7 +39,7 @@ void PlayMotion2NodeTest::SetUpTestSuite()
 
   while (rclcpp::spin_until_future_complete(
       node, future_result,
-      5s) != rclcpp::FutureReturnCode::SUCCESS)
+      TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS)
   {
     future_result = client->async_send_request(request);
   }
@@ -100,7 +98,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
   auto list_motions_client =
     client_node_->create_client<ListMotions>("play_motion2/list_motions");
 
-  ASSERT_TRUE(list_motions_client->wait_for_service(1s));
+  ASSERT_TRUE(list_motions_client->wait_for_service(TIMEOUT));
 
   auto request = std::make_shared<ListMotions::Request>();
   auto future_result = list_motions_client->async_send_request(request);
@@ -108,7 +106,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, future_result,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   const auto result = future_result.get();
 
@@ -121,7 +119,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
 
 TEST_F(PlayMotion2NodeTest, BadMotionName)
 {
-  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(1s));
+  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(TIMEOUT));
 
   auto pm2_goal = PlayMotion2::Goal();
   pm2_goal.motion_name = "unreal_motion";
@@ -130,7 +128,7 @@ TEST_F(PlayMotion2NodeTest, BadMotionName)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, goal_handle_future,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   const auto goal_handle = goal_handle_future.get();
 
@@ -140,7 +138,7 @@ TEST_F(PlayMotion2NodeTest, BadMotionName)
 
 TEST_F(PlayMotion2NodeTest, MalformedMotion)
 {
-  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(1s));
+  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(TIMEOUT));
 
   auto pm2_goal = PlayMotion2::Goal();
   pm2_goal.motion_name = "malformed_motion";
@@ -149,7 +147,7 @@ TEST_F(PlayMotion2NodeTest, MalformedMotion)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, goal_handle_future,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   auto goal_handle = goal_handle_future.get();
 
@@ -168,7 +166,7 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, future_result,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   auto result = future_result.get();
   ASSERT_TRUE(result->ok);
@@ -181,7 +179,7 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
       client_node_, goal_handle_future,
-      5s), rclcpp::FutureReturnCode::SUCCESS);
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
   const auto goal_handle = goal_handle_future.get();
 

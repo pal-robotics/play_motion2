@@ -33,6 +33,9 @@
 namespace play_motion2
 {
 
+using std::chrono_literals::operator""s;
+const std::chrono::duration TIMEOUT = 10s;
+
 using SwitchController = controller_manager_msgs::srv::SwitchController;
 
 using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
@@ -62,7 +65,7 @@ private:
   template<typename ClientT>
   void wait_for_controller_service(ClientT client)
   {
-    if (!client->wait_for_service(std::chrono::seconds(10))) {
+    if (!client->wait_for_service(TIMEOUT)) {
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(
           client_node_->get_logger(),
