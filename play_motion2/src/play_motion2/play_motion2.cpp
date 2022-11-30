@@ -38,7 +38,8 @@ PlayMotion2::PlayMotion2()
   client_node_(nullptr),
   list_motions_service_(nullptr),
   pm2_action_(nullptr),
-  list_controllers_client_(nullptr)
+  list_controllers_client_(nullptr),
+  is_motion_ready_service_(nullptr)
 {
 }
 
@@ -79,6 +80,7 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
 CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   list_motions_service_.reset();
+  is_motion_ready_service_.reset();
   pm2_action_.reset();
   client_node_.reset();
   list_controllers_client_.reset();
