@@ -35,16 +35,17 @@ void PlayMotion2NodeTest::SetUpTestSuite()
 
   auto request = std::make_shared<IsMotionReady::Request>();
   request->motion_key = "home";
-  auto future_result = client->async_send_request(request);
 
+  using IsMotionReadyFutureAndRequestId = rclcpp::Client<IsMotionReady>::FutureAndRequestId;
+  std::shared_ptr<IsMotionReadyFutureAndRequestId> future_result;
   unsigned int retries = 3u;
-  while (retries > 0 && rclcpp::spin_until_future_complete(
-      node, future_result,
-      TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS)
-  {
-    future_result = client->async_send_request(request);
+  do {
+    future_result =
+      std::make_shared<IsMotionReadyFutureAndRequestId>(client->async_send_request(request));
     retries--;
-  }
+  } while (retries >= 0 && rclcpp::spin_until_future_complete(
+    node, *future_result,
+    TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS);
 
   ASSERT_NE(retries, 0) << "Timeout while waiting for motions to be ready";
 }
