@@ -45,6 +45,8 @@ void PlayMotion2NodeTest::SetUpTestSuite()
     future_result = client->async_send_request(request);
     retries--;
   }
+
+  ASSERT_NE(retries, 0) << "Timeout while waiting for motions to be ready";
 }
 
 void PlayMotion2NodeTest::TearDownTestSuite()
