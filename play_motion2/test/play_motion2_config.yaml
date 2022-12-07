@@ -1,7 +1,5 @@
 /play_motion2:
   ros__parameters:
-    controllers: [my_controller]
-
     motions:
       home:
         joints:

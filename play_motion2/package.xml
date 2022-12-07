@@ -14,9 +14,11 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>controller_manager_msgs</depend>
   <depend>lifecycle_msgs</depend>
   <depend>play_motion2_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>trajectory_msgs</depend>
 
@@ -24,6 +26,16 @@
   <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+
+  <test_depend>controller_manager</test_depend>
+  <test_depend>hardware_interface</test_depend>
+  <test_depend>joint_state_broadcaster</test_depend>
+  <test_depend>joint_trajectory_controller</test_depend>
+  <test_depend>launch_pal</test_depend>
+  <test_depend>launch_ros</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>pluginlib</test_depend>
+  <test_depend>xacro</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

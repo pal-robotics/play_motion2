@@ -1,0 +1,85 @@
+// Copyright (c) 2022 PAL Robotics S.L. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef PLAY_MOTION2_NODE_TEST_HPP_
+#define PLAY_MOTION2_NODE_TEST_HPP_
+
+#include <memory>
+#include <string>
+
+#include "gtest/gtest.h"
+
+#include "controller_manager_msgs/srv/list_controllers.hpp"
+#include "controller_manager_msgs/srv/switch_controller.hpp"
+#include "play_motion2_msgs/action/play_motion2.hpp"
+#include "play_motion2_msgs/srv/list_motions.hpp"
+#include "play_motion2_msgs/srv/is_motion_ready.hpp"
+#include "rclcpp_action/client.hpp"
+#include "rclcpp/client.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/node.hpp"
+
+namespace play_motion2
+{
+
+using std::chrono_literals::operator""s;
+const std::chrono::duration TIMEOUT = 10s;
+
+using SwitchController = controller_manager_msgs::srv::SwitchController;
+
+using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
+using ListMotions = play_motion2_msgs::srv::ListMotions;
+using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
+
+class PlayMotion2NodeTest : public ::testing::Test
+{
+public:
+  PlayMotion2NodeTest() = default;
+  ~PlayMotion2NodeTest() = default;
+
+  static void SetUpTestSuite();
+  static void TearDownTestSuite();
+
+  void SetUp() override;
+  void TearDown() override;
+
+protected:
+  rclcpp::Node::SharedPtr client_node_;
+  rclcpp::Client<SwitchController>::SharedPtr switch_controller_client_;
+  rclcpp_action::Client<PlayMotion2>::SharedPtr pm2_action_client_;
+
+private:
+  void restore_controllers();
+
+  template<typename ClientT>
+  void wait_for_controller_service(ClientT client)
+  {
+    if (!client->wait_for_service(TIMEOUT)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(
+          client_node_->get_logger(),
+          "rclcpp interrupted while waiting for the service.");
+      } else {
+        RCLCPP_ERROR_STREAM(
+          client_node_->get_logger(),
+          "Service " << client->get_service_name() <<
+            " not available. Waiting again...");
+      }
+      FAIL();
+    }
+  }
+};
+}  // namespace play_motion2
+
+#endif  // PLAY_MOTION2_NODE_TEST_HPP_
