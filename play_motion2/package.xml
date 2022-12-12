@@ -2,7 +2,7 @@
 <package format="3">
   <name>play_motion2</name>
   <version>0.0.1</version>
-  
+
   <description>Play a pre-recorded motion on a robot</description>
 
   <maintainer email="noel.jimenez@pal-robotics.com">Noel Jimenez</maintainer>
