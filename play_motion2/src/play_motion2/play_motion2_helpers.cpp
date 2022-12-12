@@ -162,8 +162,8 @@ bool parse_motions(
   motions.clear();
   motion_keys.clear();
 
-  MotionInfo motion;
   for (const auto & key : all_motion_keys) {
+    MotionInfo motion;
     if (parse_motion_info(node_parameters_interface, logger, key, motion)) {
       motion_keys.emplace_back(key);
       motions[key] = motion;
