@@ -94,23 +94,18 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(info.joints[0], "joint1");
   ASSERT_EQ(info.joints[1], "joint2");
 
-  ASSERT_EQ(info.trajectory.joint_names, info.joints);
-  ASSERT_EQ(info.trajectory.points.size(), 3);
+  ASSERT_EQ(info.positions.size(), 6);
+  ASSERT_EQ(info.positions[0], 0.0);
+  ASSERT_EQ(info.positions[1], 0.0);
+  ASSERT_EQ(info.positions[2], 1.0);
+  ASSERT_EQ(info.positions[3], 2.0);
+  ASSERT_EQ(info.positions[4], 2.0);
+  ASSERT_EQ(info.positions[5], 1.0);
 
-  ASSERT_EQ(info.trajectory.points[0].time_from_start, rclcpp::Duration::from_seconds(0.5));
-  ASSERT_EQ(info.trajectory.points[0].positions.size(), info.joints.size());
-  ASSERT_EQ(info.trajectory.points[0].positions[0], 0.0);
-  ASSERT_EQ(info.trajectory.points[0].positions[1], 0.0);
-
-  ASSERT_EQ(info.trajectory.points[1].time_from_start, rclcpp::Duration::from_seconds(3.1));
-  ASSERT_EQ(info.trajectory.points[1].positions.size(), info.joints.size());
-  ASSERT_EQ(info.trajectory.points[1].positions[0], 1.0);
-  ASSERT_EQ(info.trajectory.points[1].positions[1], 2.0);
-
-  ASSERT_EQ(info.trajectory.points[2].time_from_start, rclcpp::Duration::from_seconds(5.8));
-  ASSERT_EQ(info.trajectory.points[2].positions.size(), info.joints.size());
-  ASSERT_EQ(info.trajectory.points[2].positions[0], 2.0);
-  ASSERT_EQ(info.trajectory.points[2].positions[1], 1.0);
+  ASSERT_EQ(info.times.size(), 3);
+  ASSERT_EQ(info.times[0], 0.5);
+  ASSERT_EQ(info.times[1], 3.1);
+  ASSERT_EQ(info.times[2], 5.8);
 
   MotionInfo lifecycle_info;
   ASSERT_TRUE(parse_motion_info(lifecycle_node_, "sample2", lifecycle_info));
@@ -123,33 +118,18 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(lifecycle_info.joints[0], "joint3");
   ASSERT_EQ(lifecycle_info.joints[1], "joint4");
 
-  ASSERT_EQ(lifecycle_info.trajectory.joint_names, lifecycle_info.joints);
-  ASSERT_EQ(lifecycle_info.trajectory.points.size(), 3);
+  ASSERT_EQ(lifecycle_info.positions.size(), 6);
+  ASSERT_EQ(lifecycle_info.positions[0], 0.0);
+  ASSERT_EQ(lifecycle_info.positions[1], 0.0);
+  ASSERT_EQ(lifecycle_info.positions[2], 1.0);
+  ASSERT_EQ(lifecycle_info.positions[3], 2.0);
+  ASSERT_EQ(lifecycle_info.positions[4], 2.0);
+  ASSERT_EQ(lifecycle_info.positions[5], 1.0);
 
-  ASSERT_EQ(
-    lifecycle_info.trajectory.points[0].time_from_start,
-    rclcpp::Duration::from_seconds(0.5));
-
-  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions.size(), lifecycle_info.joints.size());
-  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions[0], 0.0);
-  ASSERT_EQ(lifecycle_info.trajectory.points[0].positions[1], 0.0);
-
-  ASSERT_EQ(
-    lifecycle_info.trajectory.points[1].time_from_start,
-    rclcpp::Duration::from_seconds(3.1));
-
-  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions.size(), lifecycle_info.joints.size());
-  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions[0], 1.0);
-  ASSERT_EQ(lifecycle_info.trajectory.points[1].positions[1], 2.0);
-
-  ASSERT_EQ(
-    lifecycle_info.trajectory.points[2].time_from_start,
-    rclcpp::Duration::from_seconds(5.8));
-
-  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions.size(), lifecycle_info.joints.size());
-  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions[0], 2.0);
-  ASSERT_EQ(lifecycle_info.trajectory.points[2].positions[1], 1.0);
+  ASSERT_EQ(lifecycle_info.times.size(), 3);
+  ASSERT_EQ(lifecycle_info.times[0], 0.5);
+  ASSERT_EQ(lifecycle_info.times[1], 3.1);
+  ASSERT_EQ(lifecycle_info.times[2], 5.8);
 }
-
 
 }  // namespace play_motion2
