@@ -54,8 +54,6 @@ public:
   CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
   CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
 
-  bool init();
-
 private:
   void list_motions_callback(
     ListMotions::Request::ConstSharedPtr request,
