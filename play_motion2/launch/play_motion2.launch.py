@@ -20,6 +20,10 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
+    sim_time_arg = DeclareLaunchArgument(
+      'use_sim_time', default_value='True',
+      description='Yaml file with the info of the motions. ')
+
     play_motion2_config = DeclareLaunchArgument(
         'play_motion2_config',
         description='Yaml file with the info of the motions. ')
@@ -28,10 +32,12 @@ def generate_launch_description():
                         executable='play_motion2_node',
                         output='both',
                         emulate_tty=True,
-                        parameters=[LaunchConfiguration('play_motion2_config')])
+                        parameters=[LaunchConfiguration('play_motion2_config'),
+                                    {'use_sim_time': LaunchConfiguration('use_sim_time')}])
 
     ld = LaunchDescription()
 
+    ld.add_action(sim_time_arg)
     ld.add_action(play_motion2_config)
     ld.add_action(play_motion2)
 
