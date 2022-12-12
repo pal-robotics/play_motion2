@@ -14,6 +14,8 @@
 
 #include "play_motion2/play_motion2_helpers.hpp"
 
+#include "rclcpp/logging.hpp"
+
 namespace play_motion2
 {
 

@@ -19,7 +19,8 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
+#include "rclcpp/logger.hpp"
 
 namespace play_motion2
 {
