@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "controller_manager_msgs/msg/controller_state.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
@@ -36,7 +37,10 @@ namespace play_motion2
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
+
 using ListControllers = controller_manager_msgs::srv::ListControllers;
+using ControllerState = controller_manager_msgs::msg::ControllerState;
+using ControllerStates = std::vector<ControllerState>;
 
 using PlayMotion2Action = play_motion2_msgs::action::PlayMotion2;
 using GoalHandlePM2 = rclcpp_action::ServerGoalHandle<PlayMotion2Action>;
@@ -76,6 +80,7 @@ private:
   bool is_executable(const std::string & motion_key) const;
 
   bool exists(const std::string & motion_key) const;
+  ControllerStates get_controller_states() const;
   bool check_joints_and_controllers(const std::string & motion_key) const;
 
 private:

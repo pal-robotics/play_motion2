@@ -175,7 +175,7 @@ bool PlayMotion2::exists(const std::string & motion_key) const
   return exists;
 }
 
-bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
+ControllerStates PlayMotion2::get_controller_states() const
 {
   if (!list_controllers_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
@@ -185,7 +185,7 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
         get_logger(),
         "Service " << list_controllers_client_->get_service_name() << " not available.");
     }
-    return false;
+    return ControllerStates();
   }
 
   auto list_controllers_request = std::make_shared<ListControllers::Request>();
@@ -197,9 +197,19 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
     RCLCPP_ERROR_STREAM(
       get_logger(),
       "Cannot obtain " << list_controllers_client_->get_service_name() << " result");
+    return ControllerStates();
+  }
+
+  return result.get()->controller;
+}
+
+bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
+{
+  const auto controller_states = get_controller_states();
+
+  if (controller_states.empty()) {
     return false;
   }
-  const auto controller_states = result.get()->controller;
 
   // get available controllers and their claimed joints
   std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
