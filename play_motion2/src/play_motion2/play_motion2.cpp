@@ -35,11 +35,11 @@ PlayMotion2::PlayMotion2()
     .automatically_declare_parameters_from_overrides(true)),
   motion_keys_({}),
   motions_({}),
-  client_node_(nullptr),
-  list_motions_service_(nullptr),
-  pm2_action_(nullptr),
-  list_controllers_client_(nullptr),
-  is_motion_ready_service_(nullptr)
+  client_node_(),
+  list_motions_service_(),
+  pm2_action_(),
+  list_controllers_client_(),
+  is_motion_ready_service_()
 {
 }
 
