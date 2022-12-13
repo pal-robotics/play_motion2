@@ -80,7 +80,12 @@ private:
   bool is_executable(const std::string & motion_key) const;
 
   bool exists(const std::string & motion_key) const;
+
   ControllerStates get_controller_states() const;
+  ControllerStates filter_controller_states(
+    const ControllerStates controller_states, const std::string state,
+    const std::string type) const;
+
   bool check_joints_and_controllers(const std::string & motion_key) const;
 
 private:

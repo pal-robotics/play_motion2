@@ -203,6 +203,23 @@ ControllerStates PlayMotion2::get_controller_states() const
   return result.get()->controller;
 }
 
+
+ControllerStates PlayMotion2::filter_controller_states(
+  const ControllerStates controller_states,
+  const std::string state,
+  const std::string type) const
+{
+  ControllerStates filtered_controller_states;
+
+  for (const auto & controller : controller_states) {
+    if (controller.state == state && controller.type == type) {
+      filtered_controller_states.push_back(controller);
+    }
+  }
+
+  return filtered_controller_states;
+}
+
 bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
 {
   const auto controller_states = get_controller_states();
@@ -211,17 +228,19 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
     return false;
   }
 
-  // get available controllers and their claimed joints
-  std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
-  std::vector<std::string> jtc_active_controllers;
-  std::string joint_name;
-  for (const auto & controller : controller_states) {
-    if (controller.state == "active" &&
-      controller.type == "joint_trajectory_controller/JointTrajectoryController")
-    {
-      jtc_active_controllers.push_back(controller.name);
-    }
+  const auto jtc_active_controllers = filter_controller_states(
+    controller_states, "active",
+    "joint_trajectory_controller/JointTrajectoryController");
 
+  if (jtc_active_controllers.empty()) {
+    RCLCPP_ERROR(get_logger(), "There are no active JointTrajectory controllers available");
+    return false;
+  }
+
+  // get joints claimed by active controllers
+  std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
+  std::string joint_name;
+  for (const auto & controller : jtc_active_controllers) {
     for (const auto & interface : controller.claimed_interfaces) {
       joint_name = interface.substr(0, interface.find_first_of('/'));
       joints_controllers[joint_name] = controller.name;
@@ -230,23 +249,12 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
 
   bool ok = true;
   for (const auto & joint : motions_.at(motion_key).joints) {
-    // check joints are claimed by any controller
+    // check joints are claimed by any active controller
     if (joints_controllers.find(joint) == joints_controllers.end()) {
       RCLCPP_ERROR_STREAM(
-        get_logger(), "Joint '" << joint << "' is not claimed by any available controller");
+        get_logger(), "Joint '" << joint << "' is not claimed by any active controller");
       ok = false;
       continue;
-    }
-
-    // check the corresponding controller is active
-    if (std::find(
-        jtc_active_controllers.begin(), jtc_active_controllers.end(),
-        joints_controllers.at(joint)) == jtc_active_controllers.end())
-    {
-      RCLCPP_ERROR_STREAM(
-        get_logger(), "Controller '" << joints_controllers.at(
-          joint) << "' is not active");
-      ok = false;
     }
   }
   return ok;
