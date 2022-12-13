@@ -238,25 +238,25 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
   }
 
   // get joints claimed by active controllers
-  std::map<std::string, std::string> joints_controllers;  // map format {joint: controller}
-  std::string joint_name;
+  std::unordered_set<std::string> joint_names;
   for (const auto & controller : jtc_active_controllers) {
     for (const auto & interface : controller.claimed_interfaces) {
-      joint_name = interface.substr(0, interface.find_first_of('/'));
-      joints_controllers[joint_name] = controller.name;
+      auto joint_name = interface.substr(0, interface.find_first_of('/'));
+      joint_names.insert(joint_name);
     }
   }
 
   bool ok = true;
   for (const auto & joint : motions_.at(motion_key).joints) {
     // check joints are claimed by any active controller
-    if (joints_controllers.find(joint) == joints_controllers.end()) {
+    if (joint_names.find(joint) == joint_names.end()) {
       RCLCPP_ERROR_STREAM(
         get_logger(), "Joint '" << joint << "' is not claimed by any active controller");
       ok = false;
       continue;
     }
   }
+
   return ok;
 }
 
