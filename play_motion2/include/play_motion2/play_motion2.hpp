@@ -30,10 +30,10 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "trajectory_msgs/msg/joint_trajectory.hpp"
 
 namespace play_motion2
 {
-
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
@@ -41,6 +41,9 @@ using ListMotions = play_motion2_msgs::srv::ListMotions;
 using ListControllers = controller_manager_msgs::srv::ListControllers;
 using ControllerState = controller_manager_msgs::msg::ControllerState;
 using ControllerStates = std::vector<ControllerState>;
+
+using JTMsg = trajectory_msgs::msg::JointTrajectory;
+using ControllerTrajectories = std::map<std::string, JTMsg>;
 
 using PlayMotion2Action = play_motion2_msgs::action::PlayMotion2;
 using GoalHandlePM2 = rclcpp_action::ServerGoalHandle<PlayMotion2Action>;
@@ -87,6 +90,11 @@ private:
     const std::string type) const;
 
   bool check_joints_and_controllers(const std::string & motion_key) const;
+
+  JTMsg create_trajectory(
+    const ControllerState controller_state,
+    const std::string motion_key) const;
+  ControllerTrajectories generate_controller_trajectories(const std::string motion_key) const;
 
 private:
   MotionKeys motion_keys_;

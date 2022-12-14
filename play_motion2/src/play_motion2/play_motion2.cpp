@@ -21,12 +21,15 @@
 #include "rclcpp/node_options.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#include "trajectory_msgs/msg/joint_trajectory_point.hpp"
+
 namespace play_motion2
 {
-
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 using std::placeholders::_2;
+
+using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
 
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
@@ -149,6 +152,10 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   auto result = std::make_shared<PlayMotion2Action::Result>();
   auto goal = goal_handle->get_goal();
 
+  const auto ctrl_trajectories = generate_controller_trajectories(goal->motion_name);
+
+  /// @todo send trajectories
+
   result->success = true;
   RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
 
@@ -258,6 +265,73 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
   }
 
   return ok;
+}
+
+JTMsg PlayMotion2::create_trajectory(
+  const ControllerState controller_state,
+  const std::string motion_key) const
+{
+  std::unordered_set<std::string> controller_joints;
+  for (const auto & interface : controller_state.claimed_interfaces) {
+    std::string joint_name = interface.substr(0, interface.find_first_of('/'));
+    controller_joints.insert(joint_name);
+  }
+
+  // create a map with joints positions
+  const auto & motion_info = motions_.at(motion_key);
+  std::map<std::string, std::vector<double>> joint_positions;
+  for (const std::string & joint : controller_joints) {
+    const auto iterator = std::find(motion_info.joints.begin(), motion_info.joints.end(), joint);
+    if (iterator != motion_info.joints.end()) {
+      // get the location of the first position
+      unsigned int vector_pos = std::distance(motion_info.joints.begin(), iterator);
+      std::vector<double> positions;
+
+      // extract positions for a specific joint and save them
+      for (unsigned int i = 0; i < motion_info.times.size(); i++) {
+        positions.push_back(motion_info.positions.at(vector_pos));
+        vector_pos += motion_info.joints.size();
+      }
+      joint_positions[joint] = positions;
+    }
+  }
+
+  JTMsg jt_msg;
+  for (unsigned int i = 0; i < motion_info.times.size(); i++) {
+    JTPointMsg jtc_point;
+    const auto jtc_point_time = rclcpp::Duration::from_seconds(motion_info.times[i]);
+    jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
+    jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
+
+    for (const auto & j_pos : joint_positions) {
+      jtc_point.positions.push_back(j_pos.second.at(i));
+    }
+    jt_msg.points.emplace_back(jtc_point);
+  }
+
+  for (const auto & j_pos : joint_positions) {
+    jt_msg.joint_names.push_back(j_pos.first);
+  }
+
+  jt_msg.header.stamp = now();
+  return jt_msg;
+}
+
+ControllerTrajectories PlayMotion2::generate_controller_trajectories(const std::string motion_key)
+const
+{
+  const auto jtc_active_controllers = filter_controller_states(
+    get_controller_states(), "active",
+    "joint_trajectory_controller/JointTrajectoryController");
+
+  ControllerTrajectories ct;
+  for (const auto & controller : jtc_active_controllers) {
+    const auto trajectory = create_trajectory(controller, motion_key);
+    if (!trajectory.joint_names.empty()) {
+      ct[controller.name] = trajectory;
+    }
+  }
+  return ct;
 }
 
 }  // namespace play_motion2
