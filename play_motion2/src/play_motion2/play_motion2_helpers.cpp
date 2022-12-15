@@ -14,6 +14,8 @@
 
 #include "play_motion2/play_motion2_helpers.hpp"
 
+#include "rclcpp/logging.hpp"
+
 namespace play_motion2
 {
 
@@ -98,56 +100,27 @@ bool parse_motion_info(
   param = "motions." + motion_key + ".meta.description";
   motion.description = node_parameters_interface->get_parameter(param).as_string();
 
-  // Get joint names
+  // Get info
   param = "motions." + motion_key + ".joints";
   motion.joints = node_parameters_interface->get_parameter(param).as_string_array();
 
-  // Get trajectory
-  bool valid = parse_motion_trajectory(node_parameters_interface, logger, motion_key, motion);
+  param = "motions." + motion_key + ".positions";
+  motion.positions = node_parameters_interface->get_parameter(param).as_double_array();
 
-  return valid;
-}
-
-bool parse_motion_trajectory(
-  const NodeParametersInterfaceSharedPtr node_parameters_interface,
-  const rclcpp::Logger & logger,
-  const std::string & motion_key,
-  MotionInfo & motion)
-{
-  const std::string positions_param = "motions." + motion_key + ".positions";
-  const std::string times_param = "motions." + motion_key + ".times_from_start";
-
-  const auto joint_positions =
-    node_parameters_interface->get_parameter(positions_param).as_double_array();
-  const auto times_from_start =
-    node_parameters_interface->get_parameter(times_param).as_double_array();
-  const size_t joints_size = motion.joints.size();
+  param = "motions." + motion_key + ".times_from_start";
+  motion.times = node_parameters_interface->get_parameter(param).as_double_array();
 
   // check correct size
-  if (joint_positions.size() != times_from_start.size() * joints_size) {
+  if (motion.positions.size() != motion.times.size() * motion.joints.size()) {
     RCLCPP_ERROR_STREAM(
       logger,
       "Motion '" << motion_key <<
-        "' is not valid: 'positions', 'joints' and 'times_from_start' sizes are not compatible (" <<
-        joint_positions.size() << " != " << times_from_start.size() << "*" << joints_size << ")");
+        "' is not valid: sizes are not compatible. "
+        "'positions' != 'joints' * 'times_from_start' (" << motion.positions.size() <<
+        " != " << motion.times.size() << "*" << motion.joints.size() << ")");
     return false;
   }
 
-  motion.trajectory.joint_names = motion.joints;
-
-  auto joint_init = joint_positions.cbegin();
-  for (unsigned int i = 0; i < times_from_start.size(); i++) {
-    trajectory_msgs::msg::JointTrajectoryPoint jtc_point;
-    jtc_point.positions.resize(joints_size);
-    std::copy_n(joint_init, joints_size, jtc_point.positions.begin());
-
-    const auto jtc_point_time = rclcpp::Duration::from_seconds(times_from_start[i]);
-    jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
-    jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
-
-    motion.trajectory.points.push_back(jtc_point);
-    joint_init += joints_size;
-  }
   return true;
 }
 
@@ -162,8 +135,8 @@ bool parse_motions(
   motions.clear();
   motion_keys.clear();
 
-  MotionInfo motion;
   for (const auto & key : all_motion_keys) {
+    MotionInfo motion;
     if (parse_motion_info(node_parameters_interface, logger, key, motion)) {
       motion_keys.emplace_back(key);
       motions[key] = motion;

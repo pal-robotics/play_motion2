@@ -19,15 +19,16 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "trajectory_msgs/msg/joint_trajectory.hpp"
+#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
+#include "rclcpp/logger.hpp"
 
 namespace play_motion2
 {
 
 using MotionKeys = std::vector<std::string>;
 using MotionJoints = std::vector<std::string>;
-using Trajectory = trajectory_msgs::msg::JointTrajectory;
+using MotionPositions = std::vector<double>;
+using MotionTimes = std::vector<double>;
 
 using NodeParametersInterfaceSharedPtr =
   rclcpp::node_interfaces::NodeParametersInterface::SharedPtr;
@@ -41,7 +42,8 @@ struct MotionInfo
 
   // info
   MotionJoints joints;
-  Trajectory trajectory;
+  MotionPositions positions;
+  MotionTimes times;
 };
 
 using MotionsMap = std::map<std::string, MotionInfo>;
@@ -83,21 +85,6 @@ bool parse_motion_info(
   return parse_motion_info(
     node->get_node_parameters_interface(),
     node->get_logger(), motion_key, motion);
-}
-
-bool parse_motion_trajectory(
-  const NodeParametersInterfaceSharedPtr node_parameters_interface,
-  const rclcpp::Logger & logger,
-  const std::string & motion_key,
-  MotionInfo & motion);
-
-template<typename NodeT>
-bool parse_motion_trajectory(
-  const NodeT & node,
-  const std::string & motion_key,
-  MotionInfo & motion)
-{
-  return parse_motion_trajectory(node->get_node_parameters_interface(), node->get_logger(), motion);
 }
 
 bool parse_motions(
