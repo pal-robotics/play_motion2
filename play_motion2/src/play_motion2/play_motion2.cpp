@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "control_msgs/action/follow_joint_trajectory.hpp"
+
 #include "play_motion2/play_motion2.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 
@@ -30,6 +32,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
+using FollowJT = control_msgs::action::FollowJointTrajectory;
 
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
@@ -154,8 +157,17 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
 
   const auto ctrl_trajectories = generate_controller_trajectories(goal->motion_name);
 
-  /// @todo send trajectories
+  for (const auto & [controller, trajectory] : ctrl_trajectories) {
+    if (!send_trajectory(controller, trajectory)) {
+      result->success = false;
+      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+      goal_handle->abort(result);
+      return;
+    }
+  }
 
+  /// @todo wait for the result to check motion is correctly completed
+  /// instead of succeed.
   result->success = true;
   RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
 
@@ -332,6 +344,35 @@ const
     }
   }
   return ct;
+}
+
+bool PlayMotion2::send_trajectory(const std::string controller, const JTMsg trajectory) const
+{
+  const auto action_client = rclcpp_action::create_client<FollowJT>(
+    client_node_,
+    "/" + controller +
+    "/follow_joint_trajectory");
+
+  if (!action_client->wait_for_action_server(1s)) {
+    RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+    return false;
+  }
+
+  /// @todo fill rest of the fields ??
+  auto goal = FollowJT::Goal();
+  goal.trajectory = trajectory;
+
+  auto goal_handle = action_client->async_send_goal(goal);
+
+  if (rclcpp::spin_until_future_complete(
+      client_node_,
+      goal_handle) != rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Cannot send goal");
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace play_motion2

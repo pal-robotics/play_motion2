@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "controller_manager_msgs/msg/controller_state.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
@@ -95,6 +96,8 @@ private:
     const ControllerState controller_state,
     const std::string motion_key) const;
   ControllerTrajectories generate_controller_trajectories(const std::string motion_key) const;
+
+  bool send_trajectory(const std::string controller, const JTMsg trajectory) const;
 
 private:
   MotionKeys motion_keys_;
