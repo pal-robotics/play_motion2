@@ -241,7 +241,7 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
   std::unordered_set<std::string> joint_names;
   for (const auto & controller : jtc_active_controllers) {
     for (const auto & interface : controller.claimed_interfaces) {
-      auto joint_name = interface.substr(0, interface.find_first_of('/'));
+      const auto joint_name = interface.substr(0, interface.find_first_of('/'));
       joint_names.insert(joint_name);
     }
   }
