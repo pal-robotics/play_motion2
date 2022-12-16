@@ -315,15 +315,20 @@ JTMsg PlayMotion2::create_trajectory(
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
     jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
 
-    for (const auto & j_pos : joint_positions) {
-      jtc_point.positions.push_back(j_pos.second.at(i));
-    }
+    std::for_each(
+      joint_positions.cbegin(), joint_positions.cend(),
+      [&](const auto & j_pos) {
+        jtc_point.positions.push_back(j_pos.second.at(i));
+      });
+
     jt_msg.points.emplace_back(jtc_point);
   }
 
-  for (const auto & j_pos : joint_positions) {
-    jt_msg.joint_names.push_back(j_pos.first);
-  }
+  std::for_each(
+    joint_positions.cbegin(), joint_positions.cend(),
+    [&](const auto & j_pos) {
+      jt_msg.joint_names.push_back(j_pos.first);
+    });
 
   jt_msg.header.stamp = now();
   return jt_msg;
