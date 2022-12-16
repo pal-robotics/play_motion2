@@ -87,17 +87,17 @@ private:
 
   ControllerStates get_controller_states() const;
   ControllerStates filter_controller_states(
-    const ControllerStates & controller_states, const std::string state,
-    const std::string type) const;
+    const ControllerStates & controller_states, const std::string & state,
+    const std::string & type) const;
 
   bool check_joints_and_controllers(const std::string & motion_key) const;
 
   JTMsg create_trajectory(
     const ControllerState & controller_state,
-    const std::string motion_key) const;
-  ControllerTrajectories generate_controller_trajectories(const std::string motion_key) const;
+    const std::string & motion_key) const;
+  ControllerTrajectories generate_controller_trajectories(const std::string & motion_key) const;
 
-  bool send_trajectory(const std::string controller, const JTMsg & trajectory) const;
+  bool send_trajectory(const std::string & controller, const JTMsg & trajectory) const;
 
 private:
   MotionKeys motion_keys_;

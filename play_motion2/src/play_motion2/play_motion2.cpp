@@ -225,8 +225,8 @@ ControllerStates PlayMotion2::get_controller_states() const
 
 ControllerStates PlayMotion2::filter_controller_states(
   const ControllerStates & controller_states,
-  const std::string state,
-  const std::string type) const
+  const std::string & state,
+  const std::string & type) const
 {
   ControllerStates filtered_controller_states;
 
@@ -281,7 +281,7 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
 
 JTMsg PlayMotion2::create_trajectory(
   const ControllerState & controller_state,
-  const std::string motion_key) const
+  const std::string & motion_key) const
 {
   std::unordered_set<std::string> controller_joints;
   for (const auto & interface : controller_state.claimed_interfaces) {
@@ -334,7 +334,7 @@ JTMsg PlayMotion2::create_trajectory(
   return jt_msg;
 }
 
-ControllerTrajectories PlayMotion2::generate_controller_trajectories(const std::string motion_key)
+ControllerTrajectories PlayMotion2::generate_controller_trajectories(const std::string & motion_key)
 const
 {
   const auto jtc_active_controllers = filter_controller_states(
@@ -351,7 +351,7 @@ const
   return ct;
 }
 
-bool PlayMotion2::send_trajectory(const std::string controller, const JTMsg & trajectory) const
+bool PlayMotion2::send_trajectory(const std::string & controller, const JTMsg & trajectory) const
 {
   const auto action_client = rclcpp_action::create_client<FollowJT>(
     client_node_,
