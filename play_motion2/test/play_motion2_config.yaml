@@ -6,7 +6,7 @@
           - joint1
           - joint2
         positions: [0.0, 0.0]
-        times_from_start: [0.0]
+        times_from_start: [0.5]
         meta:
           name: home
           usage: test
@@ -16,7 +16,7 @@
           - joint1
           - joint2
         positions: [1.8, 1.8]
-        times_from_start: [0.0]
+        times_from_start: [1.0]
         meta:
           name: pose1
           usage: test
