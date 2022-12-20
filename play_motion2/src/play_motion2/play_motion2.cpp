@@ -32,7 +32,6 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
-using FollowJT = control_msgs::action::FollowJointTrajectory;
 
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
@@ -45,7 +44,9 @@ PlayMotion2::PlayMotion2()
   list_motions_service_(),
   pm2_action_(),
   list_controllers_client_(),
-  is_motion_ready_service_()
+  is_motion_ready_service_(),
+  action_clients_(),
+  is_busy_(false)
 {
 }
 
@@ -85,11 +86,14 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
 
 CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
 {
+  /// @todo reject when a motion is being executed ?
+
   list_motions_service_.reset();
   is_motion_ready_service_.reset();
   pm2_action_.reset();
   client_node_.reset();
   list_controllers_client_.reset();
+  is_busy_ = false;
   return CallbackReturn::SUCCESS;
 }
 
@@ -102,6 +106,7 @@ CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
 
 CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & state)
 {
+  /// @todo cancel all goals
   return CallbackReturn::SUCCESS;
 }
 
@@ -126,15 +131,17 @@ void PlayMotion2::is_motion_ready_callback(
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(
   const rclcpp_action::GoalUUID & /*uuid*/,
-  std::shared_ptr<const PlayMotion2Action::Goal> goal) const
+  std::shared_ptr<const PlayMotion2Action::Goal> goal)
 {
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
-  if (!is_executable(goal->motion_name)) {
+  if (is_busy_ || !is_executable(goal->motion_name)) {
     RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
+    RCLCPP_ERROR_EXPRESSION(get_logger(), is_busy_, "PlayMotion2 is busy");
     return rclcpp_action::GoalResponse::REJECT;
   }
 
+  is_busy_ = true;
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -144,34 +151,43 @@ rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle) const
+void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
   std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle}.detach();
 }
 
-void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle) const
+void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  auto feedback = std::make_shared<PlayMotion2Action::Feedback>();
   auto result = std::make_shared<PlayMotion2Action::Result>();
   auto goal = goal_handle->get_goal();
 
   const auto ctrl_trajectories = generate_controller_trajectories(goal->motion_name);
 
+  std::list<FollowJTGoalHandleFutureResult> futures_list;
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
-    if (!send_trajectory(controller, trajectory)) {
+    auto gh = send_trajectory(controller, trajectory);
+    if (!gh.valid()) {
       result->success = false;
       RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
       goal_handle->abort(result);
+      is_busy_ = false;
       return;
     }
+    futures_list.push_back(gh);
+  }
+  /// @todo send feedback
+  result->success = wait_for_results(futures_list);
+
+  if (!result->success) {
+    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+    goal_handle->abort(result);
+    is_busy_ = false;
+    return;
   }
 
-  /// @todo wait for the result to check motion is correctly completed
-  /// instead of succeed.
-  result->success = true;
   RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
-
   goal_handle->succeed(result);
+  is_busy_ = false;
 }
 
 bool PlayMotion2::is_executable(const std::string & motion_key) const
@@ -351,16 +367,24 @@ const
   return ct;
 }
 
-bool PlayMotion2::send_trajectory(const std::string & controller, const JTMsg & trajectory) const
+FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
+  const std::string & controller,
+  const JTMsg & trajectory)
 {
-  const auto action_client = rclcpp_action::create_client<FollowJT>(
-    client_node_,
-    "/" + controller +
-    "/follow_joint_trajectory");
+  rclcpp_action::Client<FollowJT>::SharedPtr action_client;
+  if (action_clients_.count(controller) != 0) {
+    action_client = action_clients_[controller];
+  } else {
+    action_client = rclcpp_action::create_client<FollowJT>(
+      client_node_,
+      "/" + controller +
+      "/follow_joint_trajectory");
+    action_clients_[controller] = action_client;
+  }
 
   if (!action_client->wait_for_action_server(1s)) {
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-    return false;
+    return {};
   }
 
   /// @todo fill rest of the fields ??
@@ -374,10 +398,37 @@ bool PlayMotion2::send_trajectory(const std::string & controller, const JTMsg & 
       goal_handle) != rclcpp::FutureReturnCode::SUCCESS)
   {
     RCLCPP_ERROR(this->get_logger(), "Cannot send goal");
-    return false;
+    return {};
   }
+  return action_client->async_get_result(goal_handle.get());
+}
 
-  return true;
+bool PlayMotion2::wait_for_results(std::list<FollowJTGoalHandleFutureResult> & futures_list)
+{
+  bool failed = false;
+
+  // Spin all futures and remove them when succeeded.
+  // If one fails, set failed to true and returns false
+  const auto successful_jt = [&](FollowJTGoalHandleFutureResult & future) {
+      if (rclcpp::spin_until_future_complete(
+          client_node_, future,
+          0.1s) == rclcpp::FutureReturnCode::SUCCESS)
+      {
+        if (future.get().code == rclcpp_action::ResultCode::SUCCEEDED) {
+          return true;
+        } else {
+          failed = true;
+        }
+      }
+      return false;
+    };
+
+  while (!failed && !futures_list.empty()) {
+    futures_list.erase(
+      std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
+      futures_list.end());
+  }
+  return !failed;
 }
 
 }  // namespace play_motion2
