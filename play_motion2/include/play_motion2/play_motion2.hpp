@@ -58,7 +58,7 @@ class PlayMotion2 : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   PlayMotion2();
-  ~PlayMotion2() = default;
+  ~PlayMotion2() override;
 
   CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
   CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
@@ -119,6 +119,8 @@ private:
   rclcpp::Client<ListControllers>::SharedPtr list_controllers_client_;
 
   std::map<std::string, rclcpp_action::Client<FollowJT>::SharedPtr> action_clients_;
+
+  std::thread motion_executor_;
   std::atomic_bool is_busy_;
 };
 }  // namespace play_motion2

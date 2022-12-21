@@ -46,8 +46,16 @@ PlayMotion2::PlayMotion2()
   list_controllers_client_(),
   is_motion_ready_service_(),
   action_clients_(),
+  motion_executor_(),
   is_busy_(false)
 {
+}
+
+PlayMotion2::~PlayMotion2()
+{
+  if (motion_executor_.joinable()) {
+    motion_executor_.join();
+  }
 }
 
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
@@ -141,6 +149,9 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
     return rclcpp_action::GoalResponse::REJECT;
   }
 
+  if (motion_executor_.joinable()) {
+    motion_executor_.join();
+  }
   is_busy_ = true;
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -153,7 +164,7 @@ rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
 
 void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle}.detach();
+  motion_executor_ = std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle};
 }
 
 void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
