@@ -192,12 +192,10 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   if (!result->success) {
     RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
     goal_handle->abort(result);
-    is_busy_ = false;
-    return;
+  } else {
+    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
+    goal_handle->succeed(result);
   }
-
-  RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
-  goal_handle->succeed(result);
   is_busy_ = false;
 }
 
