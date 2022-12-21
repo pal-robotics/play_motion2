@@ -20,8 +20,8 @@ from controller_manager.launch_utils import generate_load_controller_launch_desc
 
 def generate_launch_description():
     return generate_load_controller_launch_description(
-        controller_name='my_controller',
+        controller_name='controller_2',
         controller_type='joint_trajectory_controller/JointTrajectoryController',
         controller_params_file=os.path.join(
             get_package_share_directory('play_motion2'),
-            'test', 'joint_trajectory_controller.yaml'))
+            'test', 'controller_2.yaml'))

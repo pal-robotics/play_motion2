@@ -12,20 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from launch import LaunchDescription
-from launch_pal.include_utils import include_launch_py_description
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from controller_manager.launch_utils import generate_load_controller_launch_description
 
 
 def generate_launch_description():
-
-    return LaunchDescription([
-        include_launch_py_description(
-            'play_motion2',
-            ['test', 'joint_state_broadcaster.launch.py']),
-        include_launch_py_description(
-            'play_motion2',
-            ['test', 'controller_1.launch.py']),
-        include_launch_py_description(
-            'play_motion2',
-            ['test', 'controller_2.launch.py'])
-    ])
+    return generate_load_controller_launch_description(
+        controller_name='controller_1',
+        controller_type='joint_trajectory_controller/JointTrajectoryController',
+        controller_params_file=os.path.join(
+            get_package_share_directory('play_motion2'),
+            'test', 'controller_1.yaml'))

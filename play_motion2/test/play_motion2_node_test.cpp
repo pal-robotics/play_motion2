@@ -80,7 +80,8 @@ void PlayMotion2NodeTest::restore_controllers()
   wait_for_controller_service(switch_controller_client_);
 
   // reactivate controllers
-  const std::vector<std::string> controllers_list = {"joint_state_broadcaster", "my_controller"};
+  const std::vector<std::string> controllers_list =
+  {"joint_state_broadcaster", "controller_1", "controller_2"};
 
   for (const auto & controller : controllers_list) {
     auto request = std::make_shared<SwitchController::Request>();
@@ -162,9 +163,9 @@ TEST_F(PlayMotion2NodeTest, MalformedMotion)
 
 TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
 {
-  // deactivate controller
+  // deactivate controller_1
   auto request = std::make_shared<SwitchController::Request>();
-  request->deactivate_controllers = {"my_controller"};
+  request->deactivate_controllers = {"controller_1"};
   request->strictness = SwitchController::Request::BEST_EFFORT;
   auto future_result = switch_controller_client_->async_send_request(request);
 
