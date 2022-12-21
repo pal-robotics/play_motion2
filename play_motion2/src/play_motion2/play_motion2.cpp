@@ -377,24 +377,25 @@ const
 }
 
 FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
-  const std::string & controller,
+  const std::string & controller_name,
   const JTMsg & trajectory)
 {
   rclcpp_action::Client<FollowJT>::SharedPtr action_client;
-  if (action_clients_.count(controller) != 0) {
-    action_client = action_clients_[controller];
+  if (action_clients_.count(controller_name) != 0) {
+    action_client = action_clients_[controller_name];
   } else {
     action_client = rclcpp_action::create_client<FollowJT>(
       client_node_,
-      "/" + controller +
+      "/" + controller_name +
       "/follow_joint_trajectory");
-    action_clients_[controller] = action_client;
+    action_clients_[controller_name] = action_client;
   }
 
   if (!action_client->wait_for_action_server(1s)) {
     RCLCPP_ERROR_STREAM(
       this->get_logger(),
-      "/" << controller << "/follow_joint_trajectory action server not available after waiting");
+      "/" << controller_name <<
+        "/follow_joint_trajectory action server not available after waiting");
     return {};
   }
 

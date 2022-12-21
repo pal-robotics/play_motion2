@@ -103,7 +103,7 @@ private:
   ControllerTrajectories generate_controller_trajectories(const std::string & motion_key) const;
 
   FollowJTGoalHandleFutureResult send_trajectory(
-    const std::string & controller,
+    const std::string & controller_name,
     const JTMsg & trajectory);
   bool wait_for_results(std::list<FollowJTGoalHandleFutureResult> & futures_list);
 
