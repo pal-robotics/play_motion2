@@ -392,7 +392,9 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   }
 
   if (!action_client->wait_for_action_server(1s)) {
-    RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+    RCLCPP_ERROR_STREAM(
+      this->get_logger(),
+      "/" << controller << "/follow_joint_trajectory action server not available after waiting");
     return {};
   }
 
