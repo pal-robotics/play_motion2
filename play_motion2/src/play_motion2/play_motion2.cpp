@@ -440,12 +440,19 @@ bool PlayMotion2::wait_for_results(
   // finish if failed, motions finished or timeout
   const double TIMEOUT = motion_time * 2.0;
   const rclcpp::Time init_time = now();
-  while (!failed && !futures_list.empty() && (now() - init_time).seconds() < TIMEOUT) {
+  bool on_time = true;
+  do {
     futures_list.erase(
       std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
       futures_list.end());
-  }
-  return (init_time - now()).seconds() < TIMEOUT && !failed;
+    bool on_time = (now() - init_time).seconds() < TIMEOUT;
+  } while (!failed && !futures_list.empty() && on_time);
+
+  RCLCPP_ERROR_EXPRESSION(
+    get_logger(),
+    !on_time, "Timeout exceeded while waiting for results");
+
+  return on_time && !failed;
 }
 
 }  // namespace play_motion2
