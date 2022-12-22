@@ -440,7 +440,7 @@ bool PlayMotion2::wait_for_results(
   // finish if failed, motions finished or timeout
   const double TIMEOUT = motion_time * 2.0;
   const rclcpp::Time init_time = now();
-  while (!failed && !futures_list.empty() && (init_time - now()).seconds() < TIMEOUT) {
+  while (!failed && !futures_list.empty() && (now() - init_time).seconds() < TIMEOUT) {
     futures_list.erase(
       std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
       futures_list.end());
