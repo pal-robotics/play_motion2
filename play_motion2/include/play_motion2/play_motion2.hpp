@@ -105,7 +105,9 @@ private:
   FollowJTGoalHandleFutureResult send_trajectory(
     const std::string & controller_name,
     const JTMsg & trajectory);
-  bool wait_for_results(std::list<FollowJTGoalHandleFutureResult> & futures_list);
+  bool wait_for_results(
+    std::list<FollowJTGoalHandleFutureResult> & futures_list,
+    const double motion_time);
 
 private:
   MotionKeys motion_keys_;

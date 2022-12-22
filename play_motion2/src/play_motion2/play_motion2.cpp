@@ -187,7 +187,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
     futures_list.push_back(gh);
   }
   /// @todo send feedback
-  result->success = wait_for_results(futures_list);
+  result->success = wait_for_results(futures_list, motions_[goal->motion_name].times.back());
 
   if (!result->success) {
     RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
@@ -415,7 +415,9 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   return action_client->async_get_result(goal_handle.get());
 }
 
-bool PlayMotion2::wait_for_results(std::list<FollowJTGoalHandleFutureResult> & futures_list)
+bool PlayMotion2::wait_for_results(
+  std::list<FollowJTGoalHandleFutureResult> & futures_list,
+  const double motion_time)
 {
   bool failed = false;
 
@@ -435,12 +437,15 @@ bool PlayMotion2::wait_for_results(std::list<FollowJTGoalHandleFutureResult> & f
       return false;
     };
 
-  while (!failed && !futures_list.empty()) {
+  // finish if failed, motions finished or timeout
+  const double TIMEOUT = motion_time * 2.0;
+  const rclcpp::Time init_time = now();
+  while (!failed && !futures_list.empty() && (init_time - now()).seconds() < TIMEOUT) {
     futures_list.erase(
       std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
       futures_list.end());
   }
-  return !failed;
+  return (init_time - now()).seconds() < TIMEOUT && !failed;
 }
 
 }  // namespace play_motion2
