@@ -46,6 +46,7 @@ PlayMotion2::PlayMotion2()
   list_controllers_client_(),
   is_motion_ready_service_(),
   action_clients_(),
+  motion_controller_states_(),
   motion_executor_(),
   is_busy_(false)
 {
@@ -132,7 +133,7 @@ void PlayMotion2::list_motions_callback(
 
 void PlayMotion2::is_motion_ready_callback(
   IsMotionReady::Request::ConstSharedPtr request,
-  IsMotionReady::Response::SharedPtr response) const
+  IsMotionReady::Response::SharedPtr response)
 {
   response->is_ready = is_executable(request->motion_key);
 }
@@ -199,7 +200,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   is_busy_ = false;
 }
 
-bool PlayMotion2::is_executable(const std::string & motion_key) const
+bool PlayMotion2::is_executable(const std::string & motion_key)
 {
   const bool is_executable = exists(motion_key) &&
     check_joints_and_controllers(motion_key);
@@ -264,7 +265,7 @@ ControllerStates PlayMotion2::filter_controller_states(
   return filtered_controller_states;
 }
 
-bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
+bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key)
 {
   const auto controller_states = get_controller_states();
 
@@ -272,18 +273,18 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
     return false;
   }
 
-  const auto jtc_active_controllers = filter_controller_states(
+  motion_controller_states_ = filter_controller_states(
     controller_states, "active",
     "joint_trajectory_controller/JointTrajectoryController");
 
-  if (jtc_active_controllers.empty()) {
+  if (motion_controller_states_.empty()) {
     RCLCPP_ERROR(get_logger(), "There are no active JointTrajectory controllers available");
     return false;
   }
 
   // get joints claimed by active controllers
   std::unordered_set<std::string> joint_names;
-  for (const auto & controller : jtc_active_controllers) {
+  for (const auto & controller : motion_controller_states_) {
     for (const auto & interface : controller.claimed_interfaces) {
       const auto joint_name = interface.substr(0, interface.find_first_of('/'));
       joint_names.insert(joint_name);
@@ -362,12 +363,8 @@ JTMsg PlayMotion2::create_trajectory(
 ControllerTrajectories PlayMotion2::generate_controller_trajectories(const std::string & motion_key)
 const
 {
-  const auto jtc_active_controllers = filter_controller_states(
-    get_controller_states(), "active",
-    "joint_trajectory_controller/JointTrajectoryController");
-
   ControllerTrajectories ct;
-  for (const auto & controller : jtc_active_controllers) {
+  for (const auto & controller : motion_controller_states_) {
     const auto trajectory = create_trajectory(controller, motion_key);
     if (!trajectory.joint_names.empty()) {
       ct[controller.name] = trajectory;

@@ -74,7 +74,7 @@ private:
 
   void is_motion_ready_callback(
     IsMotionReady::Request::ConstSharedPtr request,
-    IsMotionReady::Response::SharedPtr response) const;
+    IsMotionReady::Response::SharedPtr response);
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
@@ -86,7 +86,7 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
   void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
 
-  bool is_executable(const std::string & motion_key) const;
+  bool is_executable(const std::string & motion_key);
 
   bool exists(const std::string & motion_key) const;
 
@@ -95,7 +95,7 @@ private:
     const ControllerStates & controller_states, const std::string & state,
     const std::string & type) const;
 
-  bool check_joints_and_controllers(const std::string & motion_key) const;
+  bool check_joints_and_controllers(const std::string & motion_key);
 
   JTMsg create_trajectory(
     const ControllerState & controller_state,
@@ -121,6 +121,8 @@ private:
   rclcpp::Client<ListControllers>::SharedPtr list_controllers_client_;
 
   std::map<std::string, rclcpp_action::Client<FollowJT>::SharedPtr> action_clients_;
+
+  ControllerStates motion_controller_states_;
 
   std::thread motion_executor_;
   std::atomic_bool is_busy_;
