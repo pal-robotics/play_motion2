@@ -445,7 +445,7 @@ bool PlayMotion2::wait_for_results(
     futures_list.erase(
       std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
       futures_list.end());
-    bool on_time = (now() - init_time).seconds() < TIMEOUT;
+    on_time = (now() - init_time).seconds() < TIMEOUT;
   } while (!failed && !futures_list.empty() && on_time);
 
   RCLCPP_ERROR_EXPRESSION(
