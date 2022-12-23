@@ -31,7 +31,8 @@ def generate_test_description():
     play_motion2 = include_launch_py_description(
         'play_motion2', ['launch', 'play_motion2.launch.py'],
         launch_arguments={
-          'play_motion2_config': os.path.join(pm2_dir, 'test', 'play_motion2_config.yaml')
+          'play_motion2_config': os.path.join(pm2_dir, 'test', 'play_motion2_config.yaml'),
+          'use_sim_time': 'False',
         }.items()
     )
 
