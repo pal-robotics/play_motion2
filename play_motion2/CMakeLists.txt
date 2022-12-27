@@ -15,6 +15,7 @@ find_package(play_motion2_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 
 set(dependencies
@@ -25,6 +26,7 @@ set(dependencies
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
+  sensor_msgs
   trajectory_msgs
 )
 

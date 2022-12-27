@@ -32,6 +32,7 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 
 namespace play_motion2
@@ -103,8 +104,11 @@ private:
 
   JTMsg create_trajectory(
     const ControllerState & controller_state,
-    const std::string & motion_key) const;
-  ControllerTrajectories generate_controller_trajectories(const std::string & motion_key) const;
+    const std::string & motion_key,
+    const double approach_time) const;
+  ControllerTrajectories generate_controller_trajectories(
+    const std::string & motion_key,
+    const double approach_time) const;
 
   FollowJTGoalHandleFutureResult send_trajectory(
     const std::string & controller_name,
@@ -112,6 +116,10 @@ private:
   bool wait_for_results(
     std::list<FollowJTGoalHandleFutureResult> & futures_list,
     const double motion_time);
+
+  void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
+
+  double calculate_approach_time(const std::string motion_key);
 
 private:
   MotionKeys motion_keys_;
@@ -130,6 +138,15 @@ private:
 
   std::thread motion_executor_;
   std::atomic_bool is_busy_;
+
+  rclcpp::SubscriptionBase::SharedPtr joint_states_sub_;
+  bool joint_states_updated_;
+  std::map<std::string, std::vector<double>> joint_states_;
+  std::mutex joint_states_mutex_;
+  std::condition_variable joint_states_condition_;
+
+  double approach_vel_;
+  double approach_min_duration_;
 };
 }  // namespace play_motion2
 
