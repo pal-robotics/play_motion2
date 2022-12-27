@@ -180,7 +180,13 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
     auto gh = send_trajectory(controller, trajectory);
     if (!gh.valid()) {
       result->success = false;
-      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+      RCLCPP_INFO_STREAM(get_logger(), "Cannot perform motion '" << goal->motion_name << "'");
+
+      // cancel all sent goals
+      for (const auto & client : action_clients_) {
+        client.second->async_cancel_all_goals();
+      }
+
       goal_handle->abort(result);
       is_busy_ = false;
       return;
@@ -402,6 +408,10 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
 
   auto goal_handle = action_client->async_send_goal(goal);
 
+  if (!goal_handle.valid()) {
+    return {};
+  }
+
   if (rclcpp::spin_until_future_complete(
       client_node_,
       goal_handle) != rclcpp::FutureReturnCode::SUCCESS)
@@ -409,7 +419,16 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
     RCLCPP_ERROR(this->get_logger(), "Cannot send goal");
     return {};
   }
-  return action_client->async_get_result(goal_handle.get());
+
+  //
+  FollowJTGoalHandleFutureResult result;
+  try {
+    result = action_client->async_get_result(goal_handle.get());
+  } catch (rclcpp_action::exceptions::UnknownGoalHandleError) {
+    result = {};
+  }
+
+  return result;
 }
 
 bool PlayMotion2::wait_for_results(
