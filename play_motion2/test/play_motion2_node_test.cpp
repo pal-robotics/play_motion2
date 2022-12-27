@@ -238,6 +238,52 @@ TEST_F(PlayMotion2NodeTest, ExecuteFailedMotion)
 
   ASSERT_TRUE(goal_handle);
 
+  // deactivate controller_1 to make motion fail without giving time to send all
+  // follow_joint_trajectory goals
+  auto deactivate_request = std::make_shared<SwitchController::Request>();
+  deactivate_request->deactivate_controllers = {"controller_1"};
+  deactivate_request->strictness = SwitchController::Request::BEST_EFFORT;
+  auto deactivate_future_result = switch_controller_client_->async_send_request(deactivate_request);
+
+  ASSERT_EQ(
+    rclcpp::spin_until_future_complete(
+      client_node_, deactivate_future_result,
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
+
+  auto deactivate_result = deactivate_future_result.get();
+  ASSERT_TRUE(deactivate_result->ok);
+
+  // wait for result
+  auto result_future = pm2_action_client_->async_get_result(goal_handle);
+
+  ASSERT_EQ(
+    rclcpp::spin_until_future_complete(
+      client_node_, result_future), rclcpp::FutureReturnCode::SUCCESS);
+
+  auto result = result_future.get();
+
+  ASSERT_EQ(result.code, rclcpp_action::ResultCode::ABORTED);
+}
+
+TEST_F(PlayMotion2NodeTest, ExecuteFailedMotion2)
+{
+  // create and send goal
+  auto pm2_goal = PlayMotion2::Goal();
+  pm2_goal.motion_name = "pose1";
+  auto goal_handle_future = pm2_action_client_->async_send_goal(pm2_goal);
+
+  ASSERT_EQ(
+    rclcpp::spin_until_future_complete(
+      client_node_, goal_handle_future,
+      TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
+
+  auto goal_handle = goal_handle_future.get();
+
+  ASSERT_TRUE(goal_handle);
+
+  // sleep 1s to give time to send all follow_joint_trajectory goals
+  std::this_thread::sleep_for(1s);
+
   // deactivate controller_1 to make motion fail
   auto deactivate_request = std::make_shared<SwitchController::Request>();
   deactivate_request->deactivate_controllers = {"controller_1"};
