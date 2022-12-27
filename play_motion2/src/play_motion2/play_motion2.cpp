@@ -429,6 +429,7 @@ bool PlayMotion2::wait_for_results(
           return true;
         } else {
           failed = true;
+          RCLCPP_ERROR(get_logger(), "Joint Trajectory failed");
         }
       }
       return false;
@@ -443,6 +444,14 @@ bool PlayMotion2::wait_for_results(
       std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
       futures_list.end());
     on_time = (now() - init_time).seconds() < TIMEOUT;
+
+    auto current_states = filter_controller_states(
+      get_controller_states(), "active", "joint_trajectory_controller/JointTrajectoryController");
+
+    if (current_states != motion_controller_states_) {
+      failed = true;
+      RCLCPP_ERROR(get_logger(), "Controller States have changed");
+    }
   } while (!failed && !futures_list.empty() && on_time);
 
   RCLCPP_ERROR_EXPRESSION(
