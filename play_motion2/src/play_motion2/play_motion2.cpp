@@ -54,6 +54,7 @@ PlayMotion2::PlayMotion2()
 
 PlayMotion2::~PlayMotion2()
 {
+  // wait if a motion is being executed until it finishes
   if (motion_executor_.joinable()) {
     motion_executor_.join();
   }
