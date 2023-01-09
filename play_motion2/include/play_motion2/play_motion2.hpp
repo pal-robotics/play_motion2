@@ -86,7 +86,11 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
   void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
 
-  bool is_executable(const std::string & motion_key);
+  bool update_controller_states_cache();
+
+  /// Check if the motion is executable using the saved cache for controller states.
+  /// Be sure that the function update_controller_states_cache() is called before to update them
+  bool is_executable(const std::string & motion_key) const;
 
   bool exists(const std::string & motion_key) const;
 
@@ -95,7 +99,7 @@ private:
     const ControllerStates & controller_states, const std::string & state,
     const std::string & type) const;
 
-  bool check_joints_and_controllers(const std::string & motion_key);
+  bool check_joints_and_controllers(const std::string & motion_key) const;
 
   JTMsg create_trajectory(
     const ControllerState & controller_state,

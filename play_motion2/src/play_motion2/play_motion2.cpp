@@ -136,7 +136,7 @@ void PlayMotion2::is_motion_ready_callback(
   IsMotionReady::Request::ConstSharedPtr request,
   IsMotionReady::Response::SharedPtr response)
 {
-  response->is_ready = is_executable(request->motion_key);
+  response->is_ready = update_controller_states_cache() && is_executable(request->motion_key);
 }
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(
@@ -145,7 +145,7 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
 {
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
-  if (is_busy_ || !is_executable(goal->motion_name)) {
+  if (!update_controller_states_cache() || is_busy_ || !is_executable(goal->motion_name)) {
     RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
     RCLCPP_ERROR_EXPRESSION(get_logger(), is_busy_, "PlayMotion2 is busy");
     return rclcpp_action::GoalResponse::REJECT;
@@ -207,7 +207,23 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   is_busy_ = false;
 }
 
-bool PlayMotion2::is_executable(const std::string & motion_key)
+bool PlayMotion2::update_controller_states_cache()
+{
+  const auto controller_states = get_controller_states();
+
+  motion_controller_states_ = filter_controller_states(
+    controller_states, "active",
+    "joint_trajectory_controller/JointTrajectoryController");
+
+  RCLCPP_ERROR_EXPRESSION(
+    get_logger(),
+    motion_controller_states_.empty(),
+    "There are no active JointTrajectory controllers available");
+
+  return !motion_controller_states_.empty();
+}
+
+bool PlayMotion2::is_executable(const std::string & motion_key) const
 {
   const bool is_executable = exists(motion_key) &&
     check_joints_and_controllers(motion_key);
@@ -272,23 +288,8 @@ ControllerStates PlayMotion2::filter_controller_states(
   return filtered_controller_states;
 }
 
-bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key)
+bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
 {
-  const auto controller_states = get_controller_states();
-
-  if (controller_states.empty()) {
-    return false;
-  }
-
-  motion_controller_states_ = filter_controller_states(
-    controller_states, "active",
-    "joint_trajectory_controller/JointTrajectoryController");
-
-  if (motion_controller_states_.empty()) {
-    RCLCPP_ERROR(get_logger(), "There are no active JointTrajectory controllers available");
-    return false;
-  }
-
   // get joints claimed by active controllers
   std::unordered_set<std::string> joint_names;
   for (const auto & controller : motion_controller_states_) {
