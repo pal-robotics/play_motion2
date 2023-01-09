@@ -146,8 +146,8 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
   if (!update_controller_states_cache() || is_busy_ || !is_executable(goal->motion_name)) {
-    RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
     RCLCPP_ERROR_EXPRESSION(get_logger(), is_busy_, "PlayMotion2 is busy");
+    RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
     return rclcpp_action::GoalResponse::REJECT;
   }
 
