@@ -225,10 +225,8 @@ bool PlayMotion2::update_controller_states_cache()
 
 bool PlayMotion2::is_executable(const std::string & motion_key) const
 {
-  const bool is_executable = exists(motion_key) &&
-    check_joints_and_controllers(motion_key);
-
-  return is_executable;
+  return exists(motion_key) &&
+         check_joints_and_controllers(motion_key);
 }
 
 bool PlayMotion2::exists(const std::string & motion_key) const
