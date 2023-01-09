@@ -178,8 +178,8 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
 
   std::list<FollowJTGoalHandleFutureResult> futures_list;
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
-    auto gh = send_trajectory(controller, trajectory);
-    if (!gh.valid()) {
+    auto jtc_future_gh = send_trajectory(controller, trajectory);
+    if (!jtc_future_gh.valid()) {
       result->success = false;
       RCLCPP_INFO_STREAM(get_logger(), "Cannot perform motion '" << goal->motion_name << "'");
 
@@ -192,7 +192,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
       is_busy_ = false;
       return;
     }
-    futures_list.push_back(gh);
+    futures_list.push_back(std::move(jtc_future_gh));
   }
   /// @todo send feedback
   result->success = wait_for_results(futures_list, motions_[goal->motion_name].times.back());
