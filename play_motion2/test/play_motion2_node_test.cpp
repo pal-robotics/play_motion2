@@ -118,7 +118,7 @@ const
 
 void PlayMotion2NodeTest::send_pm2_goal(
   const std::string & motion_name,
-  FutureGoalHandlePM2 & future_gh)
+  FutureGoalHandlePM2 & future_gh) const
 {
   auto pm2_goal = PlayMotion2::Goal();
   pm2_goal.motion_name = motion_name;
@@ -132,7 +132,7 @@ void PlayMotion2NodeTest::send_pm2_goal(
 
 void PlayMotion2NodeTest::wait_pm2_result(
   GoalHandlePM2 future_goal_handle,
-  rclcpp_action::ResultCode expected_result)
+  rclcpp_action::ResultCode expected_result) const
 {
   auto result_future = pm2_action_client_->async_get_result(future_goal_handle);
 
@@ -220,7 +220,7 @@ TEST_F(PlayMotion2NodeTest, ExecuteSuccessfulMotion)
   wait_pm2_result(goal_handle, rclcpp_action::ResultCode::SUCCEEDED);
 }
 
-void PlayMotion2NodeTest::execute_failing_motion(std::chrono::seconds duration)
+void PlayMotion2NodeTest::execute_failing_motion(std::chrono::seconds duration) const
 {
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;

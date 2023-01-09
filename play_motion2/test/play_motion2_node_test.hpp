@@ -59,10 +59,12 @@ public:
   void TearDown() override;
 
   void deactivate_controllers(const std::vector<std::string> controllers_list) const;
-  void send_pm2_goal(const std::string & motion_name, FutureGoalHandlePM2 & future_gh);
-  void wait_pm2_result(GoalHandlePM2 future_goal_handle, rclcpp_action::ResultCode expected_result);
+  void send_pm2_goal(const std::string & motion_name, FutureGoalHandlePM2 & future_gh) const;
+  void wait_pm2_result(
+    GoalHandlePM2 future_goal_handle,
+    rclcpp_action::ResultCode expected_result) const;
 
-  void execute_failing_motion(std::chrono::seconds d);
+  void execute_failing_motion(std::chrono::seconds duration) const;
 
 protected:
   rclcpp::Node::SharedPtr client_node_;
