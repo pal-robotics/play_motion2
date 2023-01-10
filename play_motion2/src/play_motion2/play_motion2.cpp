@@ -32,7 +32,6 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
-using FollowJT = control_msgs::action::FollowJointTrajectory;
 
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
@@ -45,8 +44,20 @@ PlayMotion2::PlayMotion2()
   list_motions_service_(),
   pm2_action_(),
   list_controllers_client_(),
-  is_motion_ready_service_()
+  is_motion_ready_service_(),
+  action_clients_(),
+  motion_controller_states_(),
+  motion_executor_(),
+  is_busy_(false)
 {
+}
+
+PlayMotion2::~PlayMotion2()
+{
+  // wait if a motion is being executed until it finishes
+  if (motion_executor_.joinable()) {
+    motion_executor_.join();
+  }
 }
 
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
@@ -85,11 +96,14 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
 
 CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
 {
+  /// @todo reject when a motion is being executed ?
+
   list_motions_service_.reset();
   is_motion_ready_service_.reset();
   pm2_action_.reset();
   client_node_.reset();
   list_controllers_client_.reset();
+  is_busy_ = false;
   return CallbackReturn::SUCCESS;
 }
 
@@ -102,6 +116,7 @@ CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
 
 CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & state)
 {
+  /// @todo cancel all goals
   return CallbackReturn::SUCCESS;
 }
 
@@ -119,22 +134,27 @@ void PlayMotion2::list_motions_callback(
 
 void PlayMotion2::is_motion_ready_callback(
   IsMotionReady::Request::ConstSharedPtr request,
-  IsMotionReady::Response::SharedPtr response) const
+  IsMotionReady::Response::SharedPtr response)
 {
-  response->is_ready = is_executable(request->motion_key);
+  response->is_ready = update_controller_states_cache() && is_executable(request->motion_key);
 }
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(
   const rclcpp_action::GoalUUID & /*uuid*/,
-  std::shared_ptr<const PlayMotion2Action::Goal> goal) const
+  std::shared_ptr<const PlayMotion2Action::Goal> goal)
 {
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
-  if (!is_executable(goal->motion_name)) {
+  if (!update_controller_states_cache() || is_busy_ || !is_executable(goal->motion_name)) {
+    RCLCPP_ERROR_EXPRESSION(get_logger(), is_busy_, "PlayMotion2 is busy");
     RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
     return rclcpp_action::GoalResponse::REJECT;
   }
 
+  if (motion_executor_.joinable()) {
+    motion_executor_.join();
+  }
+  is_busy_ = true;
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -144,42 +164,69 @@ rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle) const
+void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle}.detach();
+  motion_executor_ = std::thread{std::bind(&PlayMotion2::execute_motion, this, _1), goal_handle};
 }
 
-void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle) const
+void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  auto feedback = std::make_shared<PlayMotion2Action::Feedback>();
   auto result = std::make_shared<PlayMotion2Action::Result>();
   auto goal = goal_handle->get_goal();
 
   const auto ctrl_trajectories = generate_controller_trajectories(goal->motion_name);
 
+  std::list<FollowJTGoalHandleFutureResult> futures_list;
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
-    if (!send_trajectory(controller, trajectory)) {
+    auto jtc_future_gh = send_trajectory(controller, trajectory);
+    if (!jtc_future_gh.valid()) {
       result->success = false;
-      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+      RCLCPP_INFO_STREAM(get_logger(), "Cannot perform motion '" << goal->motion_name << "'");
+
+      // cancel all sent goals
+      for (const auto & client : action_clients_) {
+        client.second->async_cancel_all_goals();
+      }
+
       goal_handle->abort(result);
+      is_busy_ = false;
       return;
     }
+    futures_list.push_back(std::move(jtc_future_gh));
   }
+  /// @todo send feedback
+  result->success = wait_for_results(futures_list, motions_[goal->motion_name].times.back());
 
-  /// @todo wait for the result to check motion is correctly completed
-  /// instead of succeed.
-  result->success = true;
-  RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
+  if (!result->success) {
+    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+    goal_handle->abort(result);
+  } else {
+    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
+    goal_handle->succeed(result);
+  }
+  is_busy_ = false;
+}
 
-  goal_handle->succeed(result);
+bool PlayMotion2::update_controller_states_cache()
+{
+  const auto controller_states = get_controller_states();
+
+  motion_controller_states_ = filter_controller_states(
+    controller_states, "active",
+    "joint_trajectory_controller/JointTrajectoryController");
+
+  RCLCPP_ERROR_EXPRESSION(
+    get_logger(),
+    motion_controller_states_.empty(),
+    "There are no active JointTrajectory controllers available");
+
+  return !motion_controller_states_.empty();
 }
 
 bool PlayMotion2::is_executable(const std::string & motion_key) const
 {
-  const bool is_executable = exists(motion_key) &&
-    check_joints_and_controllers(motion_key);
-
-  return is_executable;
+  return exists(motion_key) &&
+         check_joints_and_controllers(motion_key);
 }
 
 bool PlayMotion2::exists(const std::string & motion_key) const
@@ -241,24 +288,9 @@ ControllerStates PlayMotion2::filter_controller_states(
 
 bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) const
 {
-  const auto controller_states = get_controller_states();
-
-  if (controller_states.empty()) {
-    return false;
-  }
-
-  const auto jtc_active_controllers = filter_controller_states(
-    controller_states, "active",
-    "joint_trajectory_controller/JointTrajectoryController");
-
-  if (jtc_active_controllers.empty()) {
-    RCLCPP_ERROR(get_logger(), "There are no active JointTrajectory controllers available");
-    return false;
-  }
-
   // get joints claimed by active controllers
   std::unordered_set<std::string> joint_names;
-  for (const auto & controller : jtc_active_controllers) {
+  for (const auto & controller : motion_controller_states_) {
     for (const auto & interface : controller.claimed_interfaces) {
       const auto joint_name = interface.substr(0, interface.find_first_of('/'));
       joint_names.insert(joint_name);
@@ -337,12 +369,8 @@ JTMsg PlayMotion2::create_trajectory(
 ControllerTrajectories PlayMotion2::generate_controller_trajectories(const std::string & motion_key)
 const
 {
-  const auto jtc_active_controllers = filter_controller_states(
-    get_controller_states(), "active",
-    "joint_trajectory_controller/JointTrajectoryController");
-
   ControllerTrajectories ct;
-  for (const auto & controller : jtc_active_controllers) {
+  for (const auto & controller : motion_controller_states_) {
     const auto trajectory = create_trajectory(controller, motion_key);
     if (!trajectory.joint_names.empty()) {
       ct[controller.name] = trajectory;
@@ -351,16 +379,27 @@ const
   return ct;
 }
 
-bool PlayMotion2::send_trajectory(const std::string & controller, const JTMsg & trajectory) const
+FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
+  const std::string & controller_name,
+  const JTMsg & trajectory)
 {
-  const auto action_client = rclcpp_action::create_client<FollowJT>(
-    client_node_,
-    "/" + controller +
-    "/follow_joint_trajectory");
+  rclcpp_action::Client<FollowJT>::SharedPtr action_client;
+  if (action_clients_.count(controller_name) != 0) {
+    action_client = action_clients_[controller_name];
+  } else {
+    action_client = rclcpp_action::create_client<FollowJT>(
+      client_node_,
+      "/" + controller_name +
+      "/follow_joint_trajectory");
+    action_clients_[controller_name] = action_client;
+  }
 
   if (!action_client->wait_for_action_server(1s)) {
-    RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-    return false;
+    RCLCPP_ERROR_STREAM(
+      this->get_logger(),
+      "/" << controller_name <<
+        "/follow_joint_trajectory action server not available after waiting");
+    return {};
   }
 
   /// @todo fill rest of the fields ??
@@ -369,15 +408,76 @@ bool PlayMotion2::send_trajectory(const std::string & controller, const JTMsg & 
 
   auto goal_handle = action_client->async_send_goal(goal);
 
+  if (!goal_handle.valid()) {
+    return {};
+  }
+
   if (rclcpp::spin_until_future_complete(
       client_node_,
       goal_handle) != rclcpp::FutureReturnCode::SUCCESS)
   {
     RCLCPP_ERROR(this->get_logger(), "Cannot send goal");
-    return false;
+    return {};
   }
 
-  return true;
+  //
+  FollowJTGoalHandleFutureResult result;
+  try {
+    result = action_client->async_get_result(goal_handle.get());
+  } catch (rclcpp_action::exceptions::UnknownGoalHandleError) {
+    result = {};
+  }
+
+  return result;
+}
+
+bool PlayMotion2::wait_for_results(
+  std::list<FollowJTGoalHandleFutureResult> & futures_list,
+  const double motion_time)
+{
+  bool failed = false;
+
+  // Spin all futures and remove them when succeeded.
+  // If one fails, set failed to true and returns false
+  const auto successful_jt = [&](FollowJTGoalHandleFutureResult & future) {
+      if (rclcpp::spin_until_future_complete(
+          client_node_, future,
+          0.1s) == rclcpp::FutureReturnCode::SUCCESS)
+      {
+        if (future.get().code == rclcpp_action::ResultCode::SUCCEEDED) {
+          return true;
+        } else {
+          failed = true;
+          RCLCPP_ERROR(get_logger(), "Joint Trajectory failed");
+        }
+      }
+      return false;
+    };
+
+  // finish if failed, motions finished or timeout
+  const double TIMEOUT = motion_time * 2.0;
+  const rclcpp::Time init_time = now();
+  bool on_time = true;
+  do {
+    futures_list.erase(
+      std::remove_if(futures_list.begin(), futures_list.end(), successful_jt),
+      futures_list.end());
+    on_time = (now() - init_time).seconds() < TIMEOUT;
+
+    auto current_states = filter_controller_states(
+      get_controller_states(), "active", "joint_trajectory_controller/JointTrajectoryController");
+
+    if (current_states != motion_controller_states_) {
+      failed = true;
+      RCLCPP_ERROR(get_logger(), "Controller States have changed");
+    }
+  } while (!failed && !futures_list.empty() && on_time);
+
+  RCLCPP_ERROR_EXPRESSION(
+    get_logger(),
+    !on_time, "Timeout exceeded while waiting for results");
+
+  return on_time && !failed;
 }
 
 }  // namespace play_motion2

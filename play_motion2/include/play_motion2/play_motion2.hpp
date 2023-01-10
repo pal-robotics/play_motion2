@@ -15,6 +15,7 @@
 #ifndef PLAY_MOTION2__PLAY_MOTION2_HPP_
 #define PLAY_MOTION2__PLAY_MOTION2_HPP_
 
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -46,6 +47,10 @@ using ControllerStates = std::vector<ControllerState>;
 using JTMsg = trajectory_msgs::msg::JointTrajectory;
 using ControllerTrajectories = std::map<std::string, JTMsg>;
 
+using FollowJT = control_msgs::action::FollowJointTrajectory;
+using FollowJTGoalHandleFutureResult =
+  std::shared_future<rclcpp_action::ClientGoalHandle<FollowJT>::WrappedResult>;
+
 using PlayMotion2Action = play_motion2_msgs::action::PlayMotion2;
 using GoalHandlePM2 = rclcpp_action::ServerGoalHandle<PlayMotion2Action>;
 
@@ -53,7 +58,7 @@ class PlayMotion2 : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   PlayMotion2();
-  ~PlayMotion2() = default;
+  ~PlayMotion2() override;
 
   CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
   CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
@@ -69,18 +74,22 @@ private:
 
   void is_motion_ready_callback(
     IsMotionReady::Request::ConstSharedPtr request,
-    IsMotionReady::Response::SharedPtr response) const;
+    IsMotionReady::Response::SharedPtr response);
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const PlayMotion2Action::Goal> goal) const;
+    std::shared_ptr<const PlayMotion2Action::Goal> goal);
 
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandlePM2> goal_handle) const;
 
-  void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle) const;
-  void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle) const;
+  void handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_handle);
+  void execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle);
 
+  bool update_controller_states_cache();
+
+  /// Check if the motion is executable using the saved cache for controller states.
+  /// Be sure that the function update_controller_states_cache() is called before to update them
   bool is_executable(const std::string & motion_key) const;
 
   bool exists(const std::string & motion_key) const;
@@ -97,7 +106,12 @@ private:
     const std::string & motion_key) const;
   ControllerTrajectories generate_controller_trajectories(const std::string & motion_key) const;
 
-  bool send_trajectory(const std::string & controller, const JTMsg & trajectory) const;
+  FollowJTGoalHandleFutureResult send_trajectory(
+    const std::string & controller_name,
+    const JTMsg & trajectory);
+  bool wait_for_results(
+    std::list<FollowJTGoalHandleFutureResult> & futures_list,
+    const double motion_time);
 
 private:
   MotionKeys motion_keys_;
@@ -109,6 +123,13 @@ private:
   rclcpp_action::Server<PlayMotion2Action>::SharedPtr pm2_action_;
 
   rclcpp::Client<ListControllers>::SharedPtr list_controllers_client_;
+
+  std::map<std::string, rclcpp_action::Client<FollowJT>::SharedPtr> action_clients_;
+
+  ControllerStates motion_controller_states_;
+
+  std::thread motion_executor_;
+  std::atomic_bool is_busy_;
 };
 }  // namespace play_motion2
 

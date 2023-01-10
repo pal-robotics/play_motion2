@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "gtest/gtest.h"
 
@@ -42,6 +43,9 @@ using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
 using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
 
+using GoalHandlePM2 = rclcpp_action::ClientGoalHandle<PlayMotion2>::SharedPtr;
+using FutureGoalHandlePM2 = std::shared_future<GoalHandlePM2>;
+
 class PlayMotion2NodeTest : public ::testing::Test
 {
 public:
@@ -54,16 +58,24 @@ public:
   void SetUp() override;
   void TearDown() override;
 
+  void deactivate_controllers(const std::vector<std::string> controllers_list) const;
+  void send_pm2_goal(const std::string & motion_name, FutureGoalHandlePM2 & future_gh) const;
+  void wait_pm2_result(
+    GoalHandlePM2 future_goal_handle,
+    rclcpp_action::ResultCode expected_result) const;
+
+  void execute_failing_motion(std::chrono::seconds duration) const;
+
 protected:
   rclcpp::Node::SharedPtr client_node_;
   rclcpp::Client<SwitchController>::SharedPtr switch_controller_client_;
   rclcpp_action::Client<PlayMotion2>::SharedPtr pm2_action_client_;
 
 private:
-  void restore_controllers();
+  void restore_controllers() const;
 
   template<typename ClientT>
-  void wait_for_controller_service(ClientT client)
+  void wait_for_controller_service(ClientT client) const
   {
     if (!client->wait_for_service(TIMEOUT)) {
       if (!rclcpp::ok()) {
