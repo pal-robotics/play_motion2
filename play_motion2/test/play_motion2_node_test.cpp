@@ -99,7 +99,7 @@ void PlayMotion2NodeTest::restore_controllers() const
   }
 }
 
-void PlayMotion2NodeTest::deactivate_controllers(const std::vector<std::string> controllers_list)
+void PlayMotion2NodeTest::deactivate_controllers(const std::vector<std::string> & controllers_list)
 const
 {
   auto deactivate_request = std::make_shared<SwitchController::Request>();
@@ -131,8 +131,8 @@ void PlayMotion2NodeTest::send_pm2_goal(
 }
 
 void PlayMotion2NodeTest::wait_pm2_result(
-  GoalHandlePM2 future_goal_handle,
-  rclcpp_action::ResultCode expected_result) const
+  const GoalHandlePM2 & future_goal_handle,
+  const rclcpp_action::ResultCode & expected_result) const
 {
   auto result_future = pm2_action_client_->async_get_result(future_goal_handle);
 
@@ -231,7 +231,7 @@ TEST_F(PlayMotion2NodeTest, SuccesfulMotionOnSite)
   execute_succesful_motion("home");
 }
 
-void PlayMotion2NodeTest::execute_failing_motion(std::chrono::seconds duration) const
+void PlayMotion2NodeTest::execute_failing_motion(const std::chrono::seconds & duration) const
 {
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;
