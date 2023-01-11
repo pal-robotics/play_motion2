@@ -64,6 +64,7 @@ public:
     GoalHandlePM2 future_goal_handle,
     rclcpp_action::ResultCode expected_result) const;
 
+  void execute_succesful_motion(const std::string & motion_name) const;
   void execute_failing_motion(std::chrono::seconds duration) const;
 
 protected:

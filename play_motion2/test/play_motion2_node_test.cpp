@@ -206,11 +206,11 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
   ASSERT_FALSE(goal_handle);
 }
 
-TEST_F(PlayMotion2NodeTest, ExecuteSuccessfulMotion)
+void PlayMotion2NodeTest::execute_succesful_motion(const std::string & motion_name) const
 {
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;
-  send_pm2_goal("home", goal_handle_future);
+  send_pm2_goal(motion_name, goal_handle_future);
 
   auto goal_handle = goal_handle_future.get();
 
@@ -218,6 +218,17 @@ TEST_F(PlayMotion2NodeTest, ExecuteSuccessfulMotion)
 
   // wait for result
   wait_pm2_result(goal_handle, rclcpp_action::ResultCode::SUCCEEDED);
+}
+
+TEST_F(PlayMotion2NodeTest, SuccesfulMotionWithDisplacement)
+{
+  execute_succesful_motion("home");
+}
+
+TEST_F(PlayMotion2NodeTest, SuccesfulMotionOnSite)
+{
+  // the previous test has moved the rrbot to this position so the robot does not have to move
+  execute_succesful_motion("home");
 }
 
 void PlayMotion2NodeTest::execute_failing_motion(std::chrono::seconds duration) const
