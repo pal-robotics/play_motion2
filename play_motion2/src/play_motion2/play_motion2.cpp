@@ -534,8 +534,8 @@ double play_motion2::PlayMotion2::calculate_approach_time(const std::string moti
     motions_[motion_key].positions.begin() + motions_[motion_key].joints.size()};
 
   // wait until joint_states updated and set current positions
-  joint_states_updated_ = false;
   std::unique_lock lock(joint_states_mutex_);
+  joint_states_updated_ = false;
   joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
 
   std::vector<double> curr_pos;
@@ -566,7 +566,6 @@ void PlayMotion2::joint_states_callback(const sensor_msgs::msg::JointState::Shar
     }
     joint_states_updated_ = true;
   }
-  lock.unlock();
   joint_states_condition_.notify_one();
 }
 
