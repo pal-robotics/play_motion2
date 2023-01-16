@@ -58,13 +58,14 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  void deactivate_controllers(const std::vector<std::string> controllers_list) const;
+  void deactivate_controllers(const std::vector<std::string> & controllers_list) const;
   void send_pm2_goal(const std::string & motion_name, FutureGoalHandlePM2 & future_gh) const;
   void wait_pm2_result(
-    GoalHandlePM2 future_goal_handle,
-    rclcpp_action::ResultCode expected_result) const;
+    const GoalHandlePM2 & future_goal_handle,
+    const rclcpp_action::ResultCode & expected_result) const;
 
-  void execute_failing_motion(std::chrono::seconds duration) const;
+  void execute_succesful_motion(const std::string & motion_name) const;
+  void execute_failing_motion(const std::chrono::seconds & duration) const;
 
 protected:
   rclcpp::Node::SharedPtr client_node_;
@@ -75,7 +76,7 @@ private:
   void restore_controllers() const;
 
   template<typename ClientT>
-  void wait_for_controller_service(ClientT client) const
+  void wait_for_controller_service(const ClientT & client) const
   {
     if (!client->wait_for_service(TIMEOUT)) {
       if (!rclcpp::ok()) {
