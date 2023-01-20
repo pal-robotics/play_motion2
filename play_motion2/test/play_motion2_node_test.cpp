@@ -43,7 +43,7 @@ void PlayMotion2NodeTest::SetUpTestSuite()
     future_result =
       std::make_shared<IsMotionReadyFutureAndRequestId>(client->async_send_request(request));
     retries--;
-  } while (retries >= 0 && rclcpp::spin_until_future_complete(
+  } while (retries > 0 && rclcpp::spin_until_future_complete(
     node, *future_result,
     TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS);
 
