@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2023-02-08)
+------------------
 * Merge branch 'fix_loop_condition' into 'humble-devel'
   Fix inifinite retries loop and testing double types
   See merge request app-tools/play_motion2!11

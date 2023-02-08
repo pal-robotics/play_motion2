@@ -2,8 +2,8 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2023-02-08)
+------------------
 * Merge branch 'syntax_fixes' into 'humble-devel'
   fix eol and rm whitespaces
   See merge request app-tools/play_motion2!5
