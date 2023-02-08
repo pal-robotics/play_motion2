@@ -2,6 +2,9 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2023-02-08)
 ------------------
 * Merge branch 'fix_loop_condition' into 'humble-devel'

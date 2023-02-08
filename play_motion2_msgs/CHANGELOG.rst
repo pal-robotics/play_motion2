@@ -2,6 +2,14 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'add_missing_dependency' into 'humble-devel'
+  add missing dependency action_msgs
+  See merge request app-tools/play_motion2!12
+* add missing dependency action_msgs
+* Contributors: Jordan Palacios, Noel Jimenez
+
 0.0.1 (2023-02-08)
 ------------------
 * Merge branch 'syntax_fixes' into 'humble-devel'
