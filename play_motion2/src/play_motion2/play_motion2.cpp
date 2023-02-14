@@ -235,6 +235,10 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
 
 bool PlayMotion2::update_controller_states_cache()
 {
+  if (is_busy_) {
+    return false;
+  }
+
   const auto controller_states = get_controller_states();
 
   motion_controller_states_ = filter_controller_states(
