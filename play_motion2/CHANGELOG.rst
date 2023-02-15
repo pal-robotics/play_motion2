@@ -2,6 +2,14 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'fix_cache_concurrency' into 'humble-devel'
+  Do not update controller states cache if play_motion2 is busy
+  See merge request app-tools/play_motion2!13
+* do not update controller states cache if play_motion2 is busy
+* Contributors: Jordan Palacios, Noel Jimenez
+
 0.0.2 (2023-02-08)
 ------------------
 

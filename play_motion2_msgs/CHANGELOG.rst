@@ -2,6 +2,9 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.2 (2023-02-08)
 ------------------
 * Merge branch 'add_missing_dependency' into 'humble-devel'
