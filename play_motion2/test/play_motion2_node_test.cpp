@@ -17,7 +17,6 @@
 #include "gtest/gtest.h"
 
 #include "play_motion2_node_test.hpp"
-#include "rclcpp/create_client.hpp"
 #include "rclcpp/executors.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp_action/create_client.hpp"
