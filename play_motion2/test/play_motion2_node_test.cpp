@@ -56,7 +56,7 @@ void PlayMotion2NodeTest::SetUpTestSuite()
     std::this_thread::sleep_for(1s);
   } while (!timeout && !play_motion2_available);
 
-  ASSERT_NE(timeout, true) << "Timeout while waiting for motions to be ready";
+  ASSERT_FALSE(timeout) << "Timeout while waiting for motions to be ready";
 }
 
 void PlayMotion2NodeTest::TearDownTestSuite()
