@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
+#include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
+#include <chrono>
 
 #include "play_motion2_node_test.hpp"
 #include "rclcpp/executors.hpp"
