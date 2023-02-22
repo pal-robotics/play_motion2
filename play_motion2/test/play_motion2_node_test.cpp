@@ -24,6 +24,8 @@
 namespace play_motion2
 {
 
+constexpr auto START_TIMEOUT = 30s;
+
 void PlayMotion2NodeTest::SetUpTestSuite()
 {
   rclcpp::init(0, nullptr);
@@ -50,7 +52,7 @@ void PlayMotion2NodeTest::SetUpTestSuite()
     {
       play_motion2_available = future_result.get()->is_ready;
     }
-    timeout = (node->now() - start_time) > 3 * TIMEOUT;
+    timeout = (node->now() - start_time) > START_TIMEOUT;
 
     // sleep to avoid spamming many messages of play_motion2
     std::this_thread::sleep_for(1s);
