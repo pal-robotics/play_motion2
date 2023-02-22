@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <gtest/gtest.h>
+
 #include <chrono>
 
-#include "gtest/gtest.h"
-
 #include "play_motion2_node_test.hpp"
-#include "rclcpp/create_client.hpp"
 #include "rclcpp/executors.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp_action/create_client.hpp"
 
 namespace play_motion2
 {
+
+constexpr auto START_TIMEOUT = 30s;
 
 void PlayMotion2NodeTest::SetUpTestSuite()
 {
@@ -33,21 +34,31 @@ void PlayMotion2NodeTest::SetUpTestSuite()
   auto client = node->create_client<IsMotionReady>(
     "play_motion2/is_motion_ready");
 
+  ASSERT_TRUE(client->wait_for_service(TIMEOUT)) <<
+    "Timeout while waiting for is_motion_ready service";
+
   auto request = std::make_shared<IsMotionReady::Request>();
   request->motion_key = "home";
 
-  using IsMotionReadyFutureAndRequestId = rclcpp::Client<IsMotionReady>::FutureAndRequestId;
-  std::shared_ptr<IsMotionReadyFutureAndRequestId> future_result;
-  unsigned int retries = 3u;
+  const auto start_time = node->now();
+  bool timeout = false;
+  bool play_motion2_available = false;
   do {
-    future_result =
-      std::make_shared<IsMotionReadyFutureAndRequestId>(client->async_send_request(request));
-    retries--;
-  } while (retries > 0 && rclcpp::spin_until_future_complete(
-    node, *future_result,
-    TIMEOUT) != rclcpp::FutureReturnCode::SUCCESS);
+    auto future_result = client->async_send_request(request);
 
-  ASSERT_NE(retries, 0) << "Timeout while waiting for motions to be ready";
+    if (rclcpp::spin_until_future_complete(
+        node, future_result,
+        TIMEOUT) == rclcpp::FutureReturnCode::SUCCESS)
+    {
+      play_motion2_available = future_result.get()->is_ready;
+    }
+    timeout = (node->now() - start_time) > START_TIMEOUT;
+
+    // sleep to avoid spamming many messages of play_motion2
+    std::this_thread::sleep_for(1s);
+  } while (!timeout && !play_motion2_available);
+
+  ASSERT_FALSE(timeout) << "Timeout while waiting for motions to be ready";
 }
 
 void PlayMotion2NodeTest::TearDownTestSuite()
