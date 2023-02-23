@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2023-02-23)
+------------------
 * Merge branch 'fix_test' into 'humble-devel'
   Fix unstable test
   See merge request app-tools/play_motion2!16
