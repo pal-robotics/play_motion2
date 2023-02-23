@@ -2,6 +2,18 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'fix_test' into 'humble-devel'
+  Fix unstable test
+  See merge request app-tools/play_motion2!16
+* set start timeout in a variable
+* use a better assert
+* fix gtest header
+* remove unused header
+* fix loop condition to start play_motion2_node_test
+* Contributors: Jordan Palacios, Noel Jimenez
+
 0.0.3 (2023-02-15)
 ------------------
 * Merge branch 'fix_cache_concurrency' into 'humble-devel'
