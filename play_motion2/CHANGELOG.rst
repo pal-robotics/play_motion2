@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2023-03-01)
+------------------
 * Merge branch 'add_missing_dependency' into 'humble-devel'
   add missing test dependency robot_state_publisher and remove initial / from controllers config
   See merge request app-tools/play_motion2!17
