@@ -5,9 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(ament_cmake REQUIRED)
 
-# PAL Robotics stricter build flags, other developers should not worry about this
-find_package(ament_cmake_pal QUIET)
-
 find_package(control_msgs REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
