@@ -12,7 +12,7 @@
 
   <author email="noel.jimenez@pal-robotics.com">Noel Jimenez</author>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
