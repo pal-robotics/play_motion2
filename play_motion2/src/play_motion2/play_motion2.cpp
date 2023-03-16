@@ -72,7 +72,7 @@ PlayMotion2::~PlayMotion2()
   }
 }
 
-CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   const bool ok =
     parse_motions(shared_from_this(), motion_keys_, motions_);
@@ -82,7 +82,7 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
   return ok ? CallbackReturn::SUCCESS : CallbackReturn::FAILURE;
 }
 
-CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
@@ -111,7 +111,7 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo reject when a motion is being executed ?
 
@@ -125,20 +125,20 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   motion_keys_.clear();
   motions_.clear();
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo cancel all goals
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & /*state*/)
 {
   return CallbackReturn::SUCCESS;
 }
@@ -177,7 +177,7 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
 }
 
 rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
-  const std::shared_ptr<GoalHandlePM2> goal_handle) const
+  const std::shared_ptr<GoalHandlePM2>/*goal_handle*/) const
 {
   return rclcpp_action::CancelResponse::ACCEPT;
 }
