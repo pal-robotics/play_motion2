@@ -70,14 +70,14 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 {
   MotionKeys keys = parse_motion_keys(node_);
 
-  ASSERT_EQ(keys.size(), 1);
+  ASSERT_EQ(keys.size(), 1u);
   ASSERT_EQ(keys[0], "sample");
 
   keys.clear();
 
   keys = parse_motion_keys(lifecycle_node_);
 
-  ASSERT_EQ(keys.size(), 1);
+  ASSERT_EQ(keys.size(), 1u);
   ASSERT_EQ(keys[0], "sample2");
 }
 
@@ -90,11 +90,11 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(info.usage, "sample");
   ASSERT_EQ(info.description, "Sample");
 
-  ASSERT_EQ(info.joints.size(), 2);
+  ASSERT_EQ(info.joints.size(), 2u);
   ASSERT_EQ(info.joints[0], "joint1");
   ASSERT_EQ(info.joints[1], "joint2");
 
-  ASSERT_EQ(info.positions.size(), 6);
+  ASSERT_EQ(info.positions.size(), 6u);
   ASSERT_DOUBLE_EQ(info.positions[0], 0.0);
   ASSERT_DOUBLE_EQ(info.positions[1], 0.0);
   ASSERT_DOUBLE_EQ(info.positions[2], 1.0);
@@ -102,7 +102,7 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_DOUBLE_EQ(info.positions[4], 2.0);
   ASSERT_DOUBLE_EQ(info.positions[5], 1.0);
 
-  ASSERT_EQ(info.times.size(), 3);
+  ASSERT_EQ(info.times.size(), 3u);
   ASSERT_DOUBLE_EQ(info.times[0], 0.5);
   ASSERT_DOUBLE_EQ(info.times[1], 3.1);
   ASSERT_DOUBLE_EQ(info.times[2], 5.8);
@@ -114,11 +114,11 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_EQ(lifecycle_info.usage, "sample2");
   ASSERT_EQ(lifecycle_info.description, "Sample2");
 
-  ASSERT_EQ(lifecycle_info.joints.size(), 2);
+  ASSERT_EQ(lifecycle_info.joints.size(), 2u);
   ASSERT_EQ(lifecycle_info.joints[0], "joint3");
   ASSERT_EQ(lifecycle_info.joints[1], "joint4");
 
-  ASSERT_EQ(lifecycle_info.positions.size(), 6);
+  ASSERT_EQ(lifecycle_info.positions.size(), 6u);
   ASSERT_DOUBLE_EQ(lifecycle_info.positions[0], 0.0);
   ASSERT_DOUBLE_EQ(lifecycle_info.positions[1], 0.0);
   ASSERT_DOUBLE_EQ(lifecycle_info.positions[2], 1.0);
@@ -126,7 +126,7 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_DOUBLE_EQ(lifecycle_info.positions[4], 2.0);
   ASSERT_DOUBLE_EQ(lifecycle_info.positions[5], 1.0);
 
-  ASSERT_EQ(lifecycle_info.times.size(), 3);
+  ASSERT_EQ(lifecycle_info.times.size(), 3u);
   ASSERT_DOUBLE_EQ(lifecycle_info.times[0], 0.5);
   ASSERT_DOUBLE_EQ(lifecycle_info.times[1], 3.1);
   ASSERT_DOUBLE_EQ(lifecycle_info.times[2], 5.8);
