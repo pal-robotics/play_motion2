@@ -456,7 +456,7 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   FollowJTGoalHandleFutureResult result;
   try {
     result = action_client->async_get_result(goal_handle.get());
-  } catch (rclcpp_action::exceptions::UnknownGoalHandleError) {
+  } catch (const rclcpp_action::exceptions::UnknownGoalHandleError &) {
     result = {};
   }
 
