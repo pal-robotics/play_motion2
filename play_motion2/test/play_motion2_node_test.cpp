@@ -73,8 +73,14 @@ void PlayMotion2NodeTest::SetUp()
   pm2_action_client_ = rclcpp_action::create_client<PlayMotion2>(
     client_node_, "play_motion2");
 
+  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(TIMEOUT)) <<
+    "Timeout while waiting for play_motion2 action";
+
   switch_controller_client_ = client_node_->create_client<SwitchController>(
     "controller_manager/switch_controller");
+
+  ASSERT_TRUE(switch_controller_client_->wait_for_service(TIMEOUT)) <<
+    "Timeout while waiting for switch_controller service";
 
   ASSERT_NO_THROW(restore_controllers());
 }
