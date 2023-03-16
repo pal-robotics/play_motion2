@@ -44,23 +44,23 @@ PlayMotion2::PlayMotion2()
   motion_keys_({}),
   motions_({}),
   client_node_(),
+  is_motion_ready_service_(),
   list_motions_service_(),
   pm2_action_(),
   list_controllers_client_(),
-  is_motion_ready_service_(),
   action_clients_(),
   motion_controller_states_(),
   motion_executor_(),
   is_busy_(false),
 
-  approach_vel_(kDefaultApproachVel),
-  approach_min_duration_(kDefaultApproachMinDuration),
-
   joint_states_sub_(nullptr),
   joint_states_updated_(false),
   joint_states_(),
   joint_states_mutex_(),
-  joint_states_condition_()
+  joint_states_condition_(),
+
+  approach_vel_(kDefaultApproachVel),
+  approach_min_duration_(kDefaultApproachMinDuration)
 {
 }
 
