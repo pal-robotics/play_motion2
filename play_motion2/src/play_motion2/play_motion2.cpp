@@ -44,23 +44,23 @@ PlayMotion2::PlayMotion2()
   motion_keys_({}),
   motions_({}),
   client_node_(),
+  is_motion_ready_service_(),
   list_motions_service_(),
   pm2_action_(),
   list_controllers_client_(),
-  is_motion_ready_service_(),
   action_clients_(),
   motion_controller_states_(),
   motion_executor_(),
   is_busy_(false),
 
-  approach_vel_(kDefaultApproachVel),
-  approach_min_duration_(kDefaultApproachMinDuration),
-
   joint_states_sub_(nullptr),
   joint_states_updated_(false),
   joint_states_(),
   joint_states_mutex_(),
-  joint_states_condition_()
+  joint_states_condition_(),
+
+  approach_vel_(kDefaultApproachVel),
+  approach_min_duration_(kDefaultApproachMinDuration)
 {
 }
 
@@ -72,7 +72,7 @@ PlayMotion2::~PlayMotion2()
   }
 }
 
-CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   const bool ok =
     parse_motions(shared_from_this(), motion_keys_, motions_);
@@ -82,7 +82,7 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & state)
   return ok ? CallbackReturn::SUCCESS : CallbackReturn::FAILURE;
 }
 
-CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
@@ -111,7 +111,7 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & state)
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo reject when a motion is being executed ?
 
@@ -125,20 +125,20 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & state)
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   motion_keys_.clear();
   motions_.clear();
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo cancel all goals
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & state)
+CallbackReturn PlayMotion2::on_error(const rclcpp_lifecycle::State & /*state*/)
 {
   return CallbackReturn::SUCCESS;
 }
@@ -177,7 +177,7 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
 }
 
 rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
-  const std::shared_ptr<GoalHandlePM2> goal_handle) const
+  const std::shared_ptr<GoalHandlePM2>/*goal_handle*/) const
 {
   return rclcpp_action::CancelResponse::ACCEPT;
 }
@@ -456,7 +456,7 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   FollowJTGoalHandleFutureResult result;
   try {
     result = action_client->async_get_result(goal_handle.get());
-  } catch (rclcpp_action::exceptions::UnknownGoalHandleError) {
+  } catch (const rclcpp_action::exceptions::UnknownGoalHandleError &) {
     result = {};
   }
 

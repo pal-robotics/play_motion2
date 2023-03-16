@@ -179,7 +179,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
 
   const auto result = future_result.get();
 
-  ASSERT_EQ(result->motion_keys.size(), 2);
+  ASSERT_EQ(result->motion_keys.size(), 2u);
 
   std::sort(result->motion_keys.begin(), result->motion_keys.end());
   ASSERT_EQ(result->motion_keys[0], "home");
