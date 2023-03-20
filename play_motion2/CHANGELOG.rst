@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.6 (2023-03-20)
+------------------
 * Merge branch 'remove_tests_namespace' into 'humble-devel'
   remove namespaces from tests
   See merge request app-tools/play_motion2!22

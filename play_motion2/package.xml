@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>play_motion2</name>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
 
   <description>Play a pre-recorded motion on a robot</description>
 
