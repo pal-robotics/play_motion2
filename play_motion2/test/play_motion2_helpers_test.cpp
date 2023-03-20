@@ -21,8 +21,9 @@
 #include "rclcpp/utilities.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-namespace play_motion2
-{
+
+using MotionKeys = play_motion2::MotionKeys;
+using MotionInfo = play_motion2::MotionInfo;
 
 void PlayMotion2HelpersTest::SetUpTestSuite()
 {
@@ -68,14 +69,14 @@ void PlayMotion2HelpersTest::TearDown()
 
 TEST_F(PlayMotion2HelpersTest, ParseMotionsKeysTest)
 {
-  MotionKeys keys = parse_motion_keys(node_);
+  MotionKeys keys = play_motion2::parse_motion_keys(node_);
 
   ASSERT_EQ(keys.size(), 1u);
   ASSERT_EQ(keys[0], "sample");
 
   keys.clear();
 
-  keys = parse_motion_keys(lifecycle_node_);
+  keys = play_motion2::parse_motion_keys(lifecycle_node_);
 
   ASSERT_EQ(keys.size(), 1u);
   ASSERT_EQ(keys[0], "sample2");
@@ -131,5 +132,3 @@ TEST_F(PlayMotion2HelpersTest, ParseMotionInfoTest)
   ASSERT_DOUBLE_EQ(lifecycle_info.times[1], 3.1);
   ASSERT_DOUBLE_EQ(lifecycle_info.times[2], 5.8);
 }
-
-}  // namespace play_motion2

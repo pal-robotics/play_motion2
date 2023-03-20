@@ -23,8 +23,6 @@
 #include "play_motion2_test.hpp"
 #include "rclcpp/parameter_client.hpp"
 
-namespace play_motion2
-{
 
 void PlayMotion2Test::SetUpTestSuite()
 {
@@ -69,5 +67,3 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
     play_motion2_->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
 }
-
-}  // namespace play_motion2

@@ -31,9 +31,6 @@
 #include "rclcpp/executors.hpp"
 #include "rclcpp/node.hpp"
 
-namespace play_motion2
-{
-
 using std::chrono_literals::operator""s;
 const std::chrono::duration TIMEOUT = 10s;
 
@@ -93,6 +90,5 @@ private:
     }
   }
 };
-}  // namespace play_motion2
 
 #endif  // PLAY_MOTION2_NODE_TEST_HPP_
