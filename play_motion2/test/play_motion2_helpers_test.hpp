@@ -27,9 +27,6 @@ namespace rclcpp_lifecycle
 class LifecycleNode;
 }
 
-namespace play_motion2
-{
-
 class PlayMotion2HelpersTest : public ::testing::Test
 {
 public:
@@ -46,6 +43,5 @@ protected:
   std::shared_ptr<rclcpp::Node> node_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> lifecycle_node_;
 };
-}  // namespace play_motion2
 
 #endif  // PLAY_MOTION2_HELPERS_TEST_HPP_

@@ -21,8 +21,6 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp_action/create_client.hpp"
 
-namespace play_motion2
-{
 
 constexpr auto START_TIMEOUT = 30s;
 
@@ -277,5 +275,3 @@ TEST_F(PlayMotion2NodeTest, ControllersChangedDuringExecution)
 {
   execute_failing_motion(1s);
 }
-
-}  // namespace play_motion2
