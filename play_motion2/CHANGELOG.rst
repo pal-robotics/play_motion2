@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.7 (2023-04-17)
+------------------
 * remove meta information from mandatory parameters
 * Contributors: Noel Jimenez
 
