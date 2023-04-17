@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove meta information from mandatory parameters
+* Contributors: Noel Jimenez
+
 0.0.6 (2023-03-20)
 ------------------
 * Merge branch 'remove_tests_namespace' into 'humble-devel'

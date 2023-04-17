@@ -2,6 +2,11 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add linters properly for interfaces
+* Contributors: Noel Jimenez
+
 0.0.6 (2023-03-20)
 ------------------
 
