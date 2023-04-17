@@ -24,10 +24,7 @@ bool check_params(
   const rclcpp::Logger & logger,
   const std::string & motion_key)
 {
-  const std::map<std::string, rclcpp::ParameterType> motion_params = {
-    {"meta.name", rclcpp::ParameterType::PARAMETER_STRING},
-    {"meta.description", rclcpp::ParameterType::PARAMETER_STRING},
-    {"meta.usage", rclcpp::ParameterType::PARAMETER_STRING},
+  const std::map<std::string, rclcpp::ParameterType> mandatory_motion_params = {
     {"joints", rclcpp::ParameterType::PARAMETER_STRING_ARRAY},
     {"positions", rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY},
     {"times_from_start", rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY},
@@ -35,7 +32,7 @@ bool check_params(
 
   std::string full_param;
   bool valid_motion = true;
-  for (const auto & [param, param_type] : motion_params) {
+  for (const auto & [param, param_type] : mandatory_motion_params) {
     full_param = "motions." + motion_key + "." + param;
     if (!node_parameters_interface->has_parameter(full_param)) {
       RCLCPP_ERROR_STREAM(
@@ -90,15 +87,21 @@ bool parse_motion_info(
   }
 
   std::string param;
-  // Get meta data
+  // Get optional meta data
   param = "motions." + motion_key + ".meta.name";
-  motion.name = node_parameters_interface->get_parameter(param).as_string();
+  if (node_parameters_interface->has_parameter(param)) {
+    motion.name = node_parameters_interface->get_parameter(param).as_string();
+  }
 
   param = "motions." + motion_key + ".meta.usage";
-  motion.usage = node_parameters_interface->get_parameter(param).as_string();
+  if (node_parameters_interface->has_parameter(param)) {
+    motion.usage = node_parameters_interface->get_parameter(param).as_string();
+  }
 
   param = "motions." + motion_key + ".meta.description";
-  motion.description = node_parameters_interface->get_parameter(param).as_string();
+  if (node_parameters_interface->has_parameter(param)) {
+    motion.description = node_parameters_interface->get_parameter(param).as_string();
+  }
 
   // Get info
   param = "motions." + motion_key + ".joints";
