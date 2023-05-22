@@ -500,7 +500,7 @@ PlayMotion2Action::Result::SharedPtr PlayMotion2::wait_for_results(
     };
 
   // finish if failed, motions finished or timeout
-  const double TIMEOUT = motion_time * 2.0;
+  const double TIMEOUT = motion_time * 2.0 + 1.0;
   const rclcpp::Time init_time = now();
   bool on_time = true;
   do {
