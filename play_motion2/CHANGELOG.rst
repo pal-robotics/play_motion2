@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2023-05-22)
+------------------
 * add 1 extra second to motions timeout
   To avoid that motions with only one position fail when the robot is
   already in that position
