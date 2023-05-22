@@ -177,8 +177,9 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
 }
 
 rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
-  const std::shared_ptr<GoalHandlePM2>/*goal_handle*/) const
+  const std::shared_ptr<GoalHandlePM2> goal_handle) const
 {
+  RCLCPP_INFO_STREAM(get_logger(), "Cancelling motion " << goal_handle->get_goal()->motion_name);
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -218,17 +219,20 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
     }
     futures_list.push_back(std::move(jtc_future_gh));
   }
+
   /// @todo send feedback
   result->success = wait_for_results(
-    futures_list,
+    goal_handle, futures_list,
     motions_[goal->motion_name].times.back() + extra_time);
 
-  if (!result->success) {
-    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
-    goal_handle->abort(result);
-  } else {
-    RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
-    goal_handle->succeed(result);
+  if (goal_handle->is_active()) {
+    if (!result->success) {
+      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+      goal_handle->abort(result);
+    } else {
+      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' completed");
+      goal_handle->succeed(result);
+    }
   }
   is_busy_ = false;
 }
@@ -452,7 +456,6 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
     return {};
   }
 
-  //
   FollowJTGoalHandleFutureResult result;
   try {
     result = action_client->async_get_result(goal_handle.get());
@@ -464,10 +467,19 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
 }
 
 bool PlayMotion2::wait_for_results(
+  const std::shared_ptr<GoalHandlePM2> goal_handle,
   std::list<FollowJTGoalHandleFutureResult> & futures_list,
   const double motion_time)
 {
   bool failed = false;
+  auto result = std::make_shared<PlayMotion2Action::Result>();
+
+  if (goal_handle->is_canceling()) {
+    result->success = false;
+    result->error = "Motion canceled";
+    goal_handle->canceled(result);
+    return false;
+  }
 
   // Spin all futures and remove them when succeeded.
   // If one fails, set failed to true and returns false
@@ -502,6 +514,17 @@ bool PlayMotion2::wait_for_results(
     if (current_states != motion_controller_states_) {
       failed = true;
       RCLCPP_ERROR(get_logger(), "Controller States have changed");
+    }
+
+    if (goal_handle->is_canceling()) {
+      // cancel all sent goals
+      for (const auto & client : action_clients_) {
+        client.second->async_cancel_all_goals();
+      }
+      futures_list.clear();
+      result->success = false;
+      result->error = "Motion canceled";
+      goal_handle->canceled(result);
     }
   } while (!failed && !futures_list.empty() && on_time);
 
