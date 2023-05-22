@@ -190,7 +190,6 @@ void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_hand
 
 void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  auto result = std::make_shared<PlayMotion2Action::Result>();
   auto goal = goal_handle->get_goal();
 
   const double approach_time = calculate_approach_time(goal->motion_name);
@@ -205,14 +204,15 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
     auto jtc_future_gh = send_trajectory(controller, trajectory);
     if (!jtc_future_gh.valid()) {
-      result->success = false;
       RCLCPP_INFO_STREAM(get_logger(), "Cannot perform motion '" << goal->motion_name << "'");
-
       // cancel all sent goals
       for (const auto & client : action_clients_) {
         client.second->async_cancel_all_goals();
       }
 
+      auto result = std::make_shared<PlayMotion2Action::Result>();
+      result->success = false;
+      result->error = "Motion " + goal->motion_name + " aborted. Cannot send goal to " + controller;
       goal_handle->abort(result);
       is_busy_ = false;
       return;
@@ -221,7 +221,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   }
 
   /// @todo send feedback
-  result->success = wait_for_results(
+  auto result = wait_for_results(
     goal_handle, futures_list,
     motions_[goal->motion_name].times.back() + extra_time);
 
@@ -466,7 +466,7 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   return result;
 }
 
-bool PlayMotion2::wait_for_results(
+PlayMotion2Action::Result::SharedPtr PlayMotion2::wait_for_results(
   const std::shared_ptr<GoalHandlePM2> goal_handle,
   std::list<FollowJTGoalHandleFutureResult> & futures_list,
   const double motion_time)
@@ -478,7 +478,7 @@ bool PlayMotion2::wait_for_results(
     result->success = false;
     result->error = "Motion canceled";
     goal_handle->canceled(result);
-    return false;
+    return result;
   }
 
   // Spin all futures and remove them when succeeded.
@@ -492,7 +492,8 @@ bool PlayMotion2::wait_for_results(
           return true;
         } else {
           failed = true;
-          RCLCPP_ERROR(get_logger(), "Joint Trajectory failed");
+          result->error = "Joint Trajectory failed";
+          RCLCPP_ERROR_STREAM(get_logger(), result->error);
         }
       }
       return false;
@@ -512,8 +513,24 @@ bool PlayMotion2::wait_for_results(
       get_controller_states(), "active", "joint_trajectory_controller/JointTrajectoryController");
 
     if (current_states != motion_controller_states_) {
+      std::string controller_name = "";
+
+      for (const auto & motion_controller : motion_controller_states_) {
+        const auto controller = std::find_if(
+          current_states.cbegin(), current_states.cend(),
+          [&](const auto & current_controller_state) {
+            return current_controller_state.name == motion_controller.name;
+          });
+
+        if (controller == current_states.end()) {
+          controller_name = motion_controller.name;
+        }
+      }
+
       failed = true;
-      RCLCPP_ERROR(get_logger(), "Controller States have changed");
+      result->error = "State of controller '" + controller_name +
+        "' has changed while executing the motion";
+      RCLCPP_ERROR_STREAM(get_logger(), result->error);
     }
 
     if (goal_handle->is_canceling()) {
@@ -528,11 +545,13 @@ bool PlayMotion2::wait_for_results(
     }
   } while (!failed && !futures_list.empty() && on_time);
 
-  RCLCPP_ERROR_EXPRESSION(
-    get_logger(),
-    !on_time, "Timeout exceeded while waiting for results");
+  if (!on_time) {
+    result->error = "Timeout exceeded while waiting for results";
+    RCLCPP_ERROR_STREAM(get_logger(), result->error);
+  }
 
-  return on_time && !failed;
+  result->success = on_time && !failed;
+  return result;
 }
 
 double play_motion2::PlayMotion2::calculate_approach_time(const std::string motion_key)
