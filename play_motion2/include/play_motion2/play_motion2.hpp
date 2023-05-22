@@ -113,7 +113,7 @@ private:
   FollowJTGoalHandleFutureResult send_trajectory(
     const std::string & controller_name,
     const JTMsg & trajectory);
-  bool wait_for_results(
+  PlayMotion2Action::Result::SharedPtr wait_for_results(
     const std::shared_ptr<GoalHandlePM2> goal_handle,
     std::list<FollowJTGoalHandleFutureResult> & futures_list,
     const double motion_time);
