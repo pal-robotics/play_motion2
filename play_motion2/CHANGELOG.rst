@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.9 (2023-07-05)
+------------------
 * Use callback groups and MultiThreadedExecutor to execute callbacks in parallel
 * Contributors: Noel Jimenez
 
