@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use callback groups and MultiThreadedExecutor to execute callbacks in parallel
+* Contributors: Noel Jimenez
+
 0.0.8 (2023-05-22)
 ------------------
 * add 1 extra second to motions timeout
