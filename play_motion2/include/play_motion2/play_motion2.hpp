@@ -28,6 +28,7 @@
 #include "play_motion2_msgs/action/play_motion2.hpp"
 #include "play_motion2_msgs/srv/is_motion_ready.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
+#include "rclcpp/callback_group.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
@@ -126,7 +127,7 @@ private:
   MotionKeys motion_keys_;
   MotionsMap motions_;
 
-  rclcpp::Node::SharedPtr client_node_;
+  rclcpp::CallbackGroup::SharedPtr client_cb_group_;
   rclcpp::Service<IsMotionReady>::SharedPtr is_motion_ready_service_;
   rclcpp::Service<ListMotions>::SharedPtr list_motions_service_;
   rclcpp_action::Server<PlayMotion2Action>::SharedPtr pm2_action_;

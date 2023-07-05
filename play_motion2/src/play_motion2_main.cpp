@@ -14,7 +14,7 @@
 
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "play_motion2/play_motion2.hpp"
-#include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/executors/multi_threaded_executor.hpp"
 #include "rclcpp/utilities.hpp"
 
 int main(int argc, char ** argv)
@@ -23,7 +23,7 @@ int main(int argc, char ** argv)
 
   auto play_motion2 = std::make_shared<play_motion2::PlayMotion2>();
 
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor;
   executor.add_node(play_motion2->get_node_base_interface());
 
   play_motion2->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
