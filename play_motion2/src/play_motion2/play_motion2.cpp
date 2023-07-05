@@ -33,6 +33,7 @@ using std::placeholders::_2;
 
 constexpr double kDefaultApproachVel = 0.5;
 constexpr double kDefaultApproachMinDuration = 0.0;
+constexpr auto kTimeout = 5s;
 
 using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
 
@@ -43,7 +44,7 @@ PlayMotion2::PlayMotion2()
     .automatically_declare_parameters_from_overrides(true)),
   motion_keys_({}),
   motions_({}),
-  client_node_(),
+  client_cb_group_(),
   is_motion_ready_service_(),
   list_motions_service_(),
   pm2_action_(),
@@ -99,9 +100,9 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*
     std::bind(&PlayMotion2::handle_accepted, this, _1)
   );
 
-  client_node_ = rclcpp::Node::make_shared("client_node");
-  list_controllers_client_ = client_node_->create_client<ListControllers>(
-    "/controller_manager/list_controllers");
+  client_cb_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  list_controllers_client_ = create_client<ListControllers>(
+    "/controller_manager/list_controllers", rmw_qos_profile_default, client_cb_group_);
 
   joint_states_sub_ =
     create_subscription<sensor_msgs::msg::JointState>(
@@ -118,7 +119,7 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*stat
   list_motions_service_.reset();
   is_motion_ready_service_.reset();
   pm2_action_.reset();
-  client_node_.reset();
+  client_cb_group_.reset();
   list_controllers_client_.reset();
   is_busy_ = false;
   joint_states_sub_.reset();
@@ -291,14 +292,18 @@ ControllerStates PlayMotion2::get_controller_states() const
   auto list_controllers_request = std::make_shared<ListControllers::Request>();
   auto result = list_controllers_client_->async_send_request(list_controllers_request);
 
-  if (rclcpp::spin_until_future_complete(client_node_, result) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "Cannot obtain " << list_controllers_client_->get_service_name() << " result");
-    return ControllerStates();
-  }
+  std::future_status status;
+  auto start_t = now();
+  do {
+    status = result.wait_for(0.1s);
+    if (now() - start_t > kTimeout) {
+      RCLCPP_ERROR_STREAM(
+        get_logger(),
+        "Timeout while waiting for " << list_controllers_client_->get_service_name() <<
+          " result");
+      return ControllerStates();
+    }
+  } while(status != std::future_status::ready);
 
   return result.get()->controller;
 }
@@ -424,9 +429,9 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
     action_client = action_clients_[controller_name];
   } else {
     action_client = rclcpp_action::create_client<FollowJT>(
-      client_node_,
-      "/" + controller_name +
-      "/follow_joint_trajectory");
+      this,
+      "/" + controller_name + "/follow_joint_trajectory",
+      client_cb_group_);
     action_clients_[controller_name] = action_client;
   }
 
@@ -447,14 +452,18 @@ FollowJTGoalHandleFutureResult PlayMotion2::send_trajectory(
   if (!goal_handle.valid()) {
     return {};
   }
-
-  if (rclcpp::spin_until_future_complete(
-      client_node_,
-      goal_handle) != rclcpp::FutureReturnCode::SUCCESS)
-  {
-    RCLCPP_ERROR(this->get_logger(), "Cannot send goal");
-    return {};
-  }
+  std::future_status status;
+  auto start_t = now();
+  do {
+    status = goal_handle.wait_for(0.1s);
+    if (now() - start_t > kTimeout) {
+      RCLCPP_ERROR_STREAM(
+        get_logger(),
+        "Timeout while waiting for " << "/" << controller_name <<
+          "/follow_joint_trajectory result");
+      return {};
+    }
+  } while(status != std::future_status::ready);
 
   FollowJTGoalHandleFutureResult result;
   try {
@@ -484,10 +493,8 @@ PlayMotion2Action::Result::SharedPtr PlayMotion2::wait_for_results(
   // Spin all futures and remove them when succeeded.
   // If one fails, set failed to true and returns false
   const auto successful_jt = [&](FollowJTGoalHandleFutureResult & future) {
-      if (rclcpp::spin_until_future_complete(
-          client_node_, future,
-          0.1s) == rclcpp::FutureReturnCode::SUCCESS)
-      {
+      std::future_status status = future.wait_for(0.1s);
+      if (status == std::future_status::ready) {
         if (future.get().code == rclcpp_action::ResultCode::SUCCEEDED) {
           return true;
         } else {
