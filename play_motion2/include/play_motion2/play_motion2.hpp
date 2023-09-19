@@ -24,16 +24,17 @@
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "controller_manager_msgs/msg/controller_state.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
+#include "play_motion2/approach_planner.hpp"
 #include "play_motion2/play_motion2_helpers.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
 #include "play_motion2_msgs/srv/is_motion_ready.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
 #include "rclcpp/callback_group.hpp"
+#include "rclcpp/executors/multi_threaded_executor.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 
 namespace play_motion2
@@ -119,10 +120,6 @@ private:
     std::list<FollowJTGoalHandleFutureResult> & futures_list,
     const double motion_time);
 
-  void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
-
-  double calculate_approach_time(const std::string motion_key);
-
 private:
   MotionKeys motion_keys_;
   MotionsMap motions_;
@@ -141,14 +138,9 @@ private:
   std::thread motion_executor_;
   std::atomic_bool is_busy_;
 
-  rclcpp::SubscriptionBase::SharedPtr joint_states_sub_;
-  bool joint_states_updated_;
-  std::map<std::string, std::vector<double>> joint_states_;
-  std::mutex joint_states_mutex_;
-  std::condition_variable joint_states_condition_;
-
-  double approach_vel_;
-  double approach_min_duration_;
+  std::unique_ptr<ApproachPlanner> approach_planner_;
+  std::unique_ptr<std::thread> spinner_thread_;
+  rclcpp::executors::MultiThreadedExecutor executor_;
 };
 }  // namespace play_motion2
 

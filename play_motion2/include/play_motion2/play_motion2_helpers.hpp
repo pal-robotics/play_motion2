@@ -19,34 +19,15 @@
 #include <string>
 #include <vector>
 
+#include "play_motion2/types.hpp"
+
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 #include "rclcpp/logger.hpp"
 
 namespace play_motion2
 {
-
-using MotionKeys = std::vector<std::string>;
-using MotionJoints = std::vector<std::string>;
-using MotionPositions = std::vector<double>;
-using MotionTimes = std::vector<double>;
-
 using NodeParametersInterfaceSharedPtr =
   rclcpp::node_interfaces::NodeParametersInterface::SharedPtr;
-
-struct MotionInfo
-{
-  // meta
-  std::string name;
-  std::string usage;
-  std::string description;
-
-  // info
-  MotionJoints joints;
-  MotionPositions positions;
-  MotionTimes times;
-};
-
-using MotionsMap = std::map<std::string, MotionInfo>;
 
 // methods to parse motions
 bool check_params(

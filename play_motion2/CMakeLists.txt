@@ -6,6 +6,7 @@ ament_auto_find_build_dependencies()
 
 # play_motion2
 ament_auto_add_library(play_motion2 SHARED
+  src/play_motion2/approach_planner.cpp
   src/play_motion2/play_motion2_helpers.cpp
   src/play_motion2/play_motion2.cpp
 )

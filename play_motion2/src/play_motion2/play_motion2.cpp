@@ -31,8 +31,6 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-constexpr double kDefaultApproachVel = 0.5;
-constexpr double kDefaultApproachMinDuration = 0.0;
 constexpr auto kTimeout = 5s;
 
 using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
@@ -52,16 +50,7 @@ PlayMotion2::PlayMotion2()
   action_clients_(),
   motion_controller_states_(),
   motion_executor_(),
-  is_busy_(false),
-
-  joint_states_sub_(nullptr),
-  joint_states_updated_(false),
-  joint_states_(),
-  joint_states_mutex_(),
-  joint_states_condition_(),
-
-  approach_vel_(kDefaultApproachVel),
-  approach_min_duration_(kDefaultApproachMinDuration)
+  is_busy_(false)
 {
 }
 
@@ -70,6 +59,11 @@ PlayMotion2::~PlayMotion2()
   // wait if a motion is being executed until it finishes
   if (motion_executor_.joinable()) {
     motion_executor_.join();
+  }
+
+  if (spinner_thread_) {
+    executor_.cancel();
+    spinner_thread_->join();
   }
 }
 
@@ -85,6 +79,18 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state
 
 CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
+  approach_planner_ = std::make_unique<ApproachPlanner>();
+
+  executor_.add_node(approach_planner_->get_node_base_interface());
+  spinner_thread_ = std::make_unique<std::thread>(std::thread([&]() {executor_.spin();}));
+
+  // make sure that executor is spinning
+  const auto start_time = now();
+  while (!executor_.is_spinning()) {
+    if (now() - start_time > kTimeout) {return CallbackReturn::FAILURE;}
+    std::this_thread::sleep_for(100ms);
+  }
+
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
     std::bind(&PlayMotion2::list_motions_callback, this, _1, _2));
@@ -104,11 +110,6 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*
   list_controllers_client_ = create_client<ListControllers>(
     "/controller_manager/list_controllers", rmw_qos_profile_default, client_cb_group_);
 
-  joint_states_sub_ =
-    create_subscription<sensor_msgs::msg::JointState>(
-    "/joint_states", 1,
-    std::bind(&PlayMotion2::joint_states_callback, this, _1));
-
   return CallbackReturn::SUCCESS;
 }
 
@@ -122,7 +123,13 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*stat
   client_cb_group_.reset();
   list_controllers_client_.reset();
   is_busy_ = false;
-  joint_states_sub_.reset();
+
+  /// @pre we make sure executor is spinning in on_activate
+  executor_.cancel();
+  executor_.remove_node(approach_planner_->get_node_base_interface());
+  spinner_thread_->join();
+  spinner_thread_.reset();
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -193,7 +200,8 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
 {
   auto goal = goal_handle->get_goal();
 
-  const double approach_time = calculate_approach_time(goal->motion_name);
+  const double approach_time =
+    approach_planner_->calculate_approach_time(motions_[goal->motion_name]);
   double extra_time = 0.0;
   if (motions_[goal->motion_name].times[0] < approach_time) {
     extra_time = approach_time - motions_[goal->motion_name].times[0];
@@ -559,67 +567,6 @@ PlayMotion2Action::Result::SharedPtr PlayMotion2::wait_for_results(
 
   result->success = on_time && !failed;
   return result;
-}
-
-double play_motion2::PlayMotion2::calculate_approach_time(const std::string motion_key)
-{
-  const bool good_approach_vel = has_parameter("approach_velocity") &&
-    get_parameter_types({"approach_velocity"})[0] != rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    get_parameter("approach_velocity").as_double() > 0.0;
-
-  RCLCPP_WARN_STREAM_EXPRESSION(
-    get_logger(), good_approach_vel,
-    "Param approach_velocity not set, wrong typed, negative or 0, using the default value: " <<
-      kDefaultApproachVel);
-
-  const bool good_approach_min_duration = has_parameter("approach_min_duration") &&
-    get_parameter_types({"approach_min_duration"})[0] != rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    get_parameter("approach_min_duration").as_double() >= 0.0;
-
-  RCLCPP_WARN_STREAM_EXPRESSION(
-    get_logger(), good_approach_min_duration,
-    "Param approach_min_duration not set, wrong typed or negative, using the default value: " <<
-      kDefaultApproachVel);
-
-  // first position for all joints
-  const std::vector<double> goal_pos =
-  {motions_[motion_key].positions.begin(),
-    motions_[motion_key].positions.begin() + motions_[motion_key].joints.size()};
-
-  // wait until joint_states updated and set current positions
-  std::unique_lock lock(joint_states_mutex_);
-  joint_states_updated_ = false;
-  joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
-
-  std::vector<double> curr_pos;
-  for (const auto & joint : motions_[motion_key].joints) {
-    curr_pos.push_back(joint_states_[joint][0]);
-  }
-  lock.unlock();
-
-  // Maximum joint displacement
-  double dmax = 0.0;
-  for (unsigned int i = 0; i < curr_pos.size(); ++i) {
-    const double d = std::abs(goal_pos[i] - curr_pos[i]);
-    if (d > dmax) {
-      dmax = d;
-    }
-  }
-  return std::max(dmax / approach_vel_, approach_min_duration_);
-}
-
-
-void PlayMotion2::joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
-{
-  std::unique_lock lock(joint_states_mutex_);
-  if (!joint_states_updated_) {
-    joint_states_.clear();
-    for (size_t i = 0; i < msg->name.size(); i++) {
-      joint_states_[msg->name[i]] = {msg->position[i], msg->velocity[i], msg->effort[i]};
-    }
-    joint_states_updated_ = true;
-  }
-  joint_states_condition_.notify_one();
 }
 
 }  // namespace play_motion2
