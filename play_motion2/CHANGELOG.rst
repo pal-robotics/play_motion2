@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.10 (2023-10-02)
+-------------------
 * Move ApproachPlanner to a different class
 * Contributors: Noel Jimenez
 
