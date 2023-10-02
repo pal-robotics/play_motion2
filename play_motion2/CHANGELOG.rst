@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move ApproachPlanner to a different class
+* Contributors: Noel Jimenez
+
 0.0.9 (2023-07-05)
 ------------------
 * Use callback groups and MultiThreadedExecutor to execute callbacks in parallel
