@@ -24,6 +24,9 @@
   <depend>sensor_msgs</depend>
   <depend>trajectory_msgs</depend>
 
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_lint_auto</test_depend>
@@ -34,7 +37,6 @@
   <test_depend>joint_state_broadcaster</test_depend>
   <test_depend>joint_trajectory_controller</test_depend>
   <test_depend>launch_pal</test_depend>
-  <test_depend>launch_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>pluginlib</test_depend>
   <test_depend>robot_state_publisher</test_depend>
