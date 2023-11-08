@@ -22,7 +22,7 @@ def generate_launch_description():
 
     sim_time_arg = DeclareLaunchArgument(
       'use_sim_time', default_value='True',
-      description='Yaml file with the info of the motions. ')
+      description='Specify whether to use simulation time or not. ')
 
     play_motion2_config = DeclareLaunchArgument(
         'play_motion2_config',
