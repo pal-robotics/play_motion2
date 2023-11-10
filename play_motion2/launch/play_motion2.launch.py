@@ -21,7 +21,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     sim_time_arg = DeclareLaunchArgument(
-      'use_sim_time', default_value='True',
+      'use_sim_time', default_value='False',
       description='Specify whether to use simulation time or not. ')
 
     play_motion2_config = DeclareLaunchArgument(
