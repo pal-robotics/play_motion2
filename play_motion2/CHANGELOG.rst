@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.11 (2023-11-13)
+-------------------
 * Set use_sim_time false as default
 * Fix launch dependencies
 * Fix launch argument description
