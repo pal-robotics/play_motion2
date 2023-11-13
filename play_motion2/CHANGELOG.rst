@@ -2,6 +2,13 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set use_sim_time false as default
+* Fix launch dependencies
+* Fix launch argument description
+* Contributors: Noel Jimenez
+
 0.0.10 (2023-10-02)
 -------------------
 * Move ApproachPlanner to a different class
