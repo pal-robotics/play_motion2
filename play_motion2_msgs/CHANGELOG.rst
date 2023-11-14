@@ -2,6 +2,11 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add website tag
+* Contributors: Noel Jimenez
+
 0.0.11 (2023-11-13)
 -------------------
 

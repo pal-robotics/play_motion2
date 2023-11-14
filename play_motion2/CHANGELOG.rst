@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add website tag
+* Contributors: Noel Jimenez
+
 0.0.11 (2023-11-13)
 -------------------
 * Set use_sim_time false as default
