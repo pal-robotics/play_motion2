@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.12 (2023-11-14)
+-------------------
 * Add website tag
 * Contributors: Noel Jimenez
 
