@@ -7,7 +7,7 @@ ament_auto_find_build_dependencies()
 # play_motion2
 ament_auto_add_library(play_motion2 SHARED
   src/play_motion2/approach_planner.cpp
-  src/play_motion2/play_motion2_helpers.cpp
+  src/play_motion2/motion_loader.cpp
   src/play_motion2/play_motion2.cpp
 )
 
@@ -50,9 +50,9 @@ if(BUILD_TESTING)
   )
   pluginlib_export_plugin_description_file(hardware_interface test/rrbot/rrbot_system.xml)
 
-  # play_motion2_helpers_test
-  ament_auto_add_gtest(play_motion2_helpers_test
-    test/play_motion2_helpers_test.cpp
+  # motion_loader_test
+  ament_auto_add_gtest(motion_loader_test
+    test/motion_loader_test.cpp
   )
 
   # play_motion2_test

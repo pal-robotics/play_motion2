@@ -14,8 +14,9 @@
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 
+#include "play_motion2/approach_planner.hpp"
+#include "play_motion2/motion_loader.hpp"
 #include "play_motion2/play_motion2.hpp"
-#include "play_motion2/play_motion2_helpers.hpp"
 
 #include "rclcpp/executors.hpp"
 #include "rclcpp/logging.hpp"
@@ -40,8 +41,6 @@ PlayMotion2::PlayMotion2()
     rclcpp::NodeOptions()
     .allow_undeclared_parameters(true)
     .automatically_declare_parameters_from_overrides(true)),
-  motion_keys_({}),
-  motions_({}),
   client_cb_group_(),
   is_motion_ready_service_(),
   list_motions_service_(),
@@ -69,8 +68,8 @@ PlayMotion2::~PlayMotion2()
 
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
-  const bool ok =
-    parse_motions(shared_from_this(), motion_keys_, motions_);
+  motion_loader_ = std::make_unique<MotionLoader>(get_logger(), get_node_parameters_interface());
+  const bool ok = motion_loader_->parse_motions();
 
   RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
 
@@ -135,8 +134,7 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*stat
 
 CallbackReturn PlayMotion2::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
-  motion_keys_.clear();
-  motions_.clear();
+  motion_loader_.reset();
   return CallbackReturn::SUCCESS;
 }
 
@@ -155,7 +153,7 @@ void PlayMotion2::list_motions_callback(
   ListMotions::Request::ConstSharedPtr /*request*/,
   ListMotions::Response::SharedPtr response) const
 {
-  response->motion_keys = motion_keys_;
+  response->motion_keys = motion_loader_->get_motion_keys();
 }
 
 void PlayMotion2::is_motion_ready_callback(
@@ -198,13 +196,14 @@ void PlayMotion2::handle_accepted(const std::shared_ptr<GoalHandlePM2> goal_hand
 
 void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handle)
 {
-  auto goal = goal_handle->get_goal();
+  const auto goal = goal_handle->get_goal();
+  auto & motion = motion_loader_->get_motion_info(goal->motion_name);
 
-  const double approach_time =
-    approach_planner_->calculate_approach_time(motions_[goal->motion_name]);
-  double extra_time = 0.0;
-  if (motions_[goal->motion_name].times[0] < approach_time) {
-    extra_time = approach_time - motions_[goal->motion_name].times[0];
+  const auto approach_time =
+    approach_planner_->calculate_approach_time(motion);
+  auto extra_time = 0.0;
+  if (motion.times[0] < approach_time) {
+    extra_time = approach_time - motion.times[0];
   }
 
   const auto ctrl_trajectories = generate_controller_trajectories(goal->motion_name, approach_time);
@@ -232,7 +231,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   /// @todo send feedback
   auto result = wait_for_results(
     goal_handle, futures_list,
-    motions_[goal->motion_name].times.back() + extra_time);
+    motion.times.back() + extra_time);
 
   if (goal_handle->is_active()) {
     if (!result->success) {
@@ -268,20 +267,8 @@ bool PlayMotion2::update_controller_states_cache()
 
 bool PlayMotion2::is_executable(const std::string & motion_key) const
 {
-  return exists(motion_key) &&
+  return motion_loader_->exists(motion_key) &&
          check_joints_and_controllers(motion_key);
-}
-
-bool PlayMotion2::exists(const std::string & motion_key) const
-{
-  const bool exists =
-    std::find(motion_keys_.begin(), motion_keys_.end(), motion_key) != motion_keys_.end();
-
-  RCLCPP_ERROR_STREAM_EXPRESSION(
-    get_logger(), !exists,
-    "Motion '" << motion_key << "' is not known");
-
-  return exists;
 }
 
 ControllerStates PlayMotion2::get_controller_states() const
@@ -345,7 +332,7 @@ bool PlayMotion2::check_joints_and_controllers(const std::string & motion_key) c
   }
 
   bool ok = true;
-  for (const auto & joint : motions_.at(motion_key).joints) {
+  for (const auto & joint : motion_loader_->get_motion_info(motion_key).joints) {
     // check joints are claimed by any active controller
     if (joint_names.find(joint) == joint_names.end()) {
       RCLCPP_ERROR_STREAM(
@@ -370,7 +357,7 @@ JTMsg PlayMotion2::create_trajectory(
   }
 
   // create a map with joints positions
-  const auto & motion_info = motions_.at(motion_key);
+  const auto & motion_info = motion_loader_->get_motion_info(motion_key);
   std::map<std::string, std::vector<double>> joint_positions;
   for (const std::string & joint : controller_joints) {
     const auto iterator = std::find(motion_info.joints.begin(), motion_info.joints.end(), joint);
