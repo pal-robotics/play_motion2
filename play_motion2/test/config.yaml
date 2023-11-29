@@ -1,4 +1,4 @@
-play_motion2_helpers_test:
+motion_loader_test:
   ros__parameters:
     motions:
       sample:
@@ -11,17 +11,3 @@ play_motion2_helpers_test:
           name: Sample
           usage: sample
           description: 'Sample'
-
-play_motion2_lifecycle_helpers_test:
-  ros__parameters:
-    motions:
-      sample2:
-        joints: [joint3, joint4]
-        positions: [0.0, 0.0,
-                    1.0, 2.0,
-                    2.0, 1.0]
-        times_from_start: [0.5, 3.1, 5.8]
-        meta:
-          name: Sample2
-          usage: sample2
-          description: 'Sample2'
