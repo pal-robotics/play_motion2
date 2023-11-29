@@ -23,7 +23,6 @@ if(BUILD_TESTING)
   # test configuration files
   install(
     FILES
-      test/config.yaml
       test/play_motion2_config.yaml
       test/rrbot/controllers.yaml
       test/rrbot/rrbot.launch.py
