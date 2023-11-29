@@ -1,4 +1,4 @@
-/play_motion2_helpers_test:
+play_motion2_helpers_test:
   ros__parameters:
     motions:
       sample:
@@ -12,7 +12,7 @@
           usage: sample
           description: 'Sample'
 
-/play_motion2_lifecycle_helpers_test:
+play_motion2_lifecycle_helpers_test:
   ros__parameters:
     motions:
       sample2:
