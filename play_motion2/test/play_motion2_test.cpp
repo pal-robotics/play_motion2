@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <chrono>
+#include <filesystem>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
@@ -39,8 +40,8 @@ void PlayMotion2Test::SetUp()
   play_motion2_ = std::make_shared<play_motion2::PlayMotion2>();
 
   // load parameters
-  const auto pkg_path = ament_index_cpp::get_package_share_directory("play_motion2");
-  const std::string pm2_config_path = pkg_path + "/test/play_motion2_config.yaml";
+  const auto test_path = std::filesystem::absolute(__FILE__).parent_path().string();
+  const std::string pm2_config_path = test_path + "/play_motion2_config.yaml";
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(play_motion2_);

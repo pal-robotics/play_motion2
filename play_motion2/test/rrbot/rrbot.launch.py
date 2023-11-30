@@ -12,41 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pathlib
+import xacro
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-import xacro
+
+RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
 def generate_launch_description():
 
+    # Visualize the robot for debugging purposes
     use_rviz = DeclareLaunchArgument(
         'rviz',
         default_value='False',
         description='Whether run rviz',
         choices=['True', 'False'])
 
-    robot_description_path = os.path.join(
-        get_package_share_directory('play_motion2'), 'test', 'rrbot.xacro')
-    robot_description_config = xacro.process_file(robot_description_path)
+    robot_description_config = xacro.process_file(RRBOT_DIR + '/rrbot.xacro')
     robot_description = {'robot_description': robot_description_config.toxml()}
-
-    rrbot_controllers = os.path.join(
-        get_package_share_directory('play_motion2'),
-        'test', 'controllers.yaml')
-
-    rviz_config_file = os.path.join(
-        get_package_share_directory('play_motion2'), 'test', 'rrbot.rviz')
 
     control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description, rrbot_controllers],
+        parameters=[robot_description, RRBOT_DIR + '/controllers.yaml'],
         output='both')
 
     joint_state_broadcaster_spawner = Node(
@@ -73,6 +66,7 @@ def generate_launch_description():
         output='both',
         parameters=[robot_description])
 
+    rviz_config_file = RRBOT_DIR + '/rrbot.rviz'
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',

@@ -12,32 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import launch_testing
 import os
+import pathlib
 import unittest
 
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_prefix
 from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_pal.include_utils import include_launch_py_description
-import launch_testing
+
+TEST_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
 def generate_test_description():
 
-    pm2_dir = get_package_share_directory('play_motion2')
-
-    rrbot = include_launch_py_description(
-        'play_motion2', ['test', 'rrbot.launch.py'])
+    rrbot = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            TEST_DIR + '/rrbot/rrbot.launch.py'
+        )
+    )
 
     play_motion2 = include_launch_py_description(
         'play_motion2', ['launch', 'play_motion2.launch.py'],
         launch_arguments={
-          'play_motion2_config': os.path.join(pm2_dir, 'test', 'play_motion2_config.yaml'),
+          'play_motion2_config': TEST_DIR + '/play_motion2_config.yaml',
           'use_sim_time': 'False',
         }.items()
     )
 
     play_motion2_node_test = launch_testing.actions.GTest(
-        path=os.path.join(pm2_dir, 'test', 'play_motion2_node_test'),
+        path=os.path.join(get_package_prefix('play_motion2'), 'lib',
+                          'play_motion2', 'play_motion2_node_test'),
         output='screen')
 
     ld = LaunchDescription()

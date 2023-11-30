@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 
@@ -44,8 +46,8 @@ void MotionLoaderTest::SetUp()
     .automatically_declare_parameters_from_overrides(true));
 
   // load parameters
-  const auto pkg_path = ament_index_cpp::get_package_share_directory("play_motion2");
-  const std::string config_path = pkg_path + "/test/play_motion2_config.yaml";
+  const auto test_path = std::filesystem::absolute(__FILE__).parent_path().string();
+  const std::string config_path = test_path + "/play_motion2_config.yaml";
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(node_);
