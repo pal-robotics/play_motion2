@@ -23,16 +23,8 @@ if(BUILD_TESTING)
   # test configuration files
   install(
     FILES
-      test/config.yaml
       test/play_motion2_config.yaml
-      test/rrbot/controller_1.launch.py
-      test/rrbot/controller_1.yaml
-      test/rrbot/controller_2.launch.py
-      test/rrbot/controller_2.yaml
-      test/rrbot/controller_manager.yaml
-      test/rrbot/controllers.launch.py
-      test/rrbot/joint_state_broadcaster.launch.py
-      test/rrbot/joint_state_broadcaster.yaml
+      test/rrbot/controllers.yaml
       test/rrbot/rrbot.launch.py
       test/rrbot/rrbot.rviz
       test/rrbot/rrbot.xacro

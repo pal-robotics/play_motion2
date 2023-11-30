@@ -38,14 +38,14 @@ void MotionLoaderTest::TearDownTestSuite()
 void MotionLoaderTest::SetUp()
 {
   node_ = std::make_shared<rclcpp::Node>(
-    "play_motion2_helpers_test",
+    "motion_loader_test",
     rclcpp::NodeOptions()
     .allow_undeclared_parameters(true)
     .automatically_declare_parameters_from_overrides(true));
 
   // load parameters
   const auto pkg_path = ament_index_cpp::get_package_share_directory("play_motion2");
-  const std::string config_path = pkg_path + "/test/config.yaml";
+  const std::string config_path = pkg_path + "/test/play_motion2_config.yaml";
 
   auto synchronous_client =
     std::make_shared<rclcpp::SyncParametersClient>(node_);
