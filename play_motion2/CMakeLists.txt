@@ -20,17 +20,6 @@ if(BUILD_TESTING)
   ament_auto_find_test_dependencies()
   ament_lint_auto_find_test_dependencies()
 
-  # test configuration files
-  install(
-    FILES
-      test/play_motion2_config.yaml
-      test/rrbot/controllers.yaml
-      test/rrbot/rrbot.launch.py
-      test/rrbot/rrbot.rviz
-      test/rrbot/rrbot.xacro
-    DESTINATION share/${PROJECT_NAME}/test
-  )
-
   # rrbot_system
   ament_auto_add_library(rrbot_system SHARED
     test/rrbot/rrbot_system.cpp
@@ -66,7 +55,7 @@ if(BUILD_TESTING)
 
   install(
     TARGETS play_motion2_node_test
-    DESTINATION share/${PROJECT_NAME}/test
+    DESTINATION lib/${PROJECT_NAME}
   )
 
   add_launch_test(
