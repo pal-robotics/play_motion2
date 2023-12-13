@@ -28,17 +28,23 @@ def generate_launch_description():
         'play_motion2_config',
         description='Yaml file with the info of the motions. ')
 
+    approach_planner_config = DeclareLaunchArgument(
+        'approach_planner_config',
+        description='Configuration for the simple_approach_planner. ')
+
     play_motion2 = Node(package='play_motion2',
                         executable='play_motion2_node',
                         output='both',
                         emulate_tty=True,
                         parameters=[LaunchConfiguration('play_motion2_config'),
+                                    LaunchConfiguration('approach_planner_config'),
                                     {'use_sim_time': LaunchConfiguration('use_sim_time')}])
 
     ld = LaunchDescription()
 
     ld.add_action(sim_time_arg)
     ld.add_action(play_motion2_config)
+    ld.add_action(approach_planner_config)
     ld.add_action(play_motion2)
 
     return ld
