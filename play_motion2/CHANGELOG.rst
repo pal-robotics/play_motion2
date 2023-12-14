@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2023-12-14)
+-------------------
 * Rename launch argument for motions config
 * Add default approach_planner config
 * Add launch argument for approach_planner config
