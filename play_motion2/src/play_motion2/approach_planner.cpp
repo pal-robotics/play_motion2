@@ -44,7 +44,7 @@ ApproachPlanner::ApproachPlanner()
 void ApproachPlanner::check_parameters()
 {
   const bool good_approach_vel = has_parameter("approach_velocity") &&
-    get_parameter_types({"approach_velocity"})[0] != rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    get_parameter_types({"approach_velocity"})[0] == rclcpp::ParameterType::PARAMETER_DOUBLE &&
     get_parameter("approach_velocity").as_double() > 0.0;
 
   if (good_approach_vel) {approach_vel_ = get_parameter("approach_velocity").as_double();}
@@ -55,7 +55,7 @@ void ApproachPlanner::check_parameters()
       kDefaultApproachVel);
 
   const bool good_approach_min_duration = has_parameter("approach_min_duration") &&
-    get_parameter_types({"approach_min_duration"})[0] != rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    get_parameter_types({"approach_min_duration"})[0] == rclcpp::ParameterType::PARAMETER_DOUBLE &&
     get_parameter("approach_min_duration").as_double() >= 0.0;
 
   if (good_approach_min_duration) {
