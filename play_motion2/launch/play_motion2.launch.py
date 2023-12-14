@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -21,8 +25,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     sim_time_arg = DeclareLaunchArgument(
-      'use_sim_time', default_value='False',
-      description='Specify whether to use simulation time or not. ')
+        'use_sim_time', default_value='False',
+        description='Specify whether to use simulation time or not. ')
 
     play_motion2_config = DeclareLaunchArgument(
         'play_motion2_config',
@@ -30,6 +34,8 @@ def generate_launch_description():
 
     approach_planner_config = DeclareLaunchArgument(
         'approach_planner_config',
+        default_value=os.path.join(
+            get_package_share_directory('play_motion2'), 'config', 'approach_planner_config.yaml'),
         description='Configuration for the simple_approach_planner. ')
 
     play_motion2 = Node(package='play_motion2',
