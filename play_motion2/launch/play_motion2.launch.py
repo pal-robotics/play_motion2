@@ -28,8 +28,8 @@ def generate_launch_description():
         'use_sim_time', default_value='False',
         description='Specify whether to use simulation time or not. ')
 
-    play_motion2_config = DeclareLaunchArgument(
-        'play_motion2_config',
+    motions_config = DeclareLaunchArgument(
+        'motions_file',
         description='Yaml file with the info of the motions. ')
 
     approach_planner_config = DeclareLaunchArgument(
@@ -42,14 +42,14 @@ def generate_launch_description():
                         executable='play_motion2_node',
                         output='both',
                         emulate_tty=True,
-                        parameters=[LaunchConfiguration('play_motion2_config'),
+                        parameters=[LaunchConfiguration('motions_file'),
                                     LaunchConfiguration('approach_planner_config'),
                                     {'use_sim_time': LaunchConfiguration('use_sim_time')}])
 
     ld = LaunchDescription()
 
     ld.add_action(sim_time_arg)
-    ld.add_action(play_motion2_config)
+    ld.add_action(motions_config)
     ld.add_action(approach_planner_config)
     ld.add_action(play_motion2)
 
