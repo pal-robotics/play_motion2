@@ -18,7 +18,6 @@
 
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
-  <depend>lifecycle_msgs</depend>
   <depend>play_motion2_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
@@ -26,8 +25,11 @@
   <depend>sensor_msgs</depend>
   <depend>trajectory_msgs</depend>
 
+  <build_depend>lifecycle_msgs</build_depend>
+
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>lifecycle_msgs</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_index_cpp</test_depend>
