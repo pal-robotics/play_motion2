@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.14 (2024-01-08)
+-------------------
 * Avoid exporting lifecycle_msgs dependency
 * Contributors: Noel Jimenez
 
