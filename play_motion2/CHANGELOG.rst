@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Avoid exporting lifecycle_msgs dependency
+* Contributors: Noel Jimenez
+
 0.0.13 (2023-12-14)
 -------------------
 * Rename launch argument for motions config
