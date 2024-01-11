@@ -34,8 +34,6 @@ using std::placeholders::_2;
 
 constexpr auto kTimeout = 5s;
 
-using JTPointMsg = trajectory_msgs::msg::JointTrajectoryPoint;
-
 PlayMotion2::PlayMotion2()
 : LifecycleNode("play_motion2",
     rclcpp::NodeOptions()
@@ -377,7 +375,7 @@ JTMsg PlayMotion2::create_trajectory(
 
   JTMsg jt_msg;
   for (unsigned int i = 0; i < motion_info.times.size(); i++) {
-    JTPointMsg jtc_point;
+    TrajectoryPoint jtc_point;
     const auto jtc_point_time = rclcpp::Duration::from_seconds(motion_info.times[i] + extra_time);
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
     jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
