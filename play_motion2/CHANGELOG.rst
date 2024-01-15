@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.15 (2024-01-15)
+-------------------
 * Change callback_group to MutuallyExclusive
   Reentrant callback group sometimes throws an unexpected runtime
   exception: 'Executing action client but nothing is ready'. It is caused
