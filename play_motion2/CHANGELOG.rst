@@ -2,6 +2,16 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Change callback_group to MutuallyExclusive
+  Reentrant callback group sometimes throws an unexpected runtime
+  exception: 'Executing action client but nothing is ready'. It is caused
+  because this type of callback group can execute different parts of the
+  same callback concurrently.
+* Specify mutex type for unique_lock
+* Contributors: Aina Irisarri, Noel Jimenez
+
 0.0.14 (2024-01-08)
 -------------------
 * Avoid exporting lifecycle_msgs dependency
