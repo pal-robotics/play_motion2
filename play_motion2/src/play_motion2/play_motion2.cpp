@@ -105,7 +105,7 @@ CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*
     std::bind(&PlayMotion2::handle_accepted, this, _1)
   );
 
-  client_cb_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  client_cb_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   list_controllers_client_ = create_client<ListControllers>(
     "/controller_manager/list_controllers", rmw_qos_profile_default, client_cb_group_);
 
