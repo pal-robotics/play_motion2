@@ -78,7 +78,7 @@ double ApproachPlanner::calculate_approach_time(const MotionInfo motion_info)
     motion_info.positions.begin() + motion_info.joints.size()};
 
   // wait until joint_states updated and set current positions
-  std::unique_lock lock(joint_states_mutex_);
+  std::unique_lock<std::mutex> lock(joint_states_mutex_);
   joint_states_updated_ = false;
   joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
 
@@ -106,7 +106,7 @@ double ApproachPlanner::get_reach_time(MotionPositions current_pos, MotionPositi
 
 void ApproachPlanner::joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
-  std::unique_lock lock(joint_states_mutex_);
+  std::unique_lock<std::mutex> lock(joint_states_mutex_);
   if (!joint_states_updated_) {
     joint_states_.clear();
     for (size_t i = 0; i < msg->name.size(); i++) {
