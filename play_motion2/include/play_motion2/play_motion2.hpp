@@ -135,8 +135,6 @@ private:
 
   std::unique_ptr<MotionLoader> motion_loader_;
   std::unique_ptr<ApproachPlanner> approach_planner_;
-  std::unique_ptr<std::thread> spinner_thread_;
-  rclcpp::executors::MultiThreadedExecutor executor_;
 };
 }  // namespace play_motion2
 

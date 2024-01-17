@@ -14,6 +14,8 @@
 
 #include "play_motion2/approach_planner.hpp"
 
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 namespace play_motion2
 {
 using std::placeholders::_1;
@@ -21,49 +23,49 @@ using std::placeholders::_1;
 constexpr double kDefaultApproachVel = 0.5;
 constexpr double kDefaultApproachMinDuration = 0.0;
 
-ApproachPlanner::ApproachPlanner()
-: Node("simple_approach_planner",
-    rclcpp::NodeOptions()
-    .allow_undeclared_parameters(true)
-    .automatically_declare_parameters_from_overrides(true)),
-  approach_vel_(kDefaultApproachVel),
+ApproachPlanner::ApproachPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+:   approach_vel_(kDefaultApproachVel),
   approach_min_duration_(kDefaultApproachMinDuration),
 
   joint_states_sub_(nullptr),
   joint_states_updated_(false),
   joint_states_(),
   joint_states_mutex_(),
-  joint_states_condition_()
+  joint_states_condition_(),
+
+  node_(node)
 {
   joint_states_sub_ =
-    create_subscription<sensor_msgs::msg::JointState>(
+    node_->create_subscription<sensor_msgs::msg::JointState>(
     "/joint_states", 1,
     std::bind(&ApproachPlanner::joint_states_callback, this, _1));
 }
 
 void ApproachPlanner::check_parameters()
 {
-  const bool good_approach_vel = has_parameter("approach_velocity") &&
-    get_parameter_types({"approach_velocity"})[0] == rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    get_parameter("approach_velocity").as_double() > 0.0;
+  const bool good_approach_vel = node_->has_parameter("approach_velocity") &&
+    node_->get_parameter_types({"approach_velocity"})[0] ==
+    rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    node_->get_parameter("approach_velocity").as_double() > 0.0;
 
-  if (good_approach_vel) {approach_vel_ = get_parameter("approach_velocity").as_double();}
+  if (good_approach_vel) {approach_vel_ = node_->get_parameter("approach_velocity").as_double();}
 
   RCLCPP_WARN_STREAM_EXPRESSION(
-    get_logger(), !good_approach_vel,
+    node_->get_logger(), !good_approach_vel,
     "Param approach_velocity not set, wrong typed, negative or 0, using the default value: " <<
       kDefaultApproachVel);
 
-  const bool good_approach_min_duration = has_parameter("approach_min_duration") &&
-    get_parameter_types({"approach_min_duration"})[0] == rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    get_parameter("approach_min_duration").as_double() >= 0.0;
+  const bool good_approach_min_duration = node_->has_parameter("approach_min_duration") &&
+    node_->get_parameter_types({"approach_min_duration"})[0] ==
+    rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    node_->get_parameter("approach_min_duration").as_double() >= 0.0;
 
   if (good_approach_min_duration) {
-    approach_min_duration_ = get_parameter("approach_min_duration").as_double();
+    approach_min_duration_ = node_->get_parameter("approach_min_duration").as_double();
   }
 
   RCLCPP_WARN_STREAM_EXPRESSION(
-    get_logger(), !good_approach_min_duration,
+    node_->get_logger(), !good_approach_min_duration,
     "Param approach_min_duration not set, wrong typed or negative, using the default value: " <<
       kDefaultApproachVel);
 }

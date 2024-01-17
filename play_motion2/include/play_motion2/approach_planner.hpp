@@ -20,24 +20,23 @@
 #include <vector>
 
 #include "play_motion2/types.hpp"
-#include "rclcpp/node.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 
 namespace play_motion2
 {
-
-class ApproachPlanner : public rclcpp::Node
+class ApproachPlanner
 {
 public:
-  ApproachPlanner();
+  ApproachPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
   ~ApproachPlanner() = default;
 
-  void check_parameters();
   double calculate_approach_time(const MotionInfo motion_info);
 
   double get_reach_time(MotionPositions current_pos, MotionPositions goal_pos);
 
 private:
+  void check_parameters();
   void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
 
 private:
@@ -49,6 +48,8 @@ private:
   std::map<std::string, std::vector<double>> joint_states_;
   std::mutex joint_states_mutex_;
   std::condition_variable joint_states_condition_;
+
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
 
 }  // namespace play_motion2

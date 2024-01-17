@@ -57,17 +57,14 @@ PlayMotion2::~PlayMotion2()
   if (motion_executor_.joinable()) {
     motion_executor_.join();
   }
-
-  if (spinner_thread_) {
-    executor_.cancel();
-    spinner_thread_->join();
-  }
 }
 
 CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   motion_loader_ = std::make_unique<MotionLoader>(get_logger(), get_node_parameters_interface());
   const bool ok = motion_loader_->parse_motions();
+
+  approach_planner_ = std::make_unique<ApproachPlanner>(shared_from_this());
 
   RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
 
@@ -76,18 +73,6 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state
 
 CallbackReturn PlayMotion2::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
-  approach_planner_ = std::make_unique<ApproachPlanner>();
-
-  executor_.add_node(approach_planner_->get_node_base_interface());
-  spinner_thread_ = std::make_unique<std::thread>(std::thread([&]() {executor_.spin();}));
-
-  // make sure that executor is spinning
-  const auto start_time = now();
-  while (!executor_.is_spinning()) {
-    if (now() - start_time > kTimeout) {return CallbackReturn::FAILURE;}
-    std::this_thread::sleep_for(100ms);
-  }
-
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
     std::bind(&PlayMotion2::list_motions_callback, this, _1, _2));
@@ -120,12 +105,6 @@ CallbackReturn PlayMotion2::on_deactivate(const rclcpp_lifecycle::State & /*stat
   client_cb_group_.reset();
   list_controllers_client_.reset();
   is_busy_ = false;
-
-  /// @pre we make sure executor is spinning in on_activate
-  executor_.cancel();
-  executor_.remove_node(approach_planner_->get_node_base_interface());
-  spinner_thread_->join();
-  spinner_thread_.reset();
 
   return CallbackReturn::SUCCESS;
 }
