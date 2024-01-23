@@ -35,6 +35,8 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 
   , node_(node)
 {
+  check_parameters();
+
   joint_states_sub_ =
     node_->create_subscription<sensor_msgs::msg::JointState>(
     "/joint_states", 1,
@@ -72,8 +74,6 @@ void MotionPlanner::check_parameters()
 
 double MotionPlanner::calculate_approach_time(const MotionInfo motion_info)
 {
-  check_parameters();
-
   // first position for all joints
   MotionPositions goal_pos =
   {motion_info.positions.begin(),
