@@ -14,8 +14,8 @@
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 
-#include "play_motion2/approach_planner.hpp"
 #include "play_motion2/motion_loader.hpp"
+#include "play_motion2/motion_planner.hpp"
 #include "play_motion2/play_motion2.hpp"
 
 #include "rclcpp/executors.hpp"
@@ -64,7 +64,7 @@ CallbackReturn PlayMotion2::on_configure(const rclcpp_lifecycle::State & /*state
   motion_loader_ = std::make_unique<MotionLoader>(get_logger(), get_node_parameters_interface());
   const bool ok = motion_loader_->parse_motions();
 
-  approach_planner_ = std::make_unique<ApproachPlanner>(shared_from_this());
+  motion_planner_ = std::make_unique<MotionPlanner>(shared_from_this());
 
   RCLCPP_ERROR_EXPRESSION(get_logger(), !ok, "Failed to initialize Play Motion 2");
 
@@ -177,7 +177,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<GoalHandlePM2> goal_handl
   auto & motion = motion_loader_->get_motion_info(goal->motion_name);
 
   const auto approach_time =
-    approach_planner_->calculate_approach_time(motion);
+    motion_planner_->calculate_approach_time(motion);
   auto extra_time = 0.0;
   if (motion.times[0] < approach_time) {
     extra_time = approach_time - motion.times[0];

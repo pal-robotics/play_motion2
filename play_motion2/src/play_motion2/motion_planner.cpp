@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "play_motion2/approach_planner.hpp"
+#include "play_motion2/motion_planner.hpp"
 
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
@@ -23,25 +23,25 @@ using std::placeholders::_1;
 constexpr double kDefaultApproachVel = 0.5;
 constexpr double kDefaultApproachMinDuration = 0.0;
 
-ApproachPlanner::ApproachPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
-:   approach_vel_(kDefaultApproachVel),
-  approach_min_duration_(kDefaultApproachMinDuration),
+MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+: approach_vel_(kDefaultApproachVel)
+  , approach_min_duration_(kDefaultApproachMinDuration)
 
-  joint_states_sub_(nullptr),
-  joint_states_updated_(false),
-  joint_states_(),
-  joint_states_mutex_(),
-  joint_states_condition_(),
+  , joint_states_sub_(nullptr)
+  , joint_states_updated_(false)
+  , joint_states_()
+  , joint_states_mutex_()
+  , joint_states_condition_()
 
-  node_(node)
+  , node_(node)
 {
   joint_states_sub_ =
     node_->create_subscription<sensor_msgs::msg::JointState>(
     "/joint_states", 1,
-    std::bind(&ApproachPlanner::joint_states_callback, this, _1));
+    std::bind(&MotionPlanner::joint_states_callback, this, _1));
 }
 
-void ApproachPlanner::check_parameters()
+void MotionPlanner::check_parameters()
 {
   const bool good_approach_vel = node_->has_parameter("approach_velocity") &&
     node_->get_parameter_types({"approach_velocity"})[0] ==
@@ -70,7 +70,7 @@ void ApproachPlanner::check_parameters()
       kDefaultApproachVel);
 }
 
-double ApproachPlanner::calculate_approach_time(const MotionInfo motion_info)
+double MotionPlanner::calculate_approach_time(const MotionInfo motion_info)
 {
   check_parameters();
 
@@ -93,7 +93,7 @@ double ApproachPlanner::calculate_approach_time(const MotionInfo motion_info)
   return get_reach_time(curr_pos, goal_pos);
 }
 
-double ApproachPlanner::get_reach_time(MotionPositions current_pos, MotionPositions goal_pos)
+double MotionPlanner::get_reach_time(MotionPositions current_pos, MotionPositions goal_pos)
 {
   // Maximum joint displacement
   double dmax = 0.0;
@@ -106,7 +106,7 @@ double ApproachPlanner::get_reach_time(MotionPositions current_pos, MotionPositi
   return std::max(dmax / approach_vel_, approach_min_duration_);
 }
 
-void ApproachPlanner::joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
+void MotionPlanner::joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
   std::unique_lock<std::mutex> lock(joint_states_mutex_);
   if (!joint_states_updated_) {

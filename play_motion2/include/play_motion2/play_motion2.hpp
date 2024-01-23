@@ -24,8 +24,8 @@
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "controller_manager_msgs/msg/controller_state.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
-#include "play_motion2/approach_planner.hpp"
 #include "play_motion2/motion_loader.hpp"
+#include "play_motion2/motion_planner.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
 #include "play_motion2_msgs/srv/is_motion_ready.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
@@ -134,7 +134,7 @@ private:
   std::atomic_bool is_busy_;
 
   std::unique_ptr<MotionLoader> motion_loader_;
-  std::unique_ptr<ApproachPlanner> approach_planner_;
+  std::unique_ptr<MotionPlanner> motion_planner_;
 };
 }  // namespace play_motion2
 

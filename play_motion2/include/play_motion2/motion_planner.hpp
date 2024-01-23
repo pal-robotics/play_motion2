@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLAY_MOTION2__APPROACH_PLANNER_HPP_
-#define PLAY_MOTION2__APPROACH_PLANNER_HPP_
+#ifndef PLAY_MOTION2__MOTION_PLANNER_HPP_
+#define PLAY_MOTION2__MOTION_PLANNER_HPP_
 
 #include <map>
 #include <string>
@@ -25,11 +25,11 @@
 
 namespace play_motion2
 {
-class ApproachPlanner
+class MotionPlanner
 {
 public:
-  ApproachPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
-  ~ApproachPlanner() = default;
+  MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+  ~MotionPlanner() = default;
 
   double calculate_approach_time(const MotionInfo motion_info);
 
@@ -54,4 +54,4 @@ private:
 
 }  // namespace play_motion2
 
-#endif  // PLAY_MOTION2__APPROACH_PLANNER_HPP_
+#endif  // PLAY_MOTION2__MOTION_PLANNER_HPP_
