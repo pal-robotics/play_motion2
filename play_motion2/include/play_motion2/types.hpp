@@ -46,6 +46,23 @@ struct MotionInfo
 
 using MotionsMap = std::map<std::string, MotionInfo>;
 
+struct Result
+{
+  enum State
+  {
+    INVALID = 0,
+    SUCCESS = 1,
+    ERROR = 2,
+    CANCELED = 3
+  };
+
+  uint8_t state;
+  std::string error;
+
+  explicit Result(const State st = INVALID, const std::string & error_str = "")
+  : state(st), error(error_str) {}
+};
+
 }  // namespace play_motion2
 
 #endif  // PLAY_MOTION2__TYPES_HPP_
