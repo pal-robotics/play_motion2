@@ -56,7 +56,7 @@ struct Result
     CANCELED = 3
   };
 
-  uint8_t state;
+  State state;
   std::string error;
 
   explicit Result(const State st = INVALID, const std::string & error_str = "")
