@@ -155,6 +155,7 @@ rclcpp_action::CancelResponse PlayMotion2::handle_cancel(
   const std::shared_ptr<ActionGoalHandle> goal_handle) const
 {
   RCLCPP_INFO_STREAM(get_logger(), "Cancelling motion " << goal_handle->get_goal()->motion_name);
+  motion_planner_->cancel_motion();
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 

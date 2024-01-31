@@ -107,7 +107,7 @@ private:
   double approach_vel_;
   double approach_min_duration_;
 
-  bool is_canceling_;
+  std::atomic_bool is_canceling_;
   bool busy_;
 
   ControllerStates motion_controller_states_;
