@@ -212,7 +212,7 @@ double MotionPlanner::get_reach_time(MotionPositions current_pos, MotionPosition
 {
   // Maximum joint displacement
   double dmax = 0.0;
-  for (unsigned int i = 0; i < current_pos.size(); ++i) {
+  for (auto i = 0u; i < current_pos.size(); ++i) {
     const double d = std::abs(goal_pos[i] - current_pos[i]);
     if (d > dmax) {
       dmax = d;
@@ -226,7 +226,7 @@ void MotionPlanner::joint_states_callback(const JointState::SharedPtr msg)
   std::unique_lock<std::mutex> lock(joint_states_mutex_);
   if (!joint_states_updated_) {
     joint_states_.clear();
-    for (size_t i = 0; i < msg->name.size(); i++) {
+    for (auto i = 0u; i < msg->name.size(); ++i) {
       joint_states_[msg->name[i]] = {msg->position[i], msg->velocity[i], msg->effort[i]};
     }
     joint_states_updated_ = true;
@@ -264,11 +264,11 @@ JointTrajectory MotionPlanner::create_trajectory(
     const auto iterator = std::find(motion_info.joints.begin(), motion_info.joints.end(), joint);
     if (iterator != motion_info.joints.end()) {
       // get the location of the first position
-      unsigned int vector_pos = std::distance(motion_info.joints.begin(), iterator);
+      auto vector_pos = std::distance(motion_info.joints.begin(), iterator);
       std::vector<double> positions;
 
       // Extract positions for a specific joint and save them
-      for (unsigned int i = 0; i < motion_info.times.size(); i++) {
+      for (auto i = 0u; i < motion_info.times.size(); ++i) {
         positions.push_back(motion_info.positions.at(vector_pos));
         vector_pos += motion_info.joints.size();
       }
@@ -277,7 +277,7 @@ JointTrajectory MotionPlanner::create_trajectory(
   }
 
   JointTrajectory jt;
-  for (unsigned int i = 0; i < motion_info.times.size(); i++) {
+  for (auto i = 0u; i < motion_info.times.size(); ++i) {
     TrajectoryPoint jtc_point;
     const auto jtc_point_time = rclcpp::Duration::from_seconds(motion_info.times[i] + extra_time);
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
