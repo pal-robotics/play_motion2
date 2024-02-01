@@ -101,9 +101,6 @@ private:
     const double motion_time);
 
 private:
-  // bool planning_disabled_;
-  // bool planned_approach_;
-
   double approach_vel_;
   double approach_min_duration_;
 

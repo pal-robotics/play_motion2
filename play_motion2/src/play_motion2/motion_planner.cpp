@@ -304,10 +304,6 @@ JointTrajectory MotionPlanner::create_trajectory(
 
 bool MotionPlanner::update_controller_states_cache()
 {
-  // if (is_busy_) {
-  //   return false;
-  // }
-
   const auto controller_states = get_controller_states();
 
   motion_controller_states_ = filter_controller_states(
