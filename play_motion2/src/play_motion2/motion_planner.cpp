@@ -27,12 +27,19 @@ using std::placeholders::_1;
 
 constexpr auto kTimeout = 5s;
 
-constexpr double kDefaultApproachVel = 0.5;
-constexpr double kDefaultApproachMinDuration = 0.0;
+constexpr auto kDefaultApproachVel = 0.5;
+constexpr auto kDefaultApproachMinDuration = 0.0;
+constexpr auto kDefaultJointTolerance = 1e-3;
 
 MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 : approach_vel_(kDefaultApproachVel)
   , approach_min_duration_(kDefaultApproachMinDuration)
+  , joint_tolerance_(kDefaultJointTolerance)
+  , no_planning_joints_()
+  , planning_groups_()
+
+  , planning_disabled_(false)
+  , unplanned_approach_(false)
 
   , is_canceling_(false)
 
@@ -63,31 +70,85 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 
 void MotionPlanner::check_parameters()
 {
-  const bool good_approach_vel = node_->has_parameter("approach_velocity") &&
-    node_->get_parameter_types({"approach_velocity"})[0] ==
-    rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    node_->get_parameter("approach_velocity").as_double() > 0.0;
+  // Get all motion_planner parameters
+  std::map<std::string, rclcpp::Parameter> planner_params;
+  node_->get_parameters("motion_planner", planner_params);
 
-  if (good_approach_vel) {approach_vel_ = node_->get_parameter("approach_velocity").as_double();}
-
-  RCLCPP_WARN_STREAM_EXPRESSION(
-    node_->get_logger(), !good_approach_vel,
-    "Param approach_velocity not set, wrong typed, negative or 0, using the default value: " <<
-      kDefaultApproachVel);
-
-  const bool good_approach_min_duration = node_->has_parameter("approach_min_duration") &&
-    node_->get_parameter_types({"approach_min_duration"})[0] ==
-    rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    node_->get_parameter("approach_min_duration").as_double() >= 0.0;
-
-  if (good_approach_min_duration) {
-    approach_min_duration_ = node_->get_parameter("approach_min_duration").as_double();
+  // Parameters for non-planned motions
+  if (planner_params.count("approach_velocity") > 0 &&
+    planner_params["approach_velocity"].get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    planner_params["approach_velocity"].as_double() > 0.0)
+  {
+    approach_vel_ = planner_params["approach_velocity"].as_double();
+  } else {
+    RCLCPP_WARN_STREAM(
+      node_->get_logger(),
+      "Param 'approach_velocity' not set, wrong typed, negative or 0, using the default value: " <<
+        kDefaultApproachVel);
   }
 
-  RCLCPP_WARN_STREAM_EXPRESSION(
-    node_->get_logger(), !good_approach_min_duration,
-    "Param approach_min_duration not set, wrong typed or negative, using the default value: " <<
-      kDefaultApproachVel);
+  if (planner_params.count("approach_min_duration") > 0 &&
+    planner_params["approach_min_duration"].get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    planner_params["approach_min_duration"].as_double() >= 0.0)
+  {
+    approach_vel_ = planner_params["approach_min_duration"].as_double();
+  } else {
+    RCLCPP_WARN_STREAM(
+      node_->get_logger(),
+      "Param 'approach_min_duration' not set, wrong typed or negative, using the default value: " <<
+        kDefaultApproachMinDuration);
+  }
+
+  // Initialize motion planning capability, unless explicitly disabled
+  if (planner_params.count("disable_motion_planning") > 0) {
+    planning_disabled_ = planner_params["disable_motion_planning"].as_bool();
+  }
+
+  if (planning_disabled_) {
+    RCLCPP_WARN(
+      node_->get_logger(),
+      "Motion planning capability DISABLED. Goals requesting planning (the default) will be rejected.\n"
+      "To disable planning in goal requests set 'skip_planning: true'");
+
+    // Unplanned approach is only available when planning is disabled
+    if (planner_params.count("force_unplanned_approach") > 0) {
+      unplanned_approach_ = planner_params["force_unplanned_approach"].as_bool();
+    }
+
+    if (unplanned_approach_) {
+      RCLCPP_WARN(
+        node_->get_logger(),
+        "Unplanned approach FORCED. All motions will be executed without planning.\n"
+        "This configuration is NOT RECOMMENDED, as it may cause collisions.\n"
+        "To disable unplanned approach set 'force_unplanned_approach: false'");
+
+      return;  // Skip initialization of planning-related members when all planning is disabled
+    }
+  }
+
+  if (planner_params.count("joint_tolerance") > 0 &&
+    planner_params["joint_tolerance"].get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    planner_params["joint_tolerance"].as_double() >= 0.0)
+  {
+    joint_tolerance_ = planner_params["joint_tolerance"].as_double();
+  }
+  RCLCPP_DEBUG(node_->get_logger(), "Joint tolerance set to %f", joint_tolerance_);
+
+  // Joints excluded from motion planning
+  if (planner_params.count("exclude_from_planning_joints") > 0) {
+    no_planning_joints_ = planner_params["exclude_from_planning_joints"].as_string_array();
+  }
+
+  // Planning group names
+  if (planner_params.count("planning_groups") == 0 ||
+    planner_params["planning_groups"].get_type() != rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
+  {
+    const std::string what =
+      "Unspecified planning groups for computing approach trajectories. Please set the "
+      "'motion_planner.planning_groups' parameter";
+    throw std::runtime_error(what);
+  }
+  planning_groups_ = planner_params["planning_groups"].as_string_array();
 }
 
 bool MotionPlanner::is_executable(const MotionInfo & info)

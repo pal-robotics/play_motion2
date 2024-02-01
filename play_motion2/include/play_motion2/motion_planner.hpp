@@ -102,6 +102,12 @@ private:
 private:
   double approach_vel_;
   double approach_min_duration_;
+  double joint_tolerance_;
+  JointNames no_planning_joints_;
+  std::vector<std::string> planning_groups_;
+
+  bool planning_disabled_;
+  bool unplanned_approach_;
 
   std::atomic_bool is_canceling_;
 
