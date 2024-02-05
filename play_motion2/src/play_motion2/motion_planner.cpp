@@ -151,12 +151,10 @@ MotionInfo MotionPlanner::prepare_motion(const MotionInfo & info)
   return motion_info;
 }
 
-Result MotionPlanner::perform_unplanned_motion(
-  const std::string & motion_key,
-  const MotionInfo & info)
+Result MotionPlanner::perform_unplanned_motion(const MotionInfo & info)
 {
   std::list<FollowJTGoalHandleFutureResult> futures_list;
-  const auto send_result = send_trajectories(motion_key, info, futures_list);
+  const auto send_result = send_trajectories(info, futures_list);
 
   if (send_result.state != Result::State::SUCCESS) {
     return send_result;
@@ -168,14 +166,12 @@ Result MotionPlanner::perform_unplanned_motion(
   return result;
 }
 
-Result MotionPlanner::execute_motion(
-  const std::string & motion_key,
-  const MotionInfo & info)
+Result MotionPlanner::execute_motion(const MotionInfo & info)
 {
   is_canceling_ = false;    // Reset canceling flag
 
   const auto approach_info = prepare_approach(info);
-  const auto approach_result = perform_unplanned_motion(motion_key, approach_info);
+  const auto approach_result = perform_unplanned_motion(approach_info);
 
   if (approach_result.state != Result::State::SUCCESS) {
     return approach_result;
@@ -187,7 +183,7 @@ Result MotionPlanner::execute_motion(
   }
 
   const auto motion_info = prepare_motion(info);
-  return perform_unplanned_motion(motion_key, info);
+  return perform_unplanned_motion(motion_info);
 }
 
 double MotionPlanner::calculate_approach_time(
@@ -422,7 +418,6 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
 }
 
 Result MotionPlanner::send_trajectories(
-  const std::string & motion_key,
   const MotionInfo & info,
   std::list<FollowJTGoalHandleFutureResult> & futures_list)
 {
@@ -433,7 +428,7 @@ Result MotionPlanner::send_trajectories(
     if (!jtc_future_gh.valid()) {
       RCLCPP_INFO_STREAM(
         node_->get_logger(),
-        "Cannot perform motion '" << motion_key << "'");
+        "Cannot perform motion '" << info.key << "'");
       // cancel all sent goals
       for (const auto & client : action_clients_) {
         client.second->async_cancel_all_goals();
@@ -441,7 +436,7 @@ Result MotionPlanner::send_trajectories(
 
       return Result(
         Result::State::ERROR,
-        "Motion " + motion_key + " aborted. Cannot send goal to " + controller);
+        "Motion " + info.key + " aborted. Cannot send goal to " + controller);
     }
     futures_list.push_back(std::move(jtc_future_gh));
   }

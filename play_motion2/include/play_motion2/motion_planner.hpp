@@ -56,7 +56,7 @@ public:
 
   bool is_executable(const MotionInfo & info);
 
-  Result execute_motion(const std::string & motion_key, const MotionInfo & info);
+  Result execute_motion(const MotionInfo & info);
 
   void cancel_motion();
 
@@ -66,7 +66,7 @@ private:
   MotionInfo prepare_approach(const MotionInfo & info);
   MotionInfo prepare_motion(const MotionInfo & info);
 
-  Result perform_unplanned_motion(const std::string & motion_key, const MotionInfo & info);
+  Result perform_unplanned_motion(const MotionInfo & info);
 
   double calculate_approach_time(const MotionPositions & goal_pos, const JointNames & joints);
   double get_reach_time(MotionPositions current_pos, MotionPositions goal_pos) const;
@@ -92,7 +92,7 @@ private:
     const JointTrajectory & trajectory);
 
   Result send_trajectories(
-    const std::string & motion_key, const MotionInfo & info,
+    const MotionInfo & info,
     std::list<FollowJTGoalHandleFutureResult> & futures_list);
 
   Result wait_for_results(
