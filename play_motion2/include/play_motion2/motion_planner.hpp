@@ -60,9 +60,9 @@ public:
   explicit MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
   ~MotionPlanner() = default;
 
-  bool is_executable(const MotionInfo & info);
+  bool is_executable(const MotionInfo & info, const bool skip_planning);
 
-  Result execute_motion(const MotionInfo & info);
+  Result execute_motion(const MotionInfo & info, const bool skip_planning);
 
   void cancel_motion();
 

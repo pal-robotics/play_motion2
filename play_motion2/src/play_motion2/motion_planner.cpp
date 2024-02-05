@@ -160,8 +160,16 @@ void MotionPlanner::check_parameters()
   }
 }
 
-bool MotionPlanner::is_executable(const MotionInfo & info)
+bool MotionPlanner::is_executable(const MotionInfo & info, const bool skip_planning)
 {
+  if (planning_disabled_ && !skip_planning) {
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Motion planning capability is disabled, goals must not request planning. "
+      "Please, set 'skip_planning: true'");
+    return false;
+  }
+
   update_controller_states_cache();
 
   // Get joints claimed by active controllers
@@ -236,24 +244,45 @@ Result MotionPlanner::perform_unplanned_motion(const MotionInfo & info)
   return result;
 }
 
-Result MotionPlanner::execute_motion(const MotionInfo & info)
+Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_planning)
 {
   is_canceling_ = false;    // Reset canceling flag
 
-  const auto approach_info = prepare_approach(info);
-  const auto approach_result = perform_unplanned_motion(approach_info);
+  // Unplanned approach
+  if (unplanned_approach_) {
+    const auto approach_info = prepare_approach(info);
+    const auto approach_result = perform_unplanned_motion(approach_info);
 
-  if (approach_result.state != Result::State::SUCCESS) {
-    return approach_result;
+    if (approach_result.state != Result::State::SUCCESS) {
+      return approach_result;
+    }
+
+    // If the motion has only one position, it has been performed in the approach
+    if (info.positions == approach_info.positions) {
+      return Result(Result::State::SUCCESS);
+    }
+  } else {  // Planned approach
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Planned approach is not implemented yet. Please set 'disable_motion_planning: true' and "
+      "'force_unplanned_approach: true' in the motion_planner parameters");
+    return Result(Result::State::ERROR);
   }
 
-  // If the motion has only one position, it has been performed in the approach
-  if (info.positions == approach_info.positions) {
-    return Result(Result::State::SUCCESS);
+  // Unplanned motion
+  /// @pre planning_disabled_ = true && skip_planning = false is a combination that will
+  /// not happen. Goals with that combination are rejected in is_executable.
+  if (planning_disabled_ || skip_planning) {
+    const auto motion_info = prepare_motion(info);
+    return perform_unplanned_motion(motion_info);
   }
 
-  const auto motion_info = prepare_motion(info);
-  return perform_unplanned_motion(motion_info);
+  // Planned motion
+  RCLCPP_ERROR(
+    node_->get_logger(),
+    "Planned motion is not implemented yet. Please set 'disable_motion_planning: true' in the "
+    "motion_planner parameters");
+  return Result(Result::State::ERROR);
 }
 
 double MotionPlanner::calculate_approach_time(
