@@ -170,7 +170,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<ActionGoalHandle> goal_ha
   auto & motion = motion_loader_->get_motion_info(goal->motion_name);
 
   // Execute motion
-  const auto motion_result = motion_planner_->execute_motion(goal->motion_name, motion);
+  const auto motion_result = motion_planner_->execute_motion(motion);
 
   // Evaluate and set result
   auto action_result = std::make_shared<ActionResult>();

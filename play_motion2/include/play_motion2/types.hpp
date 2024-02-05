@@ -33,6 +33,8 @@ using Trajectory = std::vector<TrajectoryPoint>;
 
 struct MotionInfo
 {
+  std::string key;
+
   // meta
   std::string name;
   std::string usage;

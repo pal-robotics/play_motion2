@@ -91,6 +91,7 @@ bool MotionLoader::parse_motion_info(const std::string & motion_key)
   }
 
   MotionInfo motion;
+  motion.key = motion_key;
 
   std::string param;
   // Get optional meta data
