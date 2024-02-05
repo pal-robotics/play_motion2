@@ -190,6 +190,8 @@ void PlayMotion2::execute_motion(const std::shared_ptr<ActionGoalHandle> goal_ha
       RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' canceled");
       goal_handle->canceled(action_result);
       break;
+    default:
+      throw std::runtime_error("Unknown motion result state");
   }
 
   is_busy_ = false;
