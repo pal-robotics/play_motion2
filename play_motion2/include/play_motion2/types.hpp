@@ -19,13 +19,17 @@
 #include <string>
 #include <vector>
 
+#include "trajectory_msgs/msg/joint_trajectory_point.hpp"
+
 namespace play_motion2
 {
 
 using MotionKeys = std::vector<std::string>;
-using MotionJoints = std::vector<std::string>;
+using JointNames = std::vector<std::string>;
 using MotionPositions = std::vector<double>;
 using MotionTimes = std::vector<double>;
+using TrajectoryPoint = trajectory_msgs::msg::JointTrajectoryPoint;
+using Trajectory = std::vector<TrajectoryPoint>;
 
 struct MotionInfo
 {
@@ -35,12 +39,29 @@ struct MotionInfo
   std::string description;
 
   // info
-  MotionJoints joints;
+  JointNames joints;
   MotionPositions positions;
   MotionTimes times;
 };
 
 using MotionsMap = std::map<std::string, MotionInfo>;
+
+struct Result
+{
+  enum State
+  {
+    INVALID = 0,
+    SUCCESS = 1,
+    ERROR = 2,
+    CANCELED = 3
+  };
+
+  State state;
+  std::string error;
+
+  explicit Result(const State st = INVALID, const std::string & error_str = "")
+  : state(st), error(error_str) {}
+};
 
 }  // namespace play_motion2
 
