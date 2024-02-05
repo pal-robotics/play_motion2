@@ -22,10 +22,13 @@
 
 #include "play_motion2/types.hpp"
 
+#include "moveit/move_group_interface/move_group_interface.h"
+
 #include "rclcpp_action/client_goal_handle.hpp"
 #include "rclcpp_action/client.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp/callback_group.hpp"
+#include "rclcpp/node.hpp"
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "controller_manager_msgs/msg/controller_state.hpp"
@@ -47,6 +50,9 @@ using ControllerTrajectories = std::map<std::string, JointTrajectory>;
 using FollowJointTrajectory = control_msgs::action::FollowJointTrajectory;
 using FollowJTGoalHandleFutureResult =
   std::shared_future<rclcpp_action::ClientGoalHandle<FollowJointTrajectory>::WrappedResult>;
+
+using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
+using MoveGroupInterfacePtr = moveit::planning_interface::MoveGroupInterfacePtr;
 
 class MotionPlanner
 {
@@ -106,6 +112,8 @@ private:
   JointNames no_planning_joints_;
   std::vector<std::string> planning_groups_;
 
+  std::vector<MoveGroupInterfacePtr> move_groups_;
+
   bool planning_disabled_;
   bool unplanned_approach_;
 
@@ -125,6 +133,7 @@ private:
   std::map<std::string, rclcpp_action::Client<FollowJointTrajectory>::SharedPtr> action_clients_;
 
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  rclcpp::Node::SharedPtr move_group_node_;
 };
 
 }  // namespace play_motion2

@@ -16,9 +16,12 @@
 
 #include "play_motion2/motion_planner.hpp"
 
+#include "moveit/move_group_interface/move_group_interface.h"
+
 #include "rclcpp_action/client_goal_handle.hpp"
 #include "rclcpp_action/create_client.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp/node.hpp"
 
 namespace play_motion2
 {
@@ -51,8 +54,6 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 
   , node_(node)
 {
-  check_parameters();
-
   motion_planner_cb_group_ = node_->create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive);
 
@@ -66,6 +67,10 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 
   list_controllers_client_ = node_->create_client<ListControllers>(
     "/controller_manager/list_controllers", rmw_qos_profile_default, motion_planner_cb_group_);
+
+  move_group_node_ = rclcpp::Node::make_shared("_move_group_node", node_->get_name());
+
+  check_parameters();
 }
 
 void MotionPlanner::check_parameters()
@@ -149,6 +154,10 @@ void MotionPlanner::check_parameters()
     throw std::runtime_error(what);
   }
   planning_groups_ = planner_params["planning_groups"].as_string_array();
+
+  for (const auto & group : planning_groups_) {
+    move_groups_.emplace_back(std::make_shared<MoveGroupInterface>(move_group_node_, group));
+  }
 }
 
 bool MotionPlanner::is_executable(const MotionInfo & info)

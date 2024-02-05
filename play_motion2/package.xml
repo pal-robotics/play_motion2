@@ -18,6 +18,7 @@
 
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
+  <depend>moveit_ros_planning_interface</depend>
   <depend>play_motion2_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
