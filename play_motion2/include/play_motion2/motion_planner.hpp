@@ -86,7 +86,6 @@ private:
     const std::string & type) const;
 
   bool update_controller_states_cache();
-  bool check_joints_and_controllers(const std::string & motion_key) const;
 
   FollowJTGoalHandleFutureResult send_trajectory(
     const std::string & controller_name,
