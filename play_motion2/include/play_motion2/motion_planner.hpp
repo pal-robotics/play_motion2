@@ -54,28 +54,28 @@ public:
   explicit MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
   ~MotionPlanner() = default;
 
-  bool is_executable(const MotionInfo & motion_info);
+  bool is_executable(const MotionInfo & info);
 
-  Result execute_motion(const std::string & motion_key, const MotionInfo & motion_info);
+  Result execute_motion(const std::string & motion_key, const MotionInfo & info);
 
   void cancel_motion();
 
 private:
   void check_parameters();
 
-  MotionInfo prepare_approach(const MotionInfo & motion_info);
-  MotionInfo prepare_motion(const MotionInfo & motion_info);
+  MotionInfo prepare_approach(const MotionInfo & info);
+  MotionInfo prepare_motion(const MotionInfo & info);
 
-  Result perform_unplanned_motion(const std::string & motion_key, const MotionInfo & motion_info);
+  Result perform_unplanned_motion(const std::string & motion_key, const MotionInfo & info);
 
   double calculate_approach_time(const MotionPositions & goal_pos, const JointNames & joints);
   double get_reach_time(MotionPositions current_pos, MotionPositions goal_pos) const;
 
-  ControllerTrajectories generate_controller_trajectories(const MotionInfo & motion_info) const;
+  ControllerTrajectories generate_controller_trajectories(const MotionInfo & info) const;
 
   JointTrajectory create_trajectory(
     const ControllerState & controller_state,
-    const MotionInfo & motion_info,
+    const MotionInfo & info,
     const double extra_time) const;
 
   void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
@@ -93,7 +93,7 @@ private:
     const JointTrajectory & trajectory);
 
   Result send_trajectories(
-    const std::string & motion_key, const MotionInfo & motion_info,
+    const std::string & motion_key, const MotionInfo & info,
     std::list<FollowJTGoalHandleFutureResult> & futures_list);
 
   Result wait_for_results(

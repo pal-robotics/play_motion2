@@ -90,7 +90,7 @@ void MotionPlanner::check_parameters()
       kDefaultApproachVel);
 }
 
-bool MotionPlanner::is_executable(const MotionInfo & motion_info)
+bool MotionPlanner::is_executable(const MotionInfo & info)
 {
   update_controller_states_cache();
 
@@ -104,7 +104,7 @@ bool MotionPlanner::is_executable(const MotionInfo & motion_info)
   }
 
   bool ok = true;
-  for (const auto & joint : motion_info.joints) {
+  for (const auto & joint : info.joints) {
     // Check if joints are claimed by any active controller
     if (joint_names.find(joint) == joint_names.end()) {
       RCLCPP_ERROR_STREAM(
@@ -187,7 +187,7 @@ Result MotionPlanner::execute_motion(
   }
 
   const auto motion_info = prepare_motion(info);
-  return perform_unplanned_motion(motion_key, motion_info);
+  return perform_unplanned_motion(motion_key, info);
 }
 
 double MotionPlanner::calculate_approach_time(
@@ -235,11 +235,11 @@ void MotionPlanner::joint_states_callback(const JointState::SharedPtr msg)
 }
 
 ControllerTrajectories MotionPlanner::generate_controller_trajectories(
-  const MotionInfo & motion_info) const
+  const MotionInfo & info) const
 {
   ControllerTrajectories ct;
   for (const auto & controller : motion_controller_states_) {
-    const auto trajectory = create_trajectory(controller, motion_info, 0.0);
+    const auto trajectory = create_trajectory(controller, info, 0.0);
     if (!trajectory.joint_names.empty()) {
       ct[controller.name] = trajectory;
     }
@@ -249,7 +249,7 @@ ControllerTrajectories MotionPlanner::generate_controller_trajectories(
 
 JointTrajectory MotionPlanner::create_trajectory(
   const ControllerState & controller_state,
-  const MotionInfo & motion_info,
+  const MotionInfo & info,
   const double extra_time) const
 {
   std::unordered_set<std::string> controller_joints;
@@ -261,25 +261,25 @@ JointTrajectory MotionPlanner::create_trajectory(
   // Create a map with joints positions
   std::map<std::string, std::vector<double>> joint_positions;
   for (const std::string & joint : controller_joints) {
-    const auto iterator = std::find(motion_info.joints.begin(), motion_info.joints.end(), joint);
-    if (iterator != motion_info.joints.end()) {
+    const auto iterator = std::find(info.joints.begin(), info.joints.end(), joint);
+    if (iterator != info.joints.end()) {
       // get the location of the first position
-      auto vector_pos = std::distance(motion_info.joints.begin(), iterator);
+      auto vector_pos = std::distance(info.joints.begin(), iterator);
       std::vector<double> positions;
 
       // Extract positions for a specific joint and save them
-      for (auto i = 0u; i < motion_info.times.size(); ++i) {
-        positions.push_back(motion_info.positions.at(vector_pos));
-        vector_pos += motion_info.joints.size();
+      for (auto i = 0u; i < info.times.size(); ++i) {
+        positions.push_back(info.positions.at(vector_pos));
+        vector_pos += info.joints.size();
       }
       joint_positions[joint] = positions;
     }
   }
 
   JointTrajectory jt;
-  for (auto i = 0u; i < motion_info.times.size(); ++i) {
+  for (auto i = 0u; i < info.times.size(); ++i) {
     TrajectoryPoint jtc_point;
-    const auto jtc_point_time = rclcpp::Duration::from_seconds(motion_info.times[i] + extra_time);
+    const auto jtc_point_time = rclcpp::Duration::from_seconds(info.times[i] + extra_time);
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
     jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
 
@@ -423,10 +423,10 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
 
 Result MotionPlanner::send_trajectories(
   const std::string & motion_key,
-  const MotionInfo & motion_info,
+  const MotionInfo & info,
   std::list<FollowJTGoalHandleFutureResult> & futures_list)
 {
-  const auto ctrl_trajectories = generate_controller_trajectories(motion_info);
+  const auto ctrl_trajectories = generate_controller_trajectories(info);
 
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
     auto jtc_future_gh = send_trajectory(controller, trajectory);
