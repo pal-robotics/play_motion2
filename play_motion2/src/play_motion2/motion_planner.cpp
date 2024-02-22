@@ -42,7 +42,6 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   , planning_groups_()
 
   , planning_disabled_(false)
-  , unplanned_approach_(false)
 
   , is_canceling_(false)
 
@@ -115,20 +114,7 @@ void MotionPlanner::check_parameters()
       "Motion planning capability DISABLED. Goals requesting planning (the default) will be rejected.\n"
       "To disable planning in goal requests set 'skip_planning: true'");
 
-    // Unplanned approach is only available when planning is disabled
-    if (planner_params.count("force_unplanned_approach") > 0) {
-      unplanned_approach_ = planner_params["force_unplanned_approach"].as_bool();
-    }
-
-    if (unplanned_approach_) {
-      RCLCPP_WARN(
-        node_->get_logger(),
-        "Unplanned approach FORCED. All motions will be executed without planning.\n"
-        "This configuration is NOT RECOMMENDED, as it may cause collisions.\n"
-        "To disable unplanned approach set 'force_unplanned_approach: false'");
-
-      return;  // Skip initialization of planning-related members when all planning is disabled
-    }
+    return;  // Skip initialization of planning-related members when all planning is disabled
   }
 
   if (planner_params.count("joint_tolerance") > 0 &&
@@ -204,13 +190,10 @@ MotionInfo MotionPlanner::prepare_approach(const MotionInfo & info)
 {
   const auto approach_positions = std::vector<double>(
     info.positions.begin(), info.positions.begin() + info.joints.size());
-  const auto approach_time_set = info.times[0];
-  const auto approach_time = calculate_approach_time(approach_positions, info.joints);
 
-  MotionInfo approach_info;
-  approach_info.joints = info.joints;
+  MotionInfo approach_info = info;
   approach_info.positions = approach_positions;
-  approach_info.times = {std::max(approach_time, approach_time_set)};
+  approach_info.times = {info.times[0]};
 
   return approach_info;
 }
@@ -221,25 +204,28 @@ MotionInfo MotionPlanner::prepare_motion(const MotionInfo & info)
     info.positions.begin() + info.joints.size(), info.positions.end());
   const auto motion_times = std::vector<double>(info.times.begin() + 1, info.times.end());
 
-  MotionInfo motion_info;
-  motion_info.joints = info.joints;
+  MotionInfo motion_info = info;
   motion_info.positions = motion_positions;
   motion_info.times = motion_times;
 
   return motion_info;
 }
 
-Result MotionPlanner::perform_unplanned_motion(const MotionInfo & info)
+Result MotionPlanner::perform_unplanned_motion(
+  const MotionInfo & info,
+  const JointTrajectory & planned_approach)
 {
   std::list<FollowJTGoalHandleFutureResult> futures_list;
-  const auto send_result = send_trajectories(info, futures_list);
+  double final_motion_time;
+  const auto send_result =
+    send_trajectories(info, planned_approach, futures_list, final_motion_time);
 
   if (send_result.state != Result::State::SUCCESS) {
     return send_result;
   }
 
   const auto result = wait_for_results(
-    futures_list, info.times.back());
+    futures_list, final_motion_time);
 
   return result;
 }
@@ -248,41 +234,47 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
 {
   is_canceling_ = false;    // Reset canceling flag
 
-  // Unplanned approach
-  if (unplanned_approach_) {
-    const auto approach_info = prepare_approach(info);
-    const auto approach_result = perform_unplanned_motion(approach_info);
+  const auto approach_info = prepare_approach(info);
+  auto motion_info = prepare_motion(info);
 
-    if (approach_result.state != Result::State::SUCCESS) {
-      return approach_result;
-    }
-
-    // If the motion has only one position, it has been performed in the approach
-    if (info.positions == approach_info.positions) {
-      return Result(Result::State::SUCCESS);
-    }
-  } else {  // Planned approach
-    RCLCPP_ERROR(
-      node_->get_logger(),
-      "Planned approach is not implemented yet. Please set 'disable_motion_planning: true' and "
-      "'force_unplanned_approach: true' in the motion_planner parameters");
-    return Result(Result::State::ERROR);
-  }
+  // Check there are planned joints
+  const auto planning_joints = get_planned_joints(info.joints);
 
   // Unplanned motion
   /// @pre planning_disabled_ = true && skip_planning = false is a combination that will
   /// not happen. Goals with that combination are rejected in is_executable.
-  if (planning_disabled_ || skip_planning) {
-    const auto motion_info = prepare_motion(info);
-    return perform_unplanned_motion(motion_info);
+  if (planning_joints.empty() || planning_disabled_ || skip_planning) {
+    const auto approach_time =
+      calculate_approach_time(approach_info.positions, approach_info.joints);
+
+    MotionInfo unplanned_info = info;
+    if (approach_time > info.times[0]) {
+      for (auto & time : unplanned_info.times) {
+        time = time - info.times[0] + approach_time;
+      }
+    }
+    return perform_unplanned_motion(unplanned_info, JointTrajectory());
   }
 
   // Planned motion
-  RCLCPP_ERROR(
-    node_->get_logger(),
-    "Planned motion is not implemented yet. Please set 'disable_motion_planning: true' in the "
-    "motion_planner parameters");
-  return Result(Result::State::ERROR);
+  auto move_groups = get_valid_move_groups(info.joints);
+  if (move_groups.empty()) {
+    return Result(Result::State::ERROR, "No valid move groups found for the given joints");
+  }
+
+  MoveGroupInterface::Plan approach_plan;
+  for (const auto & group : move_groups) {
+    approach_plan = plan_approach(group, info);
+    if (!approach_plan.trajectory_.joint_trajectory.points.empty()) {
+      break;
+    }
+  }
+
+  if (approach_plan.trajectory_.joint_trajectory.points.empty()) {
+    return Result(Result::State::ERROR, "Failed to plan approach trajectory");
+  }
+
+  return perform_unplanned_motion(info, approach_plan.trajectory_.joint_trajectory);
 }
 
 double MotionPlanner::calculate_approach_time(
@@ -330,11 +322,12 @@ void MotionPlanner::joint_states_callback(const JointState::SharedPtr msg)
 }
 
 ControllerTrajectories MotionPlanner::generate_controller_trajectories(
-  const MotionInfo & info) const
+  const MotionInfo & info,
+  const JointTrajectory & planned_approach) const
 {
   ControllerTrajectories ct;
   for (const auto & controller : motion_controller_states_) {
-    const auto trajectory = create_trajectory(controller, info, 0.0);
+    const auto trajectory = create_trajectory(controller, info, planned_approach);
     if (!trajectory.joint_names.empty()) {
       ct[controller.name] = trajectory;
     }
@@ -345,7 +338,7 @@ ControllerTrajectories MotionPlanner::generate_controller_trajectories(
 JointTrajectory MotionPlanner::create_trajectory(
   const ControllerState & controller_state,
   const MotionInfo & info,
-  const double extra_time) const
+  const JointTrajectory & planned_approach) const
 {
   std::unordered_set<std::string> controller_joints;
   for (const auto & interface : controller_state.claimed_interfaces) {
@@ -374,7 +367,7 @@ JointTrajectory MotionPlanner::create_trajectory(
   JointTrajectory jt;
   for (auto i = 0u; i < info.times.size(); ++i) {
     TrajectoryPoint jtc_point;
-    const auto jtc_point_time = rclcpp::Duration::from_seconds(info.times[i] + extra_time);
+    const auto jtc_point_time = rclcpp::Duration::from_seconds(info.times[i]);
     jtc_point.time_from_start.sec = jtc_point_time.to_rmw_time().sec;
     jtc_point.time_from_start.nanosec = jtc_point_time.to_rmw_time().nsec;
 
@@ -392,6 +385,65 @@ JointTrajectory MotionPlanner::create_trajectory(
     [&](const auto & j_pos) {
       jt.joint_names.push_back(j_pos.first);
     });
+
+  // If there is a planned approach, join it with the created trajectory
+  if (!planned_approach.joint_names.empty()) {
+    const auto planned_approach_time = rclcpp::Duration(
+      planned_approach.points.back().time_from_start);
+
+    // Update times with the planned approach trajectory for both planne
+    const auto original_approach_time = rclcpp::Duration(jt.points.front().time_from_start);
+    for (auto & point : jt.points) {
+      const auto new_time =
+        rclcpp::Duration(point.time_from_start) - original_approach_time + planned_approach_time;
+      point.time_from_start.sec = new_time.to_rmw_time().sec;
+      point.time_from_start.nanosec = new_time.to_rmw_time().nsec;
+    }
+
+    // For planned joints
+    bool all_joints_included = true;
+    for (const auto & joint : controller_joints) {
+      if (std::find(
+          planned_approach.joint_names.begin(), planned_approach.joint_names.end(), joint) ==
+        planned_approach.joint_names.end())
+      {
+        all_joints_included = false;
+        break;
+      }
+    }
+
+    if (all_joints_included) {
+      // Remove the original approach time and position.
+      jt.points.erase(jt.points.begin());
+
+      // Get the indexes of the respective controller joints
+      std::set<unsigned int> joint_positions_indexes;
+      for (const auto & joint : controller_joints) {
+        const auto iterator = std::find(
+          planned_approach.joint_names.begin(), planned_approach.joint_names.end(), joint);
+        if (iterator != planned_approach.joint_names.end()) {
+          joint_positions_indexes.insert(
+            std::distance(planned_approach.joint_names.begin(), iterator));
+        }
+      }
+
+      // Fill the TrajectoryPoint with the planned approach positions
+      std::vector<TrajectoryPoint> planned_points;
+      for (const auto & point : planned_approach.points) {
+        TrajectoryPoint planned_point;
+        planned_point.time_from_start = point.time_from_start;
+
+        for (const auto & index : joint_positions_indexes) {
+          planned_point.positions.push_back(point.positions[index]);
+        }
+
+        planned_points.push_back(planned_point);
+      }
+
+      // Add the planned approach points to the trajectory
+      jt.points.insert(jt.points.begin(), planned_points.begin(), planned_points.end());
+    }
+  }
 
   jt.header.stamp = node_->now();
   return jt;
@@ -518,9 +570,15 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
 
 Result MotionPlanner::send_trajectories(
   const MotionInfo & info,
-  std::list<FollowJTGoalHandleFutureResult> & futures_list)
+  const JointTrajectory & planned_approach,
+  std::list<FollowJTGoalHandleFutureResult> & futures_list,
+  double & final_motion_time)
 {
-  const auto ctrl_trajectories = generate_controller_trajectories(info);
+  const auto ctrl_trajectories = generate_controller_trajectories(info, planned_approach);
+
+  // Save the final motion time
+  final_motion_time = rclcpp::Duration(
+    ctrl_trajectories.begin()->second.points.back().time_from_start).seconds();
 
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
     auto jtc_future_gh = send_trajectory(controller, trajectory);
@@ -626,4 +684,68 @@ Result MotionPlanner::wait_for_results(
   return result;
 }
 
+std::vector<MoveGroupInterfacePtr>
+MotionPlanner::get_valid_move_groups(const JointNames & joints) const
+{
+  const auto planning_joints = get_planned_joints(joints);
+
+  std::vector<MoveGroupInterfacePtr> valid_move_groups;
+  for (const auto & move_group : move_groups_) {
+    const auto group_joints = move_group->getJointNames();
+    if (std::includes(
+        group_joints.begin(), group_joints.end(),
+        planning_joints.begin(), planning_joints.end()))
+    {
+      valid_move_groups.push_back(move_group);
+    }
+  }
+  return valid_move_groups;
+}
+
+JointNames MotionPlanner::get_planned_joints(const JointNames & joints) const
+{
+  auto planning_joints = joints;
+  for (const auto & joint : no_planning_joints_) {
+    planning_joints.erase(
+      std::remove(planning_joints.begin(), planning_joints.end(), joint),
+      planning_joints.end());
+  }
+  return planning_joints;
+}
+
+MoveGroupInterface::Plan MotionPlanner::plan_approach(
+  MoveGroupInterfacePtr group,
+  const MotionInfo & approach_info)
+{
+  group->setStartStateToCurrentState();
+  group->setGoalTolerance(joint_tolerance_);
+
+  /// Without this, the movement is very slow
+  /// @todo Investigate if we can do it in moveit2 configuration
+  group->setMaxVelocityScalingFactor(1.0);
+
+  /// @pre sizes of joints and positions are the same
+  for (unsigned int i = 0; i < approach_info.joints.size(); i++) {
+    if (std::find(
+        no_planning_joints_.begin(), no_planning_joints_.end(),
+        approach_info.joints[i]) == no_planning_joints_.end())
+    {
+      if (!group->setJointValueTarget(approach_info.joints[i], approach_info.positions[i])) {
+        RCLCPP_ERROR_STREAM(
+          node_->get_logger(), "Failed attempt to set planning goal for joint '" <<
+            approach_info.joints[i] << "' on group '" << group->getName() << "'.");
+        return MoveGroupInterface::Plan();
+      }
+    }
+  }
+
+  moveit::planning_interface::MoveGroupInterface::Plan plan;
+  if (group->plan(plan) != moveit::core::MoveItErrorCode::SUCCESS) {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), "Failed to plan for group '" << group->getName() << "'.");
+    return MoveGroupInterface::Plan();
+  }
+
+  return plan;
+}
 }     // namespace play_motion2

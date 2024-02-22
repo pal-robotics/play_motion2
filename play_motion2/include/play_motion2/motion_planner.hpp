@@ -72,17 +72,21 @@ private:
   MotionInfo prepare_approach(const MotionInfo & info);
   MotionInfo prepare_motion(const MotionInfo & info);
 
-  Result perform_unplanned_motion(const MotionInfo & info);
+  Result perform_unplanned_motion(
+    const MotionInfo & info,
+    const JointTrajectory & planned_approach);
 
   double calculate_approach_time(const MotionPositions & goal_pos, const JointNames & joints);
   double get_reach_time(MotionPositions current_pos, MotionPositions goal_pos) const;
 
-  ControllerTrajectories generate_controller_trajectories(const MotionInfo & info) const;
+  ControllerTrajectories generate_controller_trajectories(
+    const MotionInfo & info,
+    const JointTrajectory & planned_approach) const;
 
   JointTrajectory create_trajectory(
     const ControllerState & controller_state,
     const MotionInfo & info,
-    const double extra_time) const;
+    const JointTrajectory & planned_approach) const;
 
   void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
 
@@ -99,11 +103,20 @@ private:
 
   Result send_trajectories(
     const MotionInfo & info,
-    std::list<FollowJTGoalHandleFutureResult> & futures_list);
+    const JointTrajectory & planned_approach,
+    std::list<FollowJTGoalHandleFutureResult> & futures_list,
+    double & final_motion_time);
 
   Result wait_for_results(
     std::list<FollowJTGoalHandleFutureResult> & futures_list,
     const double motion_time);
+
+  std::vector<MoveGroupInterfacePtr> get_valid_move_groups(const JointNames & joints) const;
+  JointNames get_planned_joints(const JointNames & joints) const;
+
+  MoveGroupInterface::Plan plan_approach(
+    MoveGroupInterfacePtr group,
+    const MotionInfo & approach_info);
 
 private:
   double approach_vel_;
@@ -115,7 +128,6 @@ private:
   std::vector<MoveGroupInterfacePtr> move_groups_;
 
   bool planning_disabled_;
-  bool unplanned_approach_;
 
   std::atomic_bool is_canceling_;
 
