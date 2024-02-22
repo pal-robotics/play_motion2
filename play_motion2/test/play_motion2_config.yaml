@@ -1,5 +1,10 @@
 play_motion2:
   ros__parameters:
+    motion_planner:
+      disable_motion_planning: true
+      approach_velocity: 0.5
+      approach_min_duration: 0.5
+
     motions:
       home:
         joints:
