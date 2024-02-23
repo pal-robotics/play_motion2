@@ -32,25 +32,25 @@ def generate_launch_description():
         'motions_file',
         description='Yaml file with the info of the motions. ')
 
-    approach_planner_config = DeclareLaunchArgument(
-        'approach_planner_config',
+    motion_planner_config = DeclareLaunchArgument(
+        'motion_planner_config',
         default_value=os.path.join(
-            get_package_share_directory('play_motion2'), 'config', 'approach_planner_config.yaml'),
-        description='Configuration for the simple_approach_planner. ')
+            get_package_share_directory('play_motion2'), 'config', 'motion_planner_config.yaml'),
+        description='Configuration for the motion planner. ')
 
     play_motion2 = Node(package='play_motion2',
                         executable='play_motion2_node',
                         output='both',
                         emulate_tty=True,
                         parameters=[LaunchConfiguration('motions_file'),
-                                    LaunchConfiguration('approach_planner_config'),
+                                    LaunchConfiguration('motion_planner_config'),
                                     {'use_sim_time': LaunchConfiguration('use_sim_time')}])
 
     ld = LaunchDescription()
 
     ld.add_action(sim_time_arg)
     ld.add_action(motions_config)
-    ld.add_action(approach_planner_config)
+    ld.add_action(motion_planner_config)
     ld.add_action(play_motion2)
 
     return ld
