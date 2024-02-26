@@ -400,19 +400,10 @@ JointTrajectory MotionPlanner::create_trajectory(
       point.time_from_start.nanosec = new_time.to_rmw_time().nsec;
     }
 
-    // For planned joints
-    bool all_joints_included = true;
-    for (const auto & joint : controller_joints) {
-      if (std::find(
-          planned_approach.joint_names.begin(), planned_approach.joint_names.end(), joint) ==
-        planned_approach.joint_names.end())
-      {
-        all_joints_included = false;
-        break;
-      }
-    }
-
-    if (all_joints_included) {
+    if (are_all_joints_included(
+        planned_approach.joint_names,
+        JointNames(controller_joints.begin(), controller_joints.end())))
+    {
       // Remove the original approach time and position.
       jt.points.erase(jt.points.begin());
 
@@ -692,10 +683,7 @@ MotionPlanner::get_valid_move_groups(const JointNames & joints) const
   std::vector<MoveGroupInterfacePtr> valid_move_groups;
   for (const auto & move_group : move_groups_) {
     const auto group_joints = move_group->getJointNames();
-    if (std::includes(
-        group_joints.begin(), group_joints.end(),
-        planning_joints.begin(), planning_joints.end()))
-    {
+    if (are_all_joints_included(group_joints, planning_joints)) {
       valid_move_groups.push_back(move_group);
     }
   }
@@ -747,5 +735,22 @@ MoveGroupInterface::Plan MotionPlanner::plan_approach(
   }
 
   return plan;
+}
+
+bool MotionPlanner::are_all_joints_included(
+  const JointNames & full_joint_names,
+  const JointNames & partial_joint_names) const
+{
+  bool all_joints_included = true;
+  for (const auto & joint : partial_joint_names) {
+    if (std::find(
+        full_joint_names.begin(), full_joint_names.end(), joint) ==
+      full_joint_names.end())
+    {
+      all_joints_included = false;
+      break;
+    }
+  }
+  return all_joints_included;
 }
 }     // namespace play_motion2

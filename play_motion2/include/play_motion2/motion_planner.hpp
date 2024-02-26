@@ -118,6 +118,10 @@ private:
     MoveGroupInterfacePtr group,
     const MotionInfo & approach_info);
 
+  bool are_all_joints_included(
+    const JointNames & full_joint_names,
+    const JointNames & partial_joint_names) const;
+
 private:
   double approach_vel_;
   double approach_min_duration_;
