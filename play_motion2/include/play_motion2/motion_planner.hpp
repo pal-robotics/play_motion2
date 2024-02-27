@@ -70,7 +70,6 @@ private:
   void check_parameters();
 
   MotionInfo prepare_approach(const MotionInfo & info);
-  MotionInfo prepare_motion(const MotionInfo & info);
 
   Result perform_unplanned_motion(
     const MotionInfo & info,

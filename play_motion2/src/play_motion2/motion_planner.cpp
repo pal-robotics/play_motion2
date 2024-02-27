@@ -198,19 +198,6 @@ MotionInfo MotionPlanner::prepare_approach(const MotionInfo & info)
   return approach_info;
 }
 
-MotionInfo MotionPlanner::prepare_motion(const MotionInfo & info)
-{
-  const auto motion_positions = std::vector<double>(
-    info.positions.begin() + info.joints.size(), info.positions.end());
-  const auto motion_times = std::vector<double>(info.times.begin() + 1, info.times.end());
-
-  MotionInfo motion_info = info;
-  motion_info.positions = motion_positions;
-  motion_info.times = motion_times;
-
-  return motion_info;
-}
-
 Result MotionPlanner::perform_unplanned_motion(
   const MotionInfo & info,
   const JointTrajectory & planned_approach)
@@ -235,7 +222,6 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
   is_canceling_ = false;    // Reset canceling flag
 
   const auto approach_info = prepare_approach(info);
-  auto motion_info = prepare_motion(info);
 
   // Check there are planned joints
   const auto planning_joints = get_planned_joints(info.joints);
