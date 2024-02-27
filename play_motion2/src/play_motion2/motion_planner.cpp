@@ -741,16 +741,14 @@ bool MotionPlanner::are_all_joints_included(
   const JointNames & full_joint_names,
   const JointNames & partial_joint_names) const
 {
-  bool all_joints_included = true;
   for (const auto & joint : partial_joint_names) {
     if (std::find(
         full_joint_names.begin(), full_joint_names.end(), joint) ==
       full_joint_names.end())
     {
-      all_joints_included = false;
-      break;
+      return false;
     }
   }
-  return all_joints_included;
+  return true;
 }
 }     // namespace play_motion2
