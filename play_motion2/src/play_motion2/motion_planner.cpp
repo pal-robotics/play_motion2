@@ -391,7 +391,7 @@ JointTrajectory MotionPlanner::create_trajectory(
     const auto planned_approach_time = rclcpp::Duration(
       planned_approach.points.back().time_from_start);
 
-    // Update times with the planned approach trajectory for both planne
+    // Update times with the planned approach trajectory for both planned and non-planned joints
     const auto original_approach_time = rclcpp::Duration(jt.points.front().time_from_start);
     for (auto & point : jt.points) {
       const auto new_time =
