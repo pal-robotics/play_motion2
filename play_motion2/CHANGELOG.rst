@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2024-02-28)
+------------------
 * Rename planner launch argument and update its config
 * Fix condition for checking planning groups parameter
 * Enhance loop condition
