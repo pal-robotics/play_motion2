@@ -87,35 +87,38 @@ void MotionPlanner::check_parameters()
   node_->get_parameters(kMotionPlannerParametersPrefix, planner_params);
 
   // Parameters for non-planned motions
-  if (planner_params.count(kApproachVelParam) > 0 &&
-    planner_params[kApproachVelParam].get_type() ==
-    rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    planner_params[kApproachVelParam].as_double() > 0.0)
-  {
-    approach_vel_ = planner_params[kApproachVelParam].as_double();
-  } else {
-    RCLCPP_WARN_STREAM(
-      node_->get_logger(),
-      "Param '" << kApproachVelParam << "' not set, wrong typed, negative or 0, " <<
-        "using the default value: " << kDefaultApproachVel);
+  const auto approach_vel_it = planner_params.find(kApproachVelParam);
+  if (approach_vel_it != planner_params.end()) {
+    if (approach_vel_it->second.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+      approach_vel_it->second.as_double() > 0.0)
+    {
+      approach_vel_ = approach_vel_it->second.as_double();
+    } else {
+      RCLCPP_WARN_STREAM(
+        node_->get_logger(),
+        "Param '" << kApproachVelParam << "' not set, wrong typed, negative or 0, " <<
+          "using the default value: " << kDefaultApproachVel);
+    }
   }
 
-  if (planner_params.count(kApproachMinDurationParam) > 0 &&
-    planner_params[kApproachMinDurationParam].get_type() ==
-    rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    planner_params[kApproachMinDurationParam].as_double() >= 0.0)
-  {
-    approach_vel_ = planner_params[kApproachMinDurationParam].as_double();
-  } else {
-    RCLCPP_WARN_STREAM(
-      node_->get_logger(),
-      "Param '" << kApproachMinDurationParam << "' not set, wrong typed or negative, " <<
-        "using the default value: " << kDefaultApproachMinDuration);
+  const auto approach_min_duration_it = planner_params.find(kApproachMinDurationParam);
+  if (approach_min_duration_it != planner_params.end()) {
+    if (approach_min_duration_it->second.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+      approach_min_duration_it->second.as_double() >= 0.0)
+    {
+      approach_vel_ = approach_min_duration_it->second.as_double();
+    } else {
+      RCLCPP_WARN_STREAM(
+        node_->get_logger(),
+        "Param '" << kApproachMinDurationParam << "' not set, wrong typed or negative, " <<
+          "using the default value: " << kDefaultApproachMinDuration);
+    }
   }
 
   // Initialize motion planning capability, unless explicitly disabled
-  if (planner_params.count(kDisableMotionPlanningParam) > 0) {
-    planning_disabled_ = planner_params[kDisableMotionPlanningParam].as_bool();
+  const auto disable_planning_it = planner_params.find(kDisableMotionPlanningParam);
+  if (disable_planning_it != planner_params.end()) {
+    planning_disabled_ = disable_planning_it->second.as_bool();
   }
 
   if (planning_disabled_) {
@@ -127,30 +130,32 @@ void MotionPlanner::check_parameters()
     return;  // Skip initialization of planning-related members when all planning is disabled
   }
 
-  if (planner_params.count(kJointToleranceParam) > 0 &&
-    planner_params[kJointToleranceParam].get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
-    planner_params[kJointToleranceParam].as_double() >= 0.0)
+  const auto joint_tolerance_it = planner_params.find(kJointToleranceParam);
+  if (joint_tolerance_it != planner_params.end() &&
+    joint_tolerance_it->second.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+    joint_tolerance_it->second.as_double() >= 0.0)
   {
-    joint_tolerance_ = planner_params[kJointToleranceParam].as_double();
+    joint_tolerance_ = joint_tolerance_it->second.as_double();
   }
   RCLCPP_DEBUG(node_->get_logger(), "Joint tolerance set to %f", joint_tolerance_);
 
   // Joints excluded from motion planning
-  if (planner_params.count(kExcludeFromPlanningJointsParam) > 0) {
-    no_planning_joints_ = planner_params[kExcludeFromPlanningJointsParam].as_string_array();
+  const auto no_planning_joints_it = planner_params.find(kExcludeFromPlanningJointsParam);
+  if (no_planning_joints_it != planner_params.end()) {
+    no_planning_joints_ = no_planning_joints_it->second.as_string_array();
   }
 
   // Planning group names
-  if (planner_params.count(kPlanningGroupsParam) == 0 ||
-    planner_params[kPlanningGroupsParam].get_type() !=
-    rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
+  const auto planning_groups_it = planner_params.find(kPlanningGroupsParam);
+  if (planning_groups_it != planner_params.end() ||
+    planning_groups_it->second.get_type() != rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
   {
     const std::string what =
       "Unspecified planning groups for computing approach trajectories. Please set the "
       "'motion_planner.planning_groups' parameter";
     throw std::runtime_error(what);
   }
-  planning_groups_ = planner_params[kPlanningGroupsParam].as_string_array();
+  planning_groups_ = planning_groups_it->second.as_string_array();
 
   for (const auto & group : planning_groups_) {
     move_groups_.emplace_back(std::make_shared<MoveGroupInterface>(move_group_node_, group));
