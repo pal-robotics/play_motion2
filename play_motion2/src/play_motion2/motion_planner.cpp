@@ -715,7 +715,7 @@ MoveGroupInterface::Plan MotionPlanner::plan_approach(
   group->setMaxVelocityScalingFactor(1.0);
 
   /// @pre sizes of joints and positions are the same
-  for (unsigned int i = 0; i < approach_info.joints.size(); i++) {
+  for (auto i = 0u; i < approach_info.joints.size(); ++i) {
     if (std::find(
         no_planning_joints_.begin(), no_planning_joints_.end(),
         approach_info.joints[i]) == no_planning_joints_.end())
