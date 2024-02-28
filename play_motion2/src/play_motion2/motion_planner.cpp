@@ -147,7 +147,7 @@ void MotionPlanner::check_parameters()
 
   // Planning group names
   const auto planning_groups_it = planner_params.find(kPlanningGroupsParam);
-  if (planning_groups_it != planner_params.end() ||
+  if (planning_groups_it == planner_params.end() ||
     planning_groups_it->second.get_type() != rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
   {
     const std::string what =
