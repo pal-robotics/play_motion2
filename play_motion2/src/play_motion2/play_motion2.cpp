@@ -125,8 +125,9 @@ void PlayMotion2::is_motion_ready_callback(
   IsMotionReady::Request::ConstSharedPtr request,
   IsMotionReady::Response::SharedPtr response)
 {
+  // skip_planning argument is set to true to avoid false negatives in case planning is not enabled
   response->is_ready = !is_busy_ &&
-    motion_planner_->is_executable(motion_loader_->get_motion_info(request->motion_key));
+    motion_planner_->is_executable(motion_loader_->get_motion_info(request->motion_key), true);
 }
 
 rclcpp_action::GoalResponse PlayMotion2::handle_goal(
@@ -136,7 +137,9 @@ rclcpp_action::GoalResponse PlayMotion2::handle_goal(
   RCLCPP_INFO_STREAM(get_logger(), "Received goal request: motion '" << goal->motion_name << "'");
 
   if (is_busy_ || !motion_loader_->exists(goal->motion_name) ||
-    !motion_planner_->is_executable(motion_loader_->get_motion_info(goal->motion_name)))
+    !motion_planner_->is_executable(
+      motion_loader_->get_motion_info(goal->motion_name),
+      goal->skip_planning))
   {
     RCLCPP_ERROR_EXPRESSION(get_logger(), is_busy_, "PlayMotion2 is busy");
     RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' cannot be performed");
@@ -170,7 +173,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<ActionGoalHandle> goal_ha
   auto & motion = motion_loader_->get_motion_info(goal->motion_name);
 
   // Execute motion
-  const auto motion_result = motion_planner_->execute_motion(motion);
+  const auto motion_result = motion_planner_->execute_motion(motion, goal->skip_planning);
 
   // Evaluate and set result
   auto action_result = std::make_shared<ActionResult>();

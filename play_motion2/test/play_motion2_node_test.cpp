@@ -137,6 +137,7 @@ void PlayMotion2NodeTest::send_pm2_goal(
 {
   auto pm2_goal = PlayMotion2::Goal();
   pm2_goal.motion_name = motion_name;
+  pm2_goal.skip_planning = true;
   future_gh = pm2_action_client_->async_send_goal(pm2_goal);
 
   ASSERT_EQ(

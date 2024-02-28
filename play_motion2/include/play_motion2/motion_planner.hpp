@@ -22,10 +22,13 @@
 
 #include "play_motion2/types.hpp"
 
+#include "moveit/move_group_interface/move_group_interface.h"
+
 #include "rclcpp_action/client_goal_handle.hpp"
 #include "rclcpp_action/client.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp/callback_group.hpp"
+#include "rclcpp/node.hpp"
 
 #include "control_msgs/action/follow_joint_trajectory.hpp"
 #include "controller_manager_msgs/msg/controller_state.hpp"
@@ -48,15 +51,18 @@ using FollowJointTrajectory = control_msgs::action::FollowJointTrajectory;
 using FollowJTGoalHandleFutureResult =
   std::shared_future<rclcpp_action::ClientGoalHandle<FollowJointTrajectory>::WrappedResult>;
 
+using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
+using MoveGroupInterfacePtr = moveit::planning_interface::MoveGroupInterfacePtr;
+
 class MotionPlanner
 {
 public:
   explicit MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
   ~MotionPlanner() = default;
 
-  bool is_executable(const MotionInfo & info);
+  bool is_executable(const MotionInfo & info, const bool skip_planning);
 
-  Result execute_motion(const MotionInfo & info);
+  Result execute_motion(const MotionInfo & info, const bool skip_planning);
 
   void cancel_motion();
 
@@ -64,19 +70,22 @@ private:
   void check_parameters();
 
   MotionInfo prepare_approach(const MotionInfo & info);
-  MotionInfo prepare_motion(const MotionInfo & info);
 
-  Result perform_unplanned_motion(const MotionInfo & info);
+  Result perform_unplanned_motion(
+    const MotionInfo & info,
+    const JointTrajectory & planned_approach);
 
   double calculate_approach_time(const MotionPositions & goal_pos, const JointNames & joints);
   double get_reach_time(MotionPositions current_pos, MotionPositions goal_pos) const;
 
-  ControllerTrajectories generate_controller_trajectories(const MotionInfo & info) const;
+  ControllerTrajectories generate_controller_trajectories(
+    const MotionInfo & info,
+    const JointTrajectory & planned_approach) const;
 
   JointTrajectory create_trajectory(
     const ControllerState & controller_state,
     const MotionInfo & info,
-    const double extra_time) const;
+    const JointTrajectory & planned_approach) const;
 
   void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
 
@@ -93,15 +102,35 @@ private:
 
   Result send_trajectories(
     const MotionInfo & info,
-    std::list<FollowJTGoalHandleFutureResult> & futures_list);
+    const JointTrajectory & planned_approach,
+    std::list<FollowJTGoalHandleFutureResult> & futures_list,
+    double & final_motion_time);
 
   Result wait_for_results(
     std::list<FollowJTGoalHandleFutureResult> & futures_list,
     const double motion_time);
 
+  std::vector<MoveGroupInterfacePtr> get_valid_move_groups(const JointNames & joints) const;
+  JointNames get_planned_joints(const JointNames & joints) const;
+
+  MoveGroupInterface::Plan plan_approach(
+    MoveGroupInterfacePtr group,
+    const MotionInfo & approach_info);
+
+  bool are_all_joints_included(
+    const JointNames & full_joint_names,
+    const JointNames & partial_joint_names) const;
+
 private:
   double approach_vel_;
   double approach_min_duration_;
+  double joint_tolerance_;
+  JointNames no_planning_joints_;
+  std::vector<std::string> planning_groups_;
+
+  std::vector<MoveGroupInterfacePtr> move_groups_;
+
+  bool planning_disabled_;
 
   std::atomic_bool is_canceling_;
 
@@ -119,6 +148,7 @@ private:
   std::map<std::string, rclcpp_action::Client<FollowJointTrajectory>::SharedPtr> action_clients_;
 
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  rclcpp::Node::SharedPtr move_group_node_;
 };
 
 }  // namespace play_motion2
