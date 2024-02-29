@@ -66,14 +66,14 @@ The `approach_velocity` and `approach_min_duration` parameters are used for non-
 - `approach_velocity`: Maximum velocity for the approach. The default value is `0.5`.
 - `approach_min_duration`: Minimum duration for the approach. The default value is `0.5`.
 
-The parameter `disable_motion_planning` is used to decide whether use planning or not. The default value es `false`, so the planning is enabled for the approach.
+The parameter `disable_motion_planning` is used to decide whether to use planning or not. The default value is `false`, so the planning is enabled for the approach.
 
 The rest of the parameters are used when planning is enabled:
-- `planning_groups`: defines the MoveIt 2 groups to planificate the approach of the motions. This parameter is mandatory when using planning.
+- `planning_groups`: defines the MoveIt 2 groups to plan the approach of the motions. This parameter is mandatory when using planning.
 - `exclude_from_planning_joints`: List of joints that are excluded for planning.
 - `joint_tolerance`: Joint tolerance set when planning the approach. The default value is `0.01`.
 
-When using planning, the approach to the first position will be planned by using MoveIt 2. Then, the planned trajectory is combined with the original motion in order to reach safely the first position of the motion and then perform it.
+When using planning, the approach to the first position will be planned using MoveIt 2. Then, the planned trajectory is combined with the original motion in order to safely reach the first position of the motion and perform it.
 
 > **Disclaimer**: It is strongly recommended to use planning, otherwise there might be collisions when reaching the first position of the motion.
 
