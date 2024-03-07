@@ -264,6 +264,16 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
     return Result(Result::State::ERROR, "No valid move groups found for the given joints");
   }
 
+  if (!needs_approach(approach_info)) {
+    // If the approach trajectory is not needed and there is only one position in the motion,
+    // i.e., the motion is only the approach, then the goal is already achieved.
+    if (approach_info.positions.size() == approach_info.joints.size()) {
+      return Result(Result::State::SUCCESS);
+    }
+
+    return perform_unplanned_motion(info, JointTrajectory());
+  }
+
   MoveGroupInterface::Plan approach_plan;
   for (const auto & group : move_groups) {
     approach_plan = plan_approach(group, info);
@@ -753,4 +763,28 @@ bool MotionPlanner::are_all_joints_included(
   }
   return true;
 }
+
+bool MotionPlanner::needs_approach(const MotionInfo & approach_info)
+{
+  // Wait until joint_states_ updated and set current positions
+  std::unique_lock<std::mutex> lock(joint_states_mutex_);
+  joint_states_updated_ = false;
+  joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
+
+  for (const auto & joint : approach_info.joints) {
+    {
+      const auto joint_pos = std::distance(
+        approach_info.joints.begin(),
+        std::find(approach_info.joints.begin(), approach_info.joints.end(), joint));
+      const auto goal_pos = approach_info.positions[joint_pos];
+      const auto current_pos = joint_states_[joint][0];
+
+      if (std::abs(current_pos - goal_pos) > joint_tolerance_) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 }     // namespace play_motion2
