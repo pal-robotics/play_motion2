@@ -71,7 +71,7 @@ private:
 
   MotionInfo prepare_approach(const MotionInfo & info);
 
-  Result perform_unplanned_motion(
+  Result perform_motion(
     const MotionInfo & info,
     const JointTrajectory & planned_approach);
 
