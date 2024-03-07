@@ -121,6 +121,8 @@ private:
     const JointNames & full_joint_names,
     const JointNames & partial_joint_names) const;
 
+  bool needs_approach(const MotionInfo & approach_info);
+
 private:
   double approach_vel_;
   double approach_min_duration_;
