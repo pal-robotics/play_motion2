@@ -2,6 +2,12 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rename method perform_unplanned_motion to perform_motion
+* Skip approach when the joints are already in the first position
+* Contributors: Noel Jimenez
+
 1.0.0 (2024-02-28)
 ------------------
 * Rename planner launch argument and update its config
