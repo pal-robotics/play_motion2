@@ -214,7 +214,7 @@ MotionInfo MotionPlanner::prepare_approach(const MotionInfo & info)
   return approach_info;
 }
 
-Result MotionPlanner::perform_unplanned_motion(
+Result MotionPlanner::perform_motion(
   const MotionInfo & info,
   const JointTrajectory & planned_approach)
 {
@@ -255,7 +255,7 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
         time = time - info.times[0] + approach_time;
       }
     }
-    return perform_unplanned_motion(unplanned_info, JointTrajectory());
+    return perform_motion(unplanned_info, JointTrajectory());
   }
 
   // Planned motion
@@ -271,7 +271,7 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
       return Result(Result::State::SUCCESS);
     }
 
-    return perform_unplanned_motion(info, JointTrajectory());
+    return perform_motion(info, JointTrajectory());
   }
 
   MoveGroupInterface::Plan approach_plan;
@@ -286,7 +286,7 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
     return Result(Result::State::ERROR, "Failed to plan approach trajectory");
   }
 
-  return perform_unplanned_motion(info, approach_plan.trajectory_.joint_trajectory);
+  return perform_motion(info, approach_plan.trajectory_.joint_trajectory);
 }
 
 double MotionPlanner::calculate_approach_time(
