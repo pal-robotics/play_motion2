@@ -123,6 +123,8 @@ private:
 
   bool needs_approach(const MotionInfo & approach_info);
 
+  void cancel_all_goals();
+
 private:
   double approach_vel_;
   double approach_min_duration_;
