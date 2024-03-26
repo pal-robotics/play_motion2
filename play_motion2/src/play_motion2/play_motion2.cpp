@@ -186,7 +186,7 @@ void PlayMotion2::execute_motion(const std::shared_ptr<ActionGoalHandle> goal_ha
       goal_handle->succeed(action_result);
       break;
     case Result::State::ERROR:
-      RCLCPP_INFO_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
+      RCLCPP_ERROR_STREAM(get_logger(), "Motion '" << goal->motion_name << "' failed");
       goal_handle->abort(action_result);
       break;
     case Result::State::CANCELED:
