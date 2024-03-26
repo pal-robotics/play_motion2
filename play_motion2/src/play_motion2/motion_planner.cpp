@@ -590,9 +590,7 @@ Result MotionPlanner::send_trajectories(
         node_->get_logger(),
         "Cannot perform motion '" << info.key << "'");
       // cancel all sent goals
-      for (const auto & client : action_clients_) {
-        client.second->async_cancel_all_goals();
-      }
+      cancel_all_goals();
 
       return Result(
         Result::State::ERROR,
@@ -658,6 +656,7 @@ Result MotionPlanner::wait_for_results(
         }
       }
 
+      cancel_all_goals();
       failed = true;
       result = Result(
         Result::State::ERROR,
@@ -667,16 +666,14 @@ Result MotionPlanner::wait_for_results(
     }
 
     if (is_canceling_) {
-      // cancel all sent goals
-      for (const auto & client : action_clients_) {
-        client.second->async_cancel_all_goals();
-      }
+      cancel_all_goals();
       futures_list.clear();
       return Result(Result::State::CANCELED, "Motion canceled");
     }
   } while (!failed && !futures_list.empty() && on_time);
 
   if (!on_time) {
+    cancel_all_goals();
     result = Result(Result::State::ERROR, "Timeout exceeded while waiting for results");
     RCLCPP_ERROR_STREAM(node_->get_logger(), result.error);
   } else if (!failed) {   // All goals succeeded
@@ -784,6 +781,14 @@ bool MotionPlanner::needs_approach(const MotionInfo & approach_info)
     }
   }
   return false;
+}
+
+void MotionPlanner::cancel_all_goals()
+{
+  // cancel all sent goals
+  for (const auto & client : action_clients_) {
+    client.second->async_cancel_all_goals();
+  }
 }
 
 }     // namespace play_motion2
