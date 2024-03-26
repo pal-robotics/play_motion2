@@ -646,16 +646,15 @@ Result MotionPlanner::wait_for_results(
 
     if (current_states != motion_controller_states_) {
       std::string controller_name = "";
-
-      for (const auto & motion_controller : motion_controller_states_) {
+      for (const auto & current_controller_state : current_states) {
         const auto controller = std::find_if(
-          current_states.cbegin(), current_states.cend(),
-          [&](const auto & current_controller_state) {
-            return current_controller_state.name == motion_controller.name;
+          motion_controller_states_.cbegin(), motion_controller_states_.cend(),
+          [&](const auto & prev_controller_state) {
+            return current_controller_state.name == prev_controller_state.name;
           });
 
-        if (controller == current_states.end()) {
-          controller_name = motion_controller.name;
+        if (controller == motion_controller_states_.end()) {
+          controller_name = current_controller_state.name;
         }
       }
 
