@@ -4,6 +4,8 @@ project(play_motion2)
 find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 ament_auto_find_build_dependencies()
+add_compile_definitions(MOVEIT_VERSION_MAJOR=${moveit_ros_planning_interface_VERSION_MAJOR})
+add_compile_definitions(MOVEIT_VERSION_MINOR=${moveit_ros_planning_interface_VERSION_MINOR})
 
 ament_auto_add_executable(play_motion2_node
   src/play_motion2_main.cpp

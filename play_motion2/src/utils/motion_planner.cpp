@@ -22,13 +22,12 @@
 
 #include "motion_planner.hpp"
 
-#include "moveit/move_group_interface/move_group_interface.h"
-
 #include "rclcpp_action/client_goal_handle.hpp"
 #include "rclcpp_action/create_client.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/wait_for_message.hpp"
+#include "rclcpp/version.h"
 
 #include "std_msgs/msg/string.hpp"
 namespace play_motion2
@@ -80,8 +79,16 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
     "/joint_states", 1,
     std::bind(&MotionPlanner::joint_states_callback, this, _1), options);
 
+#if RCLCPP_VERSION_MAJOR >= 17
+  const rclcpp::QoS qos_services =
+    rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_ALL, 1))
+    .reliable()
+    .durability_volatile();
+#else
+  const rmw_qos_profile_t qos_services = rmw_qos_profile_default;
+#endif
   list_controllers_client_ = node_->create_client<ListControllers>(
-    "/controller_manager/list_controllers", rmw_qos_profile_default, motion_planner_cb_group_);
+    "/controller_manager/list_controllers", qos_services, motion_planner_cb_group_);
 
   move_group_node_ = rclcpp::Node::make_shared("_move_group_node", node_->get_name());
 
@@ -320,19 +327,27 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
     return perform_motion(info, JointTrajectory());
   }
 
+  auto get_trajectory_from_plan = [&](const MoveGroupInterface::Plan & plan) {
+    #if MOVEIT_VERSION_MINOR > 7
+      return plan.trajectory;
+    #else
+      return plan.trajectory_;
+    #endif
+    };
+
   MoveGroupInterface::Plan approach_plan;
   for (const auto & group : move_groups) {
     approach_plan = plan_approach(group, info);
-    if (!approach_plan.trajectory_.joint_trajectory.points.empty()) {
+    if (!get_trajectory_from_plan(approach_plan).joint_trajectory.points.empty()) {
       break;
     }
   }
 
-  if (approach_plan.trajectory_.joint_trajectory.points.empty()) {
+  if (get_trajectory_from_plan(approach_plan).joint_trajectory.points.empty()) {
     return Result(Result::State::ERROR, "Failed to plan approach trajectory");
   }
 
-  return perform_motion(info, approach_plan.trajectory_.joint_trajectory);
+  return perform_motion(info, get_trajectory_from_plan(approach_plan).joint_trajectory);
 }
 
 double MotionPlanner::calculate_approach_time(
