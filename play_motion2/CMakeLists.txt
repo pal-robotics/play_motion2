@@ -61,6 +61,7 @@ if(BUILD_TESTING)
     play_motion2_msgs
     rclcpp
     rclcpp_action
+    sensor_msgs
   )
 
   install(
