@@ -25,7 +25,7 @@ RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
 def define_controller_spawner(name: str, active: bool = True):
-    arguments = [name, '--controller-manager', '/controller_manager']
+    arguments = [name]
 
     if not active:
         arguments.append('--inactive')
