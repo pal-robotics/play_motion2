@@ -19,7 +19,10 @@
 #include "play_motion2_node_test.hpp"
 #include "rclcpp/executors.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp/wait_for_message.hpp"
 #include "rclcpp_action/create_client.hpp"
+
+#include "sensor_msgs/msg/joint_state.hpp"
 
 
 constexpr auto START_TIMEOUT = 30s;
@@ -95,40 +98,30 @@ void PlayMotion2NodeTest::restore_controllers() const
   wait_for_controller_service(switch_controller_client_);
 
   // reactivate controllers
-  const std::vector<std::string> controllers_list =
+  const std::vector<std::string> active_controllers_list =
   {"joint_state_broadcaster", "controller_1", "controller_2"};
+  const std::vector<std::string> inactive_controllers_list = {"controller_1_low_constraints"};
 
-  for (const auto & controller : controllers_list) {
-    auto request = std::make_shared<SwitchController::Request>();
-    request->activate_controllers = {controller};
-    request->strictness = SwitchController::Request::BEST_EFFORT;
-
-    auto result = switch_controller_client_->async_send_request(request);
-
-    ASSERT_EQ(
-      rclcpp::spin_until_future_complete(
-        client_node_, result,
-        TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
-
-    ASSERT_TRUE(result.get()->ok);
-  }
+  switch_controllers(inactive_controllers_list, active_controllers_list);
 }
 
-void PlayMotion2NodeTest::deactivate_controllers(const std::vector<std::string> & controllers_list)
-const
+void PlayMotion2NodeTest::switch_controllers(
+  const std::vector<std::string> & deactivate_list,
+  const std::vector<std::string> & activate_list) const
 {
-  auto deactivate_request = std::make_shared<SwitchController::Request>();
-  deactivate_request->deactivate_controllers = controllers_list;
-  deactivate_request->strictness = SwitchController::Request::BEST_EFFORT;
-  auto deactivate_future_result = switch_controller_client_->async_send_request(deactivate_request);
+  auto request = std::make_shared<SwitchController::Request>();
+  request->deactivate_controllers = deactivate_list;
+  request->activate_controllers = activate_list;
+  request->strictness = SwitchController::Request::BEST_EFFORT;
+  auto future_result = switch_controller_client_->async_send_request(request);
 
   ASSERT_EQ(
     rclcpp::spin_until_future_complete(
-      client_node_, deactivate_future_result,
+      client_node_, future_result,
       TIMEOUT), rclcpp::FutureReturnCode::SUCCESS);
 
-  auto deactivate_result = deactivate_future_result.get();
-  ASSERT_TRUE(deactivate_result->ok);
+  auto result = future_result.get();
+  ASSERT_TRUE(result->ok);
 }
 
 void PlayMotion2NodeTest::send_pm2_goal(
@@ -211,7 +204,7 @@ TEST_F(PlayMotion2NodeTest, MalformedMotion)
 TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
 {
   // deactivate controller_1
-  deactivate_controllers({"controller_1"});
+  switch_controllers({"controller_1"}, {});
 
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;
@@ -265,7 +258,7 @@ void PlayMotion2NodeTest::execute_motion_deactivating_controller_1(
   std::this_thread::sleep_for(duration);
 
   // deactivate controller_1
-  deactivate_controllers({"controller_1"});
+  switch_controllers({"controller_1"}, {});
 
   // wait for result
   wait_pm2_result(goal_handle, code);
@@ -286,6 +279,48 @@ TEST_F(PlayMotion2NodeTest, UnusedControllersChangedDuringExecution)
   execute_motion_deactivating_controller_1(
     1s, "controller_2_pose",
     rclcpp_action::ResultCode::SUCCEEDED);
+}
+
+TEST_F(PlayMotion2NodeTest, MotionAbortsOnJTCFailure)
+{
+  execute_motion("pose1");  // start from pose1
+
+  // get joint_states
+  sensor_msgs::msg::JointState joint_state_msg_before;
+  ASSERT_TRUE(
+    rclcpp::wait_for_message(
+      joint_state_msg_before, client_node_, "joint_states",
+      TIMEOUT));
+
+  // deactivate controller_1 and activate controller_1_low_constraints
+  switch_controllers({"controller_1"}, {"controller_1_low_constraints"});
+
+  FutureGoalHandlePM2 goal_handle_future;
+  send_pm2_goal("home", goal_handle_future);
+
+  auto goal_handle = goal_handle_future.get();
+
+  ASSERT_TRUE(goal_handle);
+
+  // sleep the time needed for the motion to be executed
+  // the motion should be aborted though
+  std::this_thread::sleep_for(5s);
+
+  // wait for result
+  wait_pm2_result(goal_handle, rclcpp_action::ResultCode::ABORTED);
+
+  // get joint_states
+  sensor_msgs::msg::JointState joint_state_msg_after;
+  ASSERT_TRUE(
+    rclcpp::wait_for_message(
+      joint_state_msg_after, client_node_, "joint_states",
+      TIMEOUT));
+
+  // check that the joints have not moved significantly
+  ASSERT_EQ(joint_state_msg_before.position.size(), joint_state_msg_after.position.size());
+  for (size_t i = 0; i < joint_state_msg_before.position.size(); ++i) {
+    ASSERT_NEAR(joint_state_msg_before.position[i], joint_state_msg_after.position[i], 0.2);
+  }
 }
 
 TEST_F(PlayMotion2NodeTest, GetMotionInfoSrvTest)

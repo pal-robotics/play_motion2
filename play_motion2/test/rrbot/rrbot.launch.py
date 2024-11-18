@@ -24,6 +24,19 @@ from launch_ros.actions import Node
 RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
+def define_controller_spawner(name: str, active: bool = True):
+    arguments = [name]
+
+    if not active:
+        arguments.append('--inactive')
+
+    return Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=arguments,
+    )
+
+
 def generate_launch_description():
 
     # Visualize the robot for debugging purposes
@@ -42,23 +55,11 @@ def generate_launch_description():
         parameters=[robot_description, RRBOT_DIR + '/controllers.yaml'],
         output='both')
 
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
-    )
-
-    controller_1_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["controller_1", "--controller-manager", "/controller_manager"],
-    )
-
-    controller_2_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["controller_2", "--controller-manager", "/controller_manager"],
-    )
+    joint_state_broadcaster_spawner = define_controller_spawner('joint_state_broadcaster')
+    controller_1_spawner = define_controller_spawner('controller_1')
+    controller_2_spawner = define_controller_spawner('controller_2')
+    controller_1_low_constraints_spawner = define_controller_spawner(
+        'controller_1_low_constraints', active=False)
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -85,6 +86,7 @@ def generate_launch_description():
     ld.add_action(joint_state_broadcaster_spawner)
     ld.add_action(controller_1_spawner)
     ld.add_action(controller_2_spawner)
+    ld.add_action(controller_1_low_constraints_spawner)
     ld.add_action(rviz_node)
 
     return ld

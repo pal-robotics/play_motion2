@@ -656,6 +656,7 @@ Result MotionPlanner::wait_for_results(
         if (future.get().code == rclcpp_action::ResultCode::SUCCEEDED) {
           return true;
         } else {
+          cancel_all_goals();
           failed = true;
           result = Result(Result::State::ERROR, "Joint Trajectory failed");
           RCLCPP_ERROR_STREAM(node_->get_logger(), result.error);

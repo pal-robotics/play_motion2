@@ -61,8 +61,11 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  void deactivate_controllers(const std::vector<std::string> & controllers_list) const;
-  void send_pm2_goal(const std::string & motion_name, FutureGoalHandlePM2 & future_gh) const;
+  void switch_controllers(
+    const std::vector<std::string> & deactivate_list,
+    const std::vector<std::string> & activate_list) const;
+  void send_pm2_goal(
+    const std::string & motion_name, FutureGoalHandlePM2 & future_gh) const;
   void wait_pm2_result(
     const GoalHandlePM2 & future_goal_handle,
     const rclcpp_action::ResultCode & expected_result) const;

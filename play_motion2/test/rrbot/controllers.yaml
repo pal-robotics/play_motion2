@@ -11,6 +11,9 @@ controller_manager:
     controller_2:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    controller_1_low_constraints:
+      type: joint_trajectory_controller/JointTrajectoryController
+
 joint_state_broadcaster:
   ros__parameters:
     type: joint_state_broadcaster/JointStateBroadcaster
@@ -38,3 +41,23 @@ controller_2:
 
     state_interfaces:
       - position
+
+controller_1_low_constraints:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints:
+      - joint1
+
+    command_interfaces:
+      - position
+
+    state_interfaces:
+      - position
+
+    # low constraints for testing JTC failure
+    constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 5.0
+      joint1:
+        trajectory: 0.000001
+        goal: 0.000002
