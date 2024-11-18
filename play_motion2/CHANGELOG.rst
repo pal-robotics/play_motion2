@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2024-11-18)
+------------------
 * Remove controller manager name from spawner arguments
 * Add test for Joint Trajectory failure
 * Cancel all goals if one of the controllers fails
