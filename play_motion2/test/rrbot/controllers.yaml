@@ -14,6 +14,15 @@ controller_manager:
     controller_1_low_constraints:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    chained_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    passthrough_controller_j1:
+      type: passthrough_controller/PassthroughController
+
+    passthrough_controller_j2:
+      type: passthrough_controller/PassthroughController
+
 joint_state_broadcaster:
   ros__parameters:
     type: joint_state_broadcaster/JointStateBroadcaster
@@ -61,3 +70,30 @@ controller_1_low_constraints:
       joint1:
         trajectory: 0.000001
         goal: 0.000002
+
+chained_controller:
+  ros__parameters:
+    type: joint_trajectory_controller/JointTrajectoryController
+
+    joints:
+      - joint1
+      - joint2
+    
+    command_joints:
+      - passthrough_controller_j1/joint1
+      - passthrough_controller_j2/joint2
+
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+passthrough_controller_j1:
+  ros__parameters:
+    type: passthrough_controller/PassthroughController
+    interfaces: ["joint1/position"]
+
+passthrough_controller_j2:
+  ros__parameters:
+    type: passthrough_controller/PassthroughController
+    interfaces: ["joint2/position"]
