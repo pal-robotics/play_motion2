@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add support for chainable controllers
+* Contributors: Noel Jimenez
+
 1.4.0 (2024-11-18)
 ------------------
 * Remove controller manager name from spawner arguments
