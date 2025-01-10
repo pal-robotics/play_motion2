@@ -39,6 +39,7 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
+  <test_depend>controller_interface</test_depend>
   <test_depend>controller_manager</test_depend>
   <test_depend>hardware_interface</test_depend>
   <test_depend>joint_state_broadcaster</test_depend>
@@ -46,6 +47,7 @@
   <test_depend>launch_pal</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>pluginlib</test_depend>
+  <test_depend>realtime_tools</test_depend>
   <test_depend>robot_state_publisher</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>xacro</test_depend>

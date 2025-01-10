@@ -41,6 +41,23 @@ if(BUILD_TESTING)
   )
   pluginlib_export_plugin_description_file(hardware_interface test/rrbot/rrbot_system.xml)
 
+  # passthrough_controller
+  generate_parameter_library(passthrough_controller_parameters
+    test/controllers/src/passthrough_controller_parameters.yaml
+  )
+  add_library(passthrough_controller SHARED
+    test/controllers/src/passthrough_controller.cpp
+  )
+
+  target_link_libraries(passthrough_controller PUBLIC passthrough_controller_parameters)
+  ament_target_dependencies(passthrough_controller PUBLIC controller_interface realtime_tools)
+  pluginlib_export_plugin_description_file(controller_interface test/controllers/passthrough_controller.xml)
+
+  install(
+    TARGETS passthrough_controller
+    DESTINATION lib
+  )
+
   # motion_loader_test
   ament_auto_add_gtest(motion_loader_test
     test/motion_loader_test.cpp

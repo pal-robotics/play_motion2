@@ -447,3 +447,22 @@ TEST_F(PlayMotion2NodeTest, RemoveMotionSrvTest)
       list_motions_result->motion_keys.end(),
       motion_to_rm), list_motions_result->motion_keys.end());
 }
+
+TEST_F(PlayMotion2NodeTest, MotionWithChainableControllers)
+{
+  // deactivate controller_1
+  switch_controllers(
+    {"controller_1", "controller_2"},
+    {"chained_controller", "passthrough_controller_j1", "passthrough_controller_j2"});
+
+  // create and send goal
+  FutureGoalHandlePM2 goal_handle_future;
+  send_pm2_goal("pose1", goal_handle_future);
+
+  const auto goal_handle = goal_handle_future.get();
+
+  ASSERT_TRUE(goal_handle);
+
+  // wait for result
+  wait_pm2_result(goal_handle, rclcpp_action::ResultCode::SUCCEEDED);
+}

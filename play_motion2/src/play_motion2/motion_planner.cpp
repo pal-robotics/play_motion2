@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <queue>
 #include <list>
 
 #include "play_motion2/motion_planner.hpp"
@@ -380,11 +381,15 @@ ControllerTrajectories MotionPlanner::generate_controller_trajectories(
 {
   ControllerTrajectories ct;
   for (const auto & controller : motion_controller_states_) {
-    const auto trajectory = create_trajectory(controller, info, planned_approach);
-    if (!trajectory.joint_names.empty()) {
-      ct[controller.name] = trajectory;
+    if (!controller.is_chained) {
+      const auto trajectory = create_trajectory(controller, info, planned_approach);
+      if (!trajectory.joint_names.empty()) {
+        ct[controller.name] = trajectory;
+      }
     }
   }
+
+
   return ct;
 }
 
@@ -394,9 +399,29 @@ JointTrajectory MotionPlanner::create_trajectory(
   const JointTrajectory & planned_approach) const
 {
   std::unordered_set<std::string> controller_joints;
-  for (const auto & interface : controller_state.claimed_interfaces) {
-    std::string joint_name = interface.substr(0, interface.find_first_of('/'));
-    controller_joints.insert(joint_name);
+
+  ControllerState chained_state = controller_state;
+  for (const auto & chain : controller_state.chain_connections) {
+    bool end_chain = false;
+    while (!end_chain) {
+      chained_state = *std::find_if(
+        motion_controller_states_.begin(), motion_controller_states_.end(),
+        [&](const auto & controller) {
+          return controller.name == chain.name;
+        });
+      if (chained_state.chain_connections.empty()) {end_chain = true;}
+    }
+    for (const auto & interface : chained_state.claimed_interfaces) {
+      std::string joint_name = interface.substr(0, interface.find_first_of('/'));
+      controller_joints.insert(joint_name);
+    }
+  }
+
+  if (controller_state.chain_connections.empty()) {
+    for (const auto & interface : controller_state.claimed_interfaces) {
+      std::string joint_name = interface.substr(0, interface.find_first_of('/'));
+      controller_joints.insert(joint_name);
+    }
   }
 
   // Create a map with joints positions
@@ -547,10 +572,46 @@ ControllerStates MotionPlanner::filter_controller_states(
   const std::string & type) const
 {
   ControllerStates filtered_controller_states;
+  std::queue<std::string> chained_controllers;
 
   for (const auto & controller : controller_states) {
     if (controller.state == state && controller.type == type) {
       filtered_controller_states.push_back(controller);
+    }
+
+    // Add chained controllers
+    if (!controller.chain_connections.empty()) {
+      for (const auto & chain : controller.chain_connections) {
+        chained_controllers.push(chain.name);
+      }
+    }
+  }
+
+  while (!chained_controllers.empty()) {
+    // Get the first controller in the chain and remove it from the queue
+    const auto chained_controller = chained_controllers.front();
+    chained_controllers.pop();
+
+    // Find the controller in the list of controllers
+    const auto & iterator = std::find_if(
+      controller_states.begin(), controller_states.end(),
+      [&](const auto & controller) {return controller.name == chained_controller;});
+
+    // If the controller is found, add it to the list of filtered controllers
+    // and add its chained controllers to the list
+    if (iterator != controller_states.end()) {
+      filtered_controller_states.push_back(*iterator);
+      if (!iterator->chain_connections.empty()) {
+        for (const auto & chain : iterator->chain_connections) {
+          chained_controllers.push(chain.name);
+        }
+      }
+    } else {
+      // This should never happen
+      RCLCPP_ERROR_STREAM(
+        node_->get_logger(),
+        "Chained controller '" << chained_controller << "' not found in the list of controllers");
+      return ControllerStates();
     }
   }
 

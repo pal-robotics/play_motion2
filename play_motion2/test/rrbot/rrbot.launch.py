@@ -24,8 +24,11 @@ from launch_ros.actions import Node
 RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
-def define_controller_spawner(name: str, active: bool = True):
+def define_controller_spawner(name: str, active: bool = True, *args):
     arguments = [name]
+
+    for arg in args:
+        arguments.append(arg)
 
     if not active:
         arguments.append('--inactive')
@@ -53,13 +56,18 @@ def generate_launch_description():
         package='controller_manager',
         executable='ros2_control_node',
         parameters=[robot_description, RRBOT_DIR + '/controllers.yaml'],
-        output='both')
+        output='both',
+        emulate_tty=True
+    )
 
     joint_state_broadcaster_spawner = define_controller_spawner('joint_state_broadcaster')
     controller_1_spawner = define_controller_spawner('controller_1')
     controller_2_spawner = define_controller_spawner('controller_2')
     controller_1_low_constraints_spawner = define_controller_spawner(
         'controller_1_low_constraints', active=False)
+    chained_controllers_spawner = define_controller_spawner(
+        'chained_controller', False, "passthrough_controller_j1",
+        "passthrough_controller_j2", "--activate-as-group")
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -87,6 +95,7 @@ def generate_launch_description():
     ld.add_action(controller_1_spawner)
     ld.add_action(controller_2_spawner)
     ld.add_action(controller_1_low_constraints_spawner)
+    ld.add_action(chained_controllers_spawner)
     ld.add_action(rviz_node)
 
     return ld
