@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2025-01-10)
+------------------
 * Add support for chainable controllers
 * Contributors: Noel Jimenez
 
