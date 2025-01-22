@@ -46,7 +46,9 @@ class PlayMotion2Client : public rclcpp::Node
   using RemoveMotion = play_motion2_msgs::srv::RemoveMotion;
 
 public:
-  explicit PlayMotion2Client(const std::string & name = "play_motion2_client");
+  explicit PlayMotion2Client(
+    const std::string & name = "play_motion2_client",
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~PlayMotion2Client();
 
   bool run_motion(
