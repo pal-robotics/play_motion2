@@ -28,8 +28,8 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 const auto kTimeout = 10s;
 
-PlayMotion2Client::PlayMotion2Client(const std::string & name)
-: Node(name)
+PlayMotion2Client::PlayMotion2Client(const std::string & name, const rclcpp::NodeOptions & options)
+: Node(name, options)
   , running_motion_(false)
   , motion_succeeded_(false)
 {
