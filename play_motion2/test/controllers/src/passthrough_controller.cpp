@@ -128,7 +128,16 @@ controller_interface::return_type PassthroughController::update_and_write_comman
 {
   for (size_t i = 0; i < command_interfaces_.size(); ++i) {
     if (!std::isnan(reference_interfaces_[i])) {
+      #if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+      if (!command_interfaces_[i].set_value(reference_interfaces_[i])) {
+        RCLCPP_ERROR(
+          get_node()->get_logger(), "Failed to set command for %s",
+          command_interface_names_[i].c_str());
+        return controller_interface::return_type::ERROR;
+      }
+      #else
       command_interfaces_[i].set_value(reference_interfaces_[i]);
+      #endif
     }
   }
 

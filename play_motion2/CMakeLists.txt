@@ -49,6 +49,7 @@ if(BUILD_TESTING)
     test/controllers/src/passthrough_controller.cpp
   )
 
+  add_compile_definitions(HARDWARE_INTERFACE_VERSION_MAJOR=${hardware_interface_VERSION_MAJOR})
   target_link_libraries(passthrough_controller PUBLIC passthrough_controller_parameters)
   ament_target_dependencies(passthrough_controller PUBLIC controller_interface realtime_tools)
   pluginlib_export_plugin_description_file(controller_interface test/controllers/passthrough_controller.xml)
