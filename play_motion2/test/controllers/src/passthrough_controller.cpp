@@ -128,7 +128,11 @@ controller_interface::return_type PassthroughController::update_and_write_comman
 {
   for (size_t i = 0; i < command_interfaces_.size(); ++i) {
     if (!std::isnan(reference_interfaces_[i])) {
+      #if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+      std::ignore = command_interfaces_[i].set_value(reference_interfaces_[i]);
+      #else
       command_interfaces_[i].set_value(reference_interfaces_[i]);
+      #endif
     }
   }
 
