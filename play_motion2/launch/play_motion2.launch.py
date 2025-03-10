@@ -38,13 +38,21 @@ def generate_launch_description():
             get_package_share_directory('play_motion2'), 'config', 'motion_planner_config.yaml'),
         description='Configuration for the motion planner. ')
 
-    play_motion2 = Node(package='play_motion2',
-                        executable='play_motion2_node',
-                        output='both',
-                        emulate_tty=True,
-                        parameters=[LaunchConfiguration('motions_file'),
-                                    LaunchConfiguration('motion_planner_config'),
-                                    {'use_sim_time': LaunchConfiguration('use_sim_time')}])
+    play_motion2 = Node(
+        package='play_motion2',
+        executable='play_motion2_node',
+        output='both',
+        emulate_tty=True,
+        parameters=[
+            LaunchConfiguration('motions_file'),
+            LaunchConfiguration('motion_planner_config'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}
+        ],
+        remappings=[
+            ('/play_motion2/robot_description', '/robot_description'),
+            ('/play_motion2/robot_description_semantic', '/robot_description_semantic'),
+        ],
+    )
 
     ld = LaunchDescription()
 
