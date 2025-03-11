@@ -2,6 +2,15 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remap description topics
+* Handle generate_parameter_library include for different versions
+* Ignore set_value output
+* Use set value output depending on hardware interface version
+* Add optional argument rclcpp::NodeOptions to play_motion_client
+* Contributors: Noel Jimenez, Sai Kishor Kothakota, thomasung
+
 1.5.0 (2025-01-10)
 ------------------
 * Add support for chainable controllers
