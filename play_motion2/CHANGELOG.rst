@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2025-03-11)
+------------------
 * Remap description topics
 * Handle generate_parameter_library include for different versions
 * Ignore set_value output
