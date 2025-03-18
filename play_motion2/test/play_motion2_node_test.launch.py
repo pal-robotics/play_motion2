@@ -21,7 +21,8 @@ from ament_index_python.packages import get_package_prefix
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_pal.include_utils import include_launch_py_description
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 
 TEST_DIR = str(pathlib.Path(__file__).resolve().parent)
 
@@ -34,8 +35,10 @@ def generate_test_description():
         )
     )
 
-    play_motion2 = include_launch_py_description(
-        'play_motion2', ['launch', 'play_motion2.launch.py'],
+    play_motion2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [FindPackageShare('play_motion2'), 'launch', 'play_motion2.launch.py'])),
         launch_arguments={
             'motions_file': TEST_DIR + '/play_motion2_config.yaml',
             'use_sim_time': 'False',
