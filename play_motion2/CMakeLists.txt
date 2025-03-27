@@ -50,7 +50,6 @@ if(BUILD_TESTING)
   )
 
   add_compile_definitions(HARDWARE_INTERFACE_VERSION_MAJOR=${hardware_interface_VERSION_MAJOR})
-  add_compile_definitions(GENERATE_PARAMETER_LIBRARY_VERSION_MINOR=${generate_parameter_library_VERSION_MINOR})
   target_link_libraries(passthrough_controller PUBLIC passthrough_controller_parameters)
   ament_target_dependencies(passthrough_controller PUBLIC controller_interface realtime_tools)
   pluginlib_export_plugin_description_file(controller_interface test/controllers/passthrough_controller.xml)
