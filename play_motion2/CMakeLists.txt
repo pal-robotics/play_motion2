@@ -12,7 +12,7 @@ ament_auto_add_library(play_motion2 SHARED
 )
 
 # play_motion2 client
-ament_auto_add_library(client
+ament_auto_add_library(client SHARED
   src/play_motion2/client.cpp
 )
 
