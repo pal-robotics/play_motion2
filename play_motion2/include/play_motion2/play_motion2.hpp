@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "play_motion2/motion_loader.hpp"
 #include "play_motion2/motion_planner.hpp"
