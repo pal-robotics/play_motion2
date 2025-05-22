@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLAY_MOTION2__MOTION_LOADER_HPP_
-#define PLAY_MOTION2__MOTION_LOADER_HPP_
+#ifndef UTILS__MOTION_LOADER_HPP_
+#define UTILS__MOTION_LOADER_HPP_
 
 #include <string>
 
@@ -63,4 +63,4 @@ private:
 
 }  // namespace play_motion2
 
-#endif  // PLAY_MOTION2__MOTION_LOADER_HPP_
+#endif  // UTILS__MOTION_LOADER_HPP_

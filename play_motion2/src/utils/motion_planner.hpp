@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLAY_MOTION2__MOTION_PLANNER_HPP_
-#define PLAY_MOTION2__MOTION_PLANNER_HPP_
+#ifndef UTILS__MOTION_PLANNER_HPP_
+#define UTILS__MOTION_PLANNER_HPP_
 
 #include <list>
 #include <map>
@@ -61,6 +61,7 @@ public:
   ~MotionPlanner() = default;
 
   bool is_executable(const MotionInfo & info, const bool skip_planning);
+  bool is_executable(const JointNames & joints, const bool skip_planning);
 
   Result execute_motion(const MotionInfo & info, const bool skip_planning);
 
@@ -157,4 +158,4 @@ private:
 
 }  // namespace play_motion2
 
-#endif  // PLAY_MOTION2__MOTION_PLANNER_HPP_
+#endif  // UTILS__MOTION_PLANNER_HPP_

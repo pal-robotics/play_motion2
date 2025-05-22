@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "motion_loader_test.hpp"
-#include "play_motion2/motion_loader.hpp"
+#include "../src/utils/motion_loader.hpp"
 #include "play_motion2_msgs/msg/motion.hpp"
 
 #include "rclcpp/parameter_client.hpp"

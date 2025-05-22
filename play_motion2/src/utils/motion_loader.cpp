@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <map>
 #include <string>
 #include <unordered_set>
 
-#include "play_motion2/motion_loader.hpp"
+#include "motion_loader.hpp"
 #include "rclcpp/logging.hpp"
 
 namespace play_motion2

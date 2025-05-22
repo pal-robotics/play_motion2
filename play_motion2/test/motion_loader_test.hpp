@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "play_motion2/motion_loader.hpp"
+#include "../src/utils/motion_loader.hpp"
 
 #include "rclcpp/node.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"

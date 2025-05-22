@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
+#include "play_motion2_msgs/msg/motion.hpp"
 
 namespace play_motion2
 {
@@ -64,7 +65,6 @@ struct Result
   explicit Result(const State st = INVALID, const std::string & error_str = "")
   : state(st), error(error_str) {}
 };
-
 }  // namespace play_motion2
 
 #endif  // PLAY_MOTION2__TYPES_HPP_

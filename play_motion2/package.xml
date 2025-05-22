@@ -16,6 +16,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <depend>backward_ros</depend>
+
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
@@ -23,6 +25,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>trajectory_msgs</depend>
 
