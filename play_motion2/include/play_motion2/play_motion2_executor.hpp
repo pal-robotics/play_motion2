@@ -37,10 +37,18 @@ using ActionGoal = Action::Goal;
 using ActionGoalHandle = rclcpp_action::ServerGoalHandle<Action>;
 using ActionResult = Action::Result;
 
+/**
+ * @class PlayMotion2Executor
+ * @brief A lifecycle node that executes motions using the PlayMotion2 action server.
+ * It provides a service to check if a list of joints is ready to receive a motion. It provides
+ * an action server to handle motion execution requests as well.
+ */
 class PlayMotion2Executor : public rclcpp_lifecycle::LifecycleNode
 {
 public:
+  // Callback group for the is_joint_list_ready service
   rclcpp::CallbackGroup::SharedPtr srv_group_;
+  // Callback group for the action server
   rclcpp::CallbackGroup::SharedPtr as_group_;
 
   explicit PlayMotion2Executor(const rclcpp::NodeOptions & options);

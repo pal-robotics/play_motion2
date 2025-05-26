@@ -31,7 +31,7 @@ PlayMotion2MgrBase::PlayMotion2MgrBase(const rclcpp::NodeOptions & options)
   ac_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   as_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   srv_c_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  srv_c_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  srv_s_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 }
 
 PlayMotion2MgrBase::~PlayMotion2MgrBase()
