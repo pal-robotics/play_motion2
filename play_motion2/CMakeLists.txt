@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(play_motion2)
 
 find_package(ament_cmake_auto REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 ament_auto_find_build_dependencies()
 
 
@@ -25,6 +26,9 @@ ament_auto_add_library(client SHARED
 ament_auto_add_executable(run_motion
   src/run_motion.cpp
 )
+
+# Play Motion 2 Client Python
+ament_python_install_package(${PROJECT_NAME})
 
 if(BUILD_TESTING)
   ament_auto_find_test_dependencies()
@@ -86,6 +90,22 @@ if(BUILD_TESTING)
   add_launch_test(
     test/play_motion2_node_test.launch.py
   )
+
+  # Python tests
+  find_package(ament_cmake_pytest REQUIRED)
+  set(_pytest_tests
+    test/test_client.py
+    test/test_flake8.py
+    test/test_pep257.py
+  )
+  foreach(_test_path ${_pytest_tests})
+    get_filename_component(_test_name ${_test_path} NAME_WE)
+    ament_add_pytest_test(${_test_name} ${_test_path}
+      APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+      TIMEOUT 60
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endforeach()
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE config launch)
