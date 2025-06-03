@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.3 (2025-06-03)
+------------------
 * Fix motion starting on the current position of the robot
   The joints were compared with the approach positions size, which always
   will match. Then if the approach was not needed, the motion was not
