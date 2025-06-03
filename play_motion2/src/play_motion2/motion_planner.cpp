@@ -300,7 +300,10 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
   if (!needs_approach(approach_info)) {
     // If the approach trajectory is not needed and there is only one position in the motion,
     // i.e., the motion is only the approach, then the goal is already achieved.
-    if (approach_info.positions.size() == approach_info.joints.size()) {
+    if (info.positions.size() == approach_info.joints.size()) {
+      RCLCPP_WARN(
+        node_->get_logger(),
+        "Motion only consists of one position and the robot is already at the goal position.");
       return Result(Result::State::SUCCESS);
     }
 
