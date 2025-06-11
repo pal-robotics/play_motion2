@@ -18,6 +18,7 @@
 #include "play_motion2/types.hpp"
 
 #include "play_motion2_msgs/action/play_motion2.hpp"
+#include "play_motion2_msgs/action/play_motion2_raw.hpp"
 #include "play_motion2_msgs/msg/motion.hpp"
 #include "play_motion2_msgs/srv/add_motion.hpp"
 #include "play_motion2_msgs/srv/get_motion_info.hpp"
@@ -42,6 +43,7 @@ namespace play_motion2
 class PlayMotion2Client : public rclcpp::Node
 {
   using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
+  using PlayMotion2Raw = play_motion2_msgs::action::PlayMotion2Raw;
   using MotionMsg = play_motion2_msgs::msg::Motion;
 
   using GetMotionInfo = play_motion2_msgs::srv::GetMotionInfo;
@@ -85,6 +87,28 @@ public:
    */
   bool run_motion_async(
     const std::string & motion_name,
+    const bool skip_planning);
+
+  /**
+ * @brief Run a non-stored motion.
+ * @param motion The motion to run.
+ * @param skip_planning If true, skip the planning phase.
+ * @param motion_timeout Optional. The timeout for the motion execution (defaults to 120).
+ * @return True if the motion was successfully started, false otherwise.
+ */
+  bool run_motion(
+    const play_motion2_msgs::msg::Motion & motion,
+    const bool skip_planning,
+    const std::chrono::seconds & motion_timeout = std::chrono::seconds(120));
+
+  /**
+   * @brief Run a non-stored motion asynchronously.
+   * @param motion The motion to run.
+   * @param skip_planning If true, skip the planning phase.
+   * @return True if the motion was successfully started, false otherwise.
+   */
+  bool run_motion_async(
+    const play_motion2_msgs::msg::Motion & motion,
     const bool skip_planning);
 
   /**
@@ -136,11 +160,17 @@ private:
   void result_callback(
     const rclcpp_action::ClientGoalHandle<PlayMotion2>::WrappedResult & result);
 
+  const rclcpp_action::ClientGoalHandle<PlayMotion2Raw>::SharedPtr
+  send_goal_raw(const play_motion2_msgs::msg::Motion & motion, const bool skip_planning);
+  void result_callback_raw(
+    const rclcpp_action::ClientGoalHandle<PlayMotion2Raw>::WrappedResult & result);
+
 private:
   std::atomic_bool running_motion_;
   bool motion_succeeded_;
 
   rclcpp_action::Client<PlayMotion2>::SharedPtr play_motion2_client_;
+  rclcpp_action::Client<PlayMotion2Raw>::SharedPtr play_motion2_client_raw_;
 
   rclcpp::Client<GetMotionInfo>::SharedPtr get_motion_info_client_;
   rclcpp::Client<IsMotionReady>::SharedPtr is_motion_ready_client_;
