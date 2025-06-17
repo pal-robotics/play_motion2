@@ -5,15 +5,11 @@ find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 ament_auto_find_build_dependencies()
 
-
-ament_auto_add_library(play_motion2_library SHARED
+ament_auto_add_executable(play_motion2_node
+  src/play_motion2_main.cpp
   src/play_motion2/play_motion2_executor.cpp
   src/play_motion2/play_motion2_mgr.cpp
   src/utils/motion_planner.cpp
-)
-
-ament_auto_add_executable(play_motion2_node
-  src/play_motion2_main.cpp
   src/utils/motion_loader.cpp
 )
 

@@ -17,8 +17,7 @@
 
 #include <string>
 
-#include "play_motion2/types.hpp"
-#include "play_motion2_msgs/msg/motion.hpp"
+#include "play_motion2/motion_loader.hpp"
 
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
@@ -28,25 +27,23 @@ namespace play_motion2
 using NodeParametersInterfaceSharedPtr =
   rclcpp::node_interfaces::NodeParametersInterface::SharedPtr;
 
-class MotionLoader
+class MotionLoader : public MotionLoaderBase
 {
-  using MotionMsg = play_motion2_msgs::msg::Motion;
-
 public:
   MotionLoader(
     const rclcpp::Logger logger,
     const NodeParametersInterfaceSharedPtr parameters_interface);
   virtual ~MotionLoader() = default;
 
-  bool parse_motions();
-  bool exists(const std::string & motion_key) const;
+  bool parse_motions() override;
+  bool exists(const std::string & motion_key) const override;
 
-  const MotionKeys & get_motion_keys() const;
-  const MotionInfo & get_motion_info(const std::string & motion_key) const;
-  const MotionsMap & get_motions() const;
+  const MotionKeys & get_motion_keys() const override;
+  const MotionInfo & get_motion_info(const std::string & motion_key) const override;
+  const MotionsMap & get_motions() const override;
 
-  bool add_motion(const MotionMsg & motion_msg, const bool overwrite);
-  bool remove_motion(const std::string & motion_key);
+  bool add_motion(const MotionMsg & motion_msg, const bool overwrite) override;
+  bool remove_motion(const std::string & motion_key) override;
 
 protected:
   MotionKeys parse_motion_keys() const;

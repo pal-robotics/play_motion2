@@ -19,76 +19,6 @@
 
 #include "utils/motion_loader.hpp"
 
-namespace play_motion2
-{
-class PlayMotion2PublicMgr : public PlayMotion2MgrBase
-{
-public:
-  explicit PlayMotion2PublicMgr(const rclcpp::NodeOptions & options)
-  : PlayMotion2MgrBase(options)
-  {
-  }
-
-  ~PlayMotion2PublicMgr() override
-  {
-    // Destructor implementation
-  }
-
-
-  virtual bool configureMgr()
-  {
-    motion_loader_ = std::make_unique<MotionLoader>(get_logger(), get_node_parameters_interface());
-    return motion_loader_->parse_motions();
-  }
-
-  virtual void cleanupMgr()
-  {
-    motion_loader_.reset();
-  }
-
-  virtual const std::vector<std::string> getMotionKeys() const
-  {
-    return motion_loader_->get_motion_keys();
-  }
-
-  virtual bool addMotion(
-    const play_motion2_msgs::msg::Motion & motion_msg,
-    const bool overwrite)
-  {
-    return motion_loader_->add_motion(motion_msg, overwrite);
-  }
-
-  virtual bool removeMotion(const std::string & motion_key)
-  {
-    return motion_loader_->remove_motion(motion_key);
-  }
-
-  virtual bool motionExists(const std::string & motion_name) const
-  {
-    return motion_loader_->exists(motion_name);
-  }
-
-  virtual play_motion2_msgs::msg::Motion loadMotion(const std::string & motion_name) const
-  {
-    play_motion2_msgs::msg::Motion motion_msg;
-
-    const auto motion_info = motion_loader_->get_motion_info(motion_name);
-    motion_msg.key = motion_info.key;
-    motion_msg.name = motion_info.name;
-    motion_msg.usage = motion_info.usage;
-    motion_msg.description = motion_info.description;
-    motion_msg.joints = motion_info.joints;
-    motion_msg.positions = motion_info.positions;
-    motion_msg.times_from_start = motion_info.times;
-
-    return motion_msg;
-  }
-
-private:
-  std::unique_ptr<MotionLoader> motion_loader_;
-};
-}  // namespace play_motion2
-
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
@@ -100,7 +30,7 @@ int main(int argc, char ** argv)
 
   rclcpp::executors::MultiThreadedExecutor executor;
 
-  auto mgrNode = std::make_shared<play_motion2::PlayMotion2PublicMgr>(options);
+  auto mgrNode = std::make_shared<play_motion2::PlayMotion2Mgr>(options);
   executor.add_node(mgrNode->get_node_base_interface());
 
   auto executorNode = std::make_shared<play_motion2::PlayMotion2Executor>(options);

@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "play_motion2/play_motion2_mgr.hpp"
+#include "play_motion2_mgr.hpp"
+
+#include "../utils/motion_loader.hpp"
 
 namespace play_motion2
 {
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PlayMotion2MgrBase::PlayMotion2MgrBase(const rclcpp::NodeOptions & options)
+PlayMotion2Mgr::PlayMotion2Mgr(const rclcpp::NodeOptions & options)
 : LifecycleNode("play_motion2_mgr",
     rclcpp::NodeOptions(options)
     .allow_undeclared_parameters(true)
@@ -34,11 +36,11 @@ PlayMotion2MgrBase::PlayMotion2MgrBase(const rclcpp::NodeOptions & options)
   srv_s_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 }
 
-PlayMotion2MgrBase::~PlayMotion2MgrBase()
+PlayMotion2Mgr::~PlayMotion2Mgr()
 {
 }
 
-CallbackReturn PlayMotion2MgrBase::on_configure(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   const bool ok = configureMgr();
 
@@ -51,38 +53,38 @@ CallbackReturn PlayMotion2MgrBase::on_configure(const rclcpp_lifecycle::State & 
   return CallbackReturn::FAILURE;
 }
 
-CallbackReturn PlayMotion2MgrBase::on_activate(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
-    std::bind(&PlayMotion2MgrBase::listMotionsCallback, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::listMotionsCallback, this, _1, _2),
     rmw_qos_profile_services_default, srv_s_group_);
 
   is_motion_ready_service_ = create_service<IsMotionReady>(
     "play_motion2/is_motion_ready",
-    std::bind(&PlayMotion2MgrBase::isMotionReadyCallback, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::isMotionReadyCallback, this, _1, _2),
     rmw_qos_profile_services_default, srv_s_group_);
 
   get_motion_info_service_ = create_service<GetMotionInfo>(
     "play_motion2/get_motion_info",
-    std::bind(&PlayMotion2MgrBase::getMotionInfoCallback, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::getMotionInfoCallback, this, _1, _2),
     rmw_qos_profile_services_default, srv_s_group_);
 
   add_motion_service_ = create_service<AddMotion>(
     "play_motion2/add_motion",
-    std::bind(&PlayMotion2MgrBase::addMotionCallback, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::addMotionCallback, this, _1, _2),
     rmw_qos_profile_services_default, srv_s_group_);
 
   remove_motion_service_ = create_service<RemoveMotion>(
     "play_motion2/remove_motion",
-    std::bind(&PlayMotion2MgrBase::removeMotionCallback, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::removeMotionCallback, this, _1, _2),
     rmw_qos_profile_services_default, srv_s_group_);
 
   pm2_action_ = rclcpp_action::create_server<play_motion2_msgs::action::PlayMotion2>(
     shared_from_this(), "play_motion2",
-    std::bind(&PlayMotion2MgrBase::handleGoal, this, _1, _2),
-    std::bind(&PlayMotion2MgrBase::handleCancel, this, _1),
-    std::bind(&PlayMotion2MgrBase::handleAccepted, this, _1),
+    std::bind(&PlayMotion2Mgr::handleGoal, this, _1, _2),
+    std::bind(&PlayMotion2Mgr::handleCancel, this, _1),
+    std::bind(&PlayMotion2Mgr::handleAccepted, this, _1),
     rcl_action_server_get_default_options(),
     as_group_
   );
@@ -107,7 +109,7 @@ CallbackReturn PlayMotion2MgrBase::on_activate(const rclcpp_lifecycle::State & /
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2MgrBase::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo reject when a motion is being executed ?
 
@@ -122,31 +124,31 @@ CallbackReturn PlayMotion2MgrBase::on_deactivate(const rclcpp_lifecycle::State &
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2MgrBase::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   cleanupMgr();
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2MgrBase::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
   /// @todo cancel all goals
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn PlayMotion2MgrBase::on_error(const rclcpp_lifecycle::State & /*state*/)
+CallbackReturn PlayMotion2Mgr::on_error(const rclcpp_lifecycle::State & /*state*/)
 {
   return CallbackReturn::SUCCESS;
 }
 
-void PlayMotion2MgrBase::listMotionsCallback(
+void PlayMotion2Mgr::listMotionsCallback(
   ListMotions::Request::ConstSharedPtr /*request*/,
   ListMotions::Response::SharedPtr response) const
 {
   response->motion_keys = getMotionKeys();
 }
 
-void PlayMotion2MgrBase::isMotionReadyCallback(
+void PlayMotion2Mgr::isMotionReadyCallback(
   IsMotionReady::Request::ConstSharedPtr request,
   IsMotionReady::Response::SharedPtr response)
 {
@@ -186,7 +188,7 @@ void PlayMotion2MgrBase::isMotionReadyCallback(
                              << (response->is_ready ? "ready" : "not ready"));
 }
 
-void PlayMotion2MgrBase::getMotionInfoCallback(
+void PlayMotion2Mgr::getMotionInfoCallback(
   GetMotionInfo::Request::ConstSharedPtr request,
   GetMotionInfo::Response::SharedPtr response) const
 {
@@ -198,21 +200,21 @@ void PlayMotion2MgrBase::getMotionInfoCallback(
   response->motion = loadMotion(request->motion_key);
 }
 
-void PlayMotion2MgrBase::addMotionCallback(
+void PlayMotion2Mgr::addMotionCallback(
   AddMotion::Request::ConstSharedPtr request,
   AddMotion::Response::SharedPtr response)
 {
   response->success = addMotion(request->motion, request->overwrite);
 }
 
-void PlayMotion2MgrBase::removeMotionCallback(
+void PlayMotion2Mgr::removeMotionCallback(
   RemoveMotion::Request::ConstSharedPtr request,
   RemoveMotion::Response::SharedPtr response)
 {
   response->success = removeMotion(request->motion_key);
 }
 
-rclcpp_action::GoalResponse PlayMotion2MgrBase::handleGoal(
+rclcpp_action::GoalResponse PlayMotion2Mgr::handleGoal(
   const rclcpp_action::GoalUUID & /*uuid*/,
   std::shared_ptr<const play_motion2_msgs::action::PlayMotion2::Goal> goal)
 {
@@ -227,7 +229,7 @@ rclcpp_action::GoalResponse PlayMotion2MgrBase::handleGoal(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PlayMotion2MgrBase::handleCancel(
+rclcpp_action::CancelResponse PlayMotion2Mgr::handleCancel(
   const std::shared_ptr<rclcpp_action::ServerGoalHandle<play_motion2_msgs::action::PlayMotion2>>)
 const
 {
@@ -238,7 +240,7 @@ const
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PlayMotion2MgrBase::handleAccepted(
+void PlayMotion2Mgr::handleAccepted(
   const std::shared_ptr<rclcpp_action::ServerGoalHandle<
     play_motion2_msgs::action::PlayMotion2>> goal_handle)
 {
@@ -312,5 +314,55 @@ void PlayMotion2MgrBase::handleAccepted(
 
   pm2_raw_action_->async_send_goal(goal, options);
   RCLCPP_INFO_STREAM(get_logger(), "Goal sent to server");
+}
+
+bool PlayMotion2Mgr::configureMgr()
+{
+  motion_loader_ =
+    std::make_unique<MotionLoader>(get_logger(), get_node_parameters_interface());
+  return motion_loader_->parse_motions();
+}
+
+void PlayMotion2Mgr::cleanupMgr()
+{
+  motion_loader_.reset();
+}
+
+const std::vector<std::string> PlayMotion2Mgr::getMotionKeys() const
+{
+  return motion_loader_->get_motion_keys();
+}
+
+bool PlayMotion2Mgr::addMotion(
+  const play_motion2_msgs::msg::Motion & motion_msg,
+  const bool overwrite)
+{
+  return motion_loader_->add_motion(motion_msg, overwrite);
+}
+
+bool PlayMotion2Mgr::removeMotion(const std::string & motion_key)
+{
+  return motion_loader_->remove_motion(motion_key);
+}
+
+bool PlayMotion2Mgr::motionExists(const std::string & motion_name) const
+{
+  return motion_loader_->exists(motion_name);
+}
+
+play_motion2_msgs::msg::Motion PlayMotion2Mgr::loadMotion(const std::string & motion_name) const
+{
+  play_motion2_msgs::msg::Motion motion_msg;
+
+  const auto motion_info = motion_loader_->get_motion_info(motion_name);
+  motion_msg.key = motion_info.key;
+  motion_msg.name = motion_info.name;
+  motion_msg.usage = motion_info.usage;
+  motion_msg.description = motion_info.description;
+  motion_msg.joints = motion_info.joints;
+  motion_msg.positions = motion_info.positions;
+  motion_msg.times_from_start = motion_info.times;
+
+  return motion_msg;
 }
 }  // namespace play_motion2

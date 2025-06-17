@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "play_motion2/play_motion2_executor.hpp"
+#include "play_motion2_executor.hpp"
+
+#include <utility>
 
 #include "../utils/motion_planner.hpp"
 #include "play_motion2/types.hpp"
