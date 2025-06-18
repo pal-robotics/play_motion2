@@ -13,6 +13,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/IsJointListReady.srv"
   "srv/ListMotions.srv"
   "srv/RemoveMotion.srv"
+  "srv/SaveMotion.srv"
   "action/PlayMotion2.action"
   "action/PlayMotion2Raw.action"
   DEPENDENCIES builtin_interfaces

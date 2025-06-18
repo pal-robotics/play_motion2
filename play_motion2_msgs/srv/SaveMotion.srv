@@ -1,0 +1,4 @@
+string motion_key
+string filepath
+---
+bool success
