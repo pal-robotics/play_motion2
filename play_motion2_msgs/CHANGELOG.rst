@@ -2,6 +2,12 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add SaveMotion service type
+* Refactor to split Mgr and Exec nodes
+* Contributors: davidfernandez
+
 1.5.3 (2025-06-03)
 ------------------
 

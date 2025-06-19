@@ -2,6 +2,17 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Prepare motion_loader to be pluginized
+* Fix topic remappings to new node name
+* Add Raw action to client
+* Remove unnecessary tests
+* Move Python client to PlayMotion2 pkg
+* Add documentation
+* Refactor to split Mgr and Exec nodes
+* Contributors: davidfernandez
+
 1.5.3 (2025-06-03)
 ------------------
 * Fix motion starting on the current position of the robot
