@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2025-06-19)
+------------------
 * Prepare motion_loader to be pluginized
 * Fix topic remappings to new node name
 * Add Raw action to client
