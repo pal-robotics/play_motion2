@@ -15,6 +15,9 @@
   <url type="website">https://github.com/pal-robotics/play_motion2</url>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>backward_ros</depend>
 
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
@@ -23,6 +26,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>trajectory_msgs</depend>
 
@@ -50,6 +54,7 @@
   <test_depend>robot_state_publisher</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>xacro</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

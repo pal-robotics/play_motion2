@@ -1,4 +1,4 @@
-// Copyright (c) 2023 PAL Robotics S.L. All rights reserved.
+// Copyright (c) 2025 PAL Robotics S.L. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,45 +20,27 @@
 #include "play_motion2/types.hpp"
 #include "play_motion2_msgs/msg/motion.hpp"
 
-#include "rclcpp/logger.hpp"
-#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
-
 namespace play_motion2
 {
-using NodeParametersInterfaceSharedPtr =
-  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr;
 
-class MotionLoader
+class MotionLoaderBase
 {
+protected:
   using MotionMsg = play_motion2_msgs::msg::Motion;
 
 public:
-  MotionLoader(
-    const rclcpp::Logger logger,
-    const NodeParametersInterfaceSharedPtr parameters_interface);
-  virtual ~MotionLoader() = default;
+  MotionLoaderBase() = default;
+  virtual ~MotionLoaderBase() = default;
 
-  bool parse_motions();
-  bool exists(const std::string & motion_key) const;
+  virtual bool parse_motions() = 0;
+  virtual bool exists(const std::string & motion_key) const = 0;
 
-  const MotionKeys & get_motion_keys() const;
-  const MotionInfo & get_motion_info(const std::string & motion_key) const;
-  const MotionsMap & get_motions() const;
+  virtual const MotionKeys & get_motion_keys() const = 0;
+  virtual const MotionInfo & get_motion_info(const std::string & motion_key) const = 0;
+  virtual const MotionsMap & get_motions() const = 0;
 
-  bool add_motion(const MotionMsg & motion_msg, const bool overwrite);
-  bool remove_motion(const std::string & motion_key);
-
-protected:
-  MotionKeys parse_motion_keys() const;
-  bool check_params(const std::string & motion_key) const;
-  bool parse_motion_info(const std::string & motion_key);
-
-private:
-  rclcpp::Logger logger_;
-  NodeParametersInterfaceSharedPtr params_interface_;
-
-  MotionKeys motion_keys_;
-  MotionsMap motions_;
+  virtual bool add_motion(const MotionMsg & motion_msg, const bool overwrite) = 0;
+  virtual bool remove_motion(const std::string & motion_key) = 0;
 };
 
 }  // namespace play_motion2

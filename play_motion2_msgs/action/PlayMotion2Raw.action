@@ -1,0 +1,11 @@
+Motion motion
+bool skip_planning
+
+---
+
+bool success
+string error
+
+---
+
+builtin_interfaces/Time current_time

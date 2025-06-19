@@ -49,8 +49,8 @@ def generate_launch_description():
             {'use_sim_time': LaunchConfiguration('use_sim_time')}
         ],
         remappings=[
-            ('/play_motion2/robot_description', '/robot_description'),
-            ('/play_motion2/robot_description_semantic', '/robot_description_semantic'),
+            ('/play_motion2_executor/robot_description', '/robot_description'),
+            ('/play_motion2_executor/robot_description_semantic', '/robot_description_semantic'),
         ],
     )
 

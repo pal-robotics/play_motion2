@@ -212,8 +212,10 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
 
   const auto goal_handle = goal_handle_future.get();
 
-  // no goal_handle means goal has been rejected
-  ASSERT_FALSE(goal_handle);
+  ASSERT_TRUE(goal_handle);
+
+  // waitf for result
+  wait_pm2_result(goal_handle, rclcpp_action::ResultCode::ABORTED);
 }
 
 void PlayMotion2NodeTest::execute_motion(const std::string & motion_name) const

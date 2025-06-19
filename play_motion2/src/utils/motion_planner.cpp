@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <unordered_set>
 #include <queue>
 #include <list>
+#include <set>
+#include <memory>
+#include <utility>
 
-#include "play_motion2/motion_planner.hpp"
+#include "motion_planner.hpp"
 
 #include "moveit/move_group_interface/move_group_interface.h"
 
@@ -185,6 +190,11 @@ void MotionPlanner::check_parameters()
 
 bool MotionPlanner::is_executable(const MotionInfo & info, const bool skip_planning)
 {
+  return is_executable(info.joints, skip_planning);
+}
+
+bool MotionPlanner::is_executable(const JointNames & joints, const bool skip_planning)
+{
   if (planning_disabled_ && !skip_planning) {
     RCLCPP_ERROR(
       node_->get_logger(),
@@ -205,7 +215,7 @@ bool MotionPlanner::is_executable(const MotionInfo & info, const bool skip_plann
   }
 
   bool ok = true;
-  for (const auto & joint : info.joints) {
+  for (const auto & joint : joints) {
     // Check if joints are claimed by any active controller
     if (joint_names.find(joint) == joint_names.end()) {
       RCLCPP_ERROR_STREAM(

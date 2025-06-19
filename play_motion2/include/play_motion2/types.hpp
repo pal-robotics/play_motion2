@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
+#include "play_motion2_msgs/msg/motion.hpp"
 
 namespace play_motion2
 {
@@ -31,23 +32,54 @@ using MotionTimes = std::vector<double>;
 using TrajectoryPoint = trajectory_msgs::msg::JointTrajectoryPoint;
 using Trajectory = std::vector<TrajectoryPoint>;
 
+/**
+ * @brief Structure to hold motion information.
+ */
 struct MotionInfo
 {
+  /**
+   * @brief Unique key for the motion.
+   */
   std::string key;
 
   // meta
+  /**
+   * @brief Human-readable name of the motion.
+   */
   std::string name;
+  /**
+   * @brief Usage of the motion, e.g., "greeting", "walking", etc.
+   */
   std::string usage;
+  /**
+   * @brief Description of the motion.
+   */
   std::string description;
 
-  // info
+  /**
+   * @brief Names of the joints involved in the motion.
+   */
   JointNames joints;
-  MotionPositions positions;
+  /**
+   * @brief Times from the start of the motion for each position.
+   */
   MotionTimes times;
+  /**
+   * @brief Positions for each joint at each time step.
+   * The size of this vector is `joints.size() * times.size()`.
+   */
+  MotionPositions positions;
 };
 
+/**
+ * @brief Map to hold multiple motions, indexed by their keys.
+ */
 using MotionsMap = std::map<std::string, MotionInfo>;
 
+/**
+ * @brief Result structure for motion execution.
+ * It contains the state of the result and an optional error message.
+ */
 struct Result
 {
   enum State
@@ -58,13 +90,22 @@ struct Result
     CANCELED = 3
   };
 
+  /**
+   * @brief The state of the result.
+   * Can be one of: INVALID, SUCCESS, ERROR, CANCELED.
+   */
   State state;
+  /**
+   * @brief Optional error message if the state is ERROR.
+   */
   std::string error;
 
+  /**
+   * @brief Default constructor initializing the state to INVALID.
+   */
   explicit Result(const State st = INVALID, const std::string & error_str = "")
   : state(st), error(error_str) {}
 };
-
 }  // namespace play_motion2
 
 #endif  // PLAY_MOTION2__TYPES_HPP_

@@ -1,4 +1,4 @@
-play_motion2:
+play_motion2_executor:
   ros__parameters:
     motion_planner:
       approach_velocity: 0.5
