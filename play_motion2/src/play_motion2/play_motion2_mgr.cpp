@@ -254,7 +254,7 @@ void PlayMotion2Mgr::handleAccepted(
   auto options =
     rclcpp_action::Client<play_motion2_msgs::action::PlayMotion2Raw>::SendGoalOptions();
   options.result_callback =
-    [this](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
+    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
       WrappedResult
       result) {
       auto result_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Result>();
@@ -263,40 +263,40 @@ void PlayMotion2Mgr::handleAccepted(
       switch (result.code) {
         case rclcpp_action::ResultCode::SUCCEEDED:
           RCLCPP_INFO_STREAM(
-            get_logger(), "Motion '" << current_goal_handle_->get_goal()->motion_name <<
+            get_logger(), "Motion '" << goal_handle->get_goal()->motion_name <<
               "' completed");
-          current_goal_handle_->succeed(result_msg);
+          goal_handle->succeed(result_msg);
           break;
         case rclcpp_action::ResultCode::CANCELED:
           RCLCPP_INFO_STREAM(
-            get_logger(), "Motion '" << current_goal_handle_->get_goal()->motion_name <<
+            get_logger(), "Motion '" << goal_handle->get_goal()->motion_name <<
               "' canceled");
-          current_goal_handle_->canceled(result_msg);
+          goal_handle->canceled(result_msg);
           break;
         case rclcpp_action::ResultCode::ABORTED:
           RCLCPP_ERROR_STREAM(
-            get_logger(), "Motion '" << current_goal_handle_->get_goal()->motion_name <<
+            get_logger(), "Motion '" << goal_handle->get_goal()->motion_name <<
               "' aborted");
-          current_goal_handle_->abort(result_msg);
+          goal_handle->abort(result_msg);
           break;
         default:
           RCLCPP_ERROR_STREAM(
-            get_logger(), "Motion '" << current_goal_handle_->get_goal()->motion_name <<
+            get_logger(), "Motion '" << goal_handle->get_goal()->motion_name <<
               "' failed with unknown result code");
-          current_goal_handle_->abort(result_msg);
+          goal_handle->abort(result_msg);
           break;
       }
       current_goal_.reset();
     };
   options.feedback_callback =
-    [this](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
+    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
       SharedPtr, play_motion2_msgs::action::PlayMotion2Raw::Feedback::ConstSharedPtr feedback) {
       auto feedback_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Feedback>();
       feedback_msg->current_time = feedback->current_time;
-      current_goal_handle_->publish_feedback(feedback_msg);
+      goal_handle->publish_feedback(feedback_msg);
     };
   options.goal_response_callback =
-    [this](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
+    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
       SharedPtr
       gh)
     {
@@ -305,7 +305,7 @@ void PlayMotion2Mgr::handleAccepted(
         auto result_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Result>();
         result_msg->success = false;
         result_msg->error = "Goal was rejected by server";
-        current_goal_handle_->abort(result_msg);
+        goal_handle->abort(result_msg);
         return;
       }
       current_goal_ = gh;
