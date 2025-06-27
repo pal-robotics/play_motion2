@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.1 (2025-06-27)
+------------------
 * Capture the goal on the callback
 * Contributors: davidfernandez
 
