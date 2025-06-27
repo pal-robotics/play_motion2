@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Capture the goal on the callback
+* Contributors: davidfernandez
+
 1.6.0 (2025-06-19)
 ------------------
 * Prepare motion_loader to be pluginized
