@@ -10,7 +10,7 @@ PlayMotion2 allows executing simultaneous trajectories in multiple groups of joi
 The motions yaml file should follow the following format:
 
 ```yaml
-/play_motion2:
+/play_motion2_mgr:
   ros__parameters:
     motions:
       motion_1:
@@ -44,7 +44,7 @@ However, since the starting position of the joint could be further than expected
 You can also configure the motion planner as follows:
 
 ```yaml
-/play_motion2:
+/play_motion2_executor:
   ros__parameters:
     motion_planner:
       disable_motion_planning: false
