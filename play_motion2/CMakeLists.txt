@@ -102,4 +102,4 @@ if(BUILD_TESTING)
   endforeach()
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE config launch)
+ament_auto_package(INSTALL_TO_SHARE config launch USE_SCOPED_HEADER_INSTALL_DIR)
