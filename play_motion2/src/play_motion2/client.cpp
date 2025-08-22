@@ -33,16 +33,16 @@ PlayMotion2Client::PlayMotion2Client(const std::string & name, const rclcpp::Nod
   , running_motion_(false)
   , motion_succeeded_(false)
 {
-  play_motion2_client_ = rclcpp_action::create_client<PlayMotion2>(this, "/play_motion2");
+  play_motion2_client_ = rclcpp_action::create_client<PlayMotion2>(this, "play_motion2");
   play_motion2_client_raw_ =
-    rclcpp_action::create_client<PlayMotion2Raw>(this, "/play_motion2/raw");
+    rclcpp_action::create_client<PlayMotion2Raw>(this, "play_motion2/raw");
 
-  get_motion_info_client_ = this->create_client<GetMotionInfo>("/play_motion2/get_motion_info");
-  is_motion_ready_client_ = this->create_client<IsMotionReady>("/play_motion2/is_motion_ready");
-  list_motions_client_ = this->create_client<ListMotions>("/play_motion2/list_motions");
+  get_motion_info_client_ = this->create_client<GetMotionInfo>("play_motion2/get_motion_info");
+  is_motion_ready_client_ = this->create_client<IsMotionReady>("play_motion2/is_motion_ready");
+  list_motions_client_ = this->create_client<ListMotions>("play_motion2/list_motions");
 
-  add_motion_client_ = this->create_client<AddMotion>("/play_motion2/add_motion");
-  remove_motion_client_ = this->create_client<RemoveMotion>("/play_motion2/remove_motion");
+  add_motion_client_ = this->create_client<AddMotion>("play_motion2/add_motion");
+  remove_motion_client_ = this->create_client<RemoveMotion>("play_motion2/remove_motion");
 }
 
 PlayMotion2Client::~PlayMotion2Client()

@@ -77,13 +77,13 @@ MotionPlanner::MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 
   joint_states_sub_ =
     node_->create_subscription<JointState>(
-    "/joint_states", 1,
+    "joint_states", 1,
     std::bind(&MotionPlanner::joint_states_callback, this, _1), options);
 
   list_controllers_client_ = node_->create_client<ListControllers>(
-    "/controller_manager/list_controllers", rmw_qos_profile_default, motion_planner_cb_group_);
+    "controller_manager/list_controllers", rmw_qos_profile_default, motion_planner_cb_group_);
 
-  move_group_node_ = rclcpp::Node::make_shared("_move_group_node", node_->get_name());
+    move_group_node_ = std::make_shared<rclcpp::Node>("_move_group_node", node_->get_namespace());
 
   check_parameters();
 }
@@ -180,11 +180,14 @@ void MotionPlanner::check_parameters()
       }
     };
 
-  wait_for_description("/robot_description");
-  wait_for_description("/robot_description_semantic");
+  wait_for_description("robot_description");
+  wait_for_description("robot_description_semantic");
 
   for (const auto & group : planning_groups_) {
-    move_groups_.emplace_back(std::make_shared<MoveGroupInterface>(move_group_node_, group));
+    moveit::planning_interface::MoveGroupInterface::Options opt(group, "robot_description", node_->get_namespace());
+    auto mgi = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node_, opt);
+    move_groups_.emplace_back(std::move(mgi));
+    RCLCPP_INFO(node_->get_logger(), "MoveGroupInterface created for group: %s", group.c_str());
   }
 }
 
@@ -641,7 +644,7 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
   } else {
     action_client = rclcpp_action::create_client<FollowJointTrajectory>(
       node_,
-      "/" + controller_name + "/follow_joint_trajectory",
+      controller_name + "/follow_joint_trajectory",
       motion_planner_cb_group_);
     action_clients_[controller_name] = action_client;
   }
@@ -649,7 +652,7 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
   if (!action_client->wait_for_action_server(1s)) {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/" << controller_name <<
+      controller_name <<
         "/follow_joint_trajectory action server not available after waiting");
     return {};
   }
@@ -670,7 +673,7 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
     if (node_->now() - start_t > kTimeout) {
       RCLCPP_ERROR_STREAM(
         node_->get_logger(),
-        "Timeout while waiting for " << "/" << controller_name <<
+        "Timeout while waiting for " << controller_name <<
           "/follow_joint_trajectory result");
       return {};
     }

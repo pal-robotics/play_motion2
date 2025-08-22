@@ -30,6 +30,8 @@ def generate_launch_description():
 
     motions_config = DeclareLaunchArgument(
         'motions_file',
+        default_value=os.path.join(
+            get_package_share_directory('play_motion2'), 'config', 'motions.yaml'),
         description='Yaml file with the info of the motions. ')
 
     motion_planner_config = DeclareLaunchArgument(
