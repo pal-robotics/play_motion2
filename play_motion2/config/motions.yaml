@@ -1,0 +1,12 @@
+play_motion2_mgr:
+  ros__parameters:
+    motions:
+      motion_1:
+        joints: [joint1, joint2]
+        positions: [0.0, 0.0,
+                    0.5, 0.25]
+        times_from_start: [0.5, 1.0]
+        meta:
+          name: Motion_1
+          usage: example
+          description: 'Example Motion'

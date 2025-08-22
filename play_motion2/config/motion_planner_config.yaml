@@ -1,6 +1,9 @@
 play_motion2_executor:
   ros__parameters:
     motion_planner:
+      disable_motion_planning: true
+      planning_groups: # Sorted by order of preference
+        - planning_group_1
       approach_velocity: 0.5
       approach_min_duration: 0.5
 
