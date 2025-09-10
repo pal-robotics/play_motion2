@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2025-09-10)
+------------------
 * Fix ament_auto warning about headers install destination
 * Contributors: Noel Jimenez
 
