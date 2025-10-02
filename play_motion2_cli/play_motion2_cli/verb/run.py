@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import rclpy
+
 from ros2cli.node.strategy import add_arguments
-from ros2cli.node.strategy import NodeStrategy
 
 from play_motion2_cli.api import MotionNameCompleter
-from play_motion2_cli.api import run_play_motion
+from play_motion2 import PlayMotion2ClientPy
 from play_motion2_cli.verb import VerbExtension
 
 
@@ -35,9 +36,28 @@ class RunVerb(VerbExtension):
         arg.completer = MotionNameCompleter()
 
     def main(self, *, args):
-        with NodeStrategy(args) as node:
-            result = run_play_motion(node, args.motion_name, args.skip_planning)
-            if result.success:
-                print('The motion has been executed correctly')
-            else:
-                print(result.error)
+        rclpy.init()
+        play_motion2_client = PlayMotion2ClientPy('cli_play_motion2_client_py')
+
+        if not play_motion2_client.is_motion_ready(args.motion_name):
+            print(f"Motion '{args.motion_name}' is not ready or does not exist")
+            return
+        print(f"Executing motion '{args.motion_name}'... (press Ctrl-C to cancel)")
+
+        play_motion2_client.run_motion_async(args.motion_name, args.skip_planning)
+
+        try:
+            while rclpy.ok() and not play_motion2_client.result_future.done():
+                rclpy.spin_once(play_motion2_client, timeout_sec=0.1)
+        except KeyboardInterrupt:
+            if play_motion2_client.goal_handle:
+                play_motion2_client.goal_handle.cancel_goal_async()
+                return
+        result_response = (play_motion2_client.last_succeeded if False else
+                           play_motion2_client.result_future.result())
+
+        if result_response.result.success:
+            print('The motion has been executed correctly')
+
+        play_motion2_client.destroy_node()
+        rclpy.try_shutdown()

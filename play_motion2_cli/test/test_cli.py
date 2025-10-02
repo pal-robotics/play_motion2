@@ -112,7 +112,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
         cls.launch_service_command = launch_service_command
 
     @launch_testing.markers.retry_on_failure(times=5, delay=1)
-    def test_list_services(self):
+    def test_list_service(self):
         with self.launch_service_command(arguments=['list']) as service_command:
             assert service_command.wait_for_shutdown(timeout=10)
         assert service_command.exit_code == launch_testing.asserts.EXIT_OK
@@ -213,13 +213,24 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
         )
 
     @launch_testing.markers.retry_on_failure(times=5, delay=1)
-    def test_playmotion2_action_error(self):
+    def test_playmotion2_action_not_exist(self):
         with self.launch_service_command(arguments=['run', 'unknown_motion']) as service_command:
             assert service_command.wait_for_shutdown(timeout=10)
         assert launch_testing.tools.expect_output(
             expected_lines=[
-                "Motion 'unknown_motion' rejected",
-                "Motion 'unknown_motion' does not exist",
+                "Motion 'unknown_motion' is not ready or does not exist",
+                ],
+            text=service_command.output,
+            strict=True
+        )
+
+    @launch_testing.markers.retry_on_failure(times=5, delay=1)
+    def test_playmotion2_action_not_ready(self):
+        with self.launch_service_command(arguments=['run', 'nod']) as service_command:
+            assert service_command.wait_for_shutdown(timeout=10)
+        assert launch_testing.tools.expect_output(
+            expected_lines=[
+                "Motion 'nod' is not ready or does not exist",
                 ],
             text=service_command.output,
             strict=True
@@ -227,12 +238,12 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
 
     @launch_testing.markers.retry_on_failure(times=5, delay=1)
     def test_playmotion2_action(self):
-        with self.launch_service_command(arguments=['run', 'nod']) as service_command:
+        with self.launch_service_command(arguments=['run', 'wave']) as service_command:
             assert service_command.wait_for_shutdown(timeout=10)
         assert service_command.exit_code == launch_testing.asserts.EXIT_OK
         assert launch_testing.tools.expect_output(
             expected_lines=[
-                'Running nod motion',
+                "Executing motion 'wave'... (press Ctrl-C to cancel)",
                 'The motion has been executed correctly',
                 ],
             text=service_command.output,

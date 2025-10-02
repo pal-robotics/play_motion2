@@ -72,7 +72,7 @@ class PlayMotionServer(Node):
         return response
 
     def is_motion_ready_callback(self, request, response):
-        response.is_ready = EXPECTED_MOTIONS[request.motion_key]
+        response.is_ready = EXPECTED_MOTIONS.get(request.motion_key, False)
         return response
 
     def get_info_callback(self, request, response):
