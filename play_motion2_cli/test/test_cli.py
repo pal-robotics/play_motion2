@@ -124,7 +124,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
 
     @launch_testing.markers.retry_on_failure(times=5, delay=1)
     def test_list_motion_ready(self):
-        with self.launch_service_command(arguments=['list', '--motion-ready']) as service_command:
+        with self.launch_service_command(arguments=['list', '--is-ready']) as service_command:
             assert service_command.wait_for_shutdown(timeout=10)
         assert service_command.exit_code == launch_testing.asserts.EXIT_OK
         expected_lines = [

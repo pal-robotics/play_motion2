@@ -25,7 +25,7 @@ class ListVerb(VerbExtension):
     def add_arguments(self, parser, cli_name):
         add_arguments(parser)
         parser.add_argument(
-            '-r', '--motion-ready', action='store_true',
+            '-r', '--is-ready', action='store_true',
             help='Additionally show if the motion is ready')
 
     def main(self, *, args):
@@ -34,7 +34,7 @@ class ListVerb(VerbExtension):
         play_motion_list = sorted(play_motion2_client.list_motions())
 
         for name in play_motion_list:
-            if args.motion_ready:
+            if args.is_ready:
                 motion = play_motion2_client.is_motion_ready(name)
                 print(f"{name} [{'Ready' if motion else 'Not ready'}]")
             else:

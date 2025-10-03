@@ -30,7 +30,7 @@ class RunVerb(VerbExtension):
             'motion_name',
             help="Name of the motion to run (e.g. 'head_down')")
         parser.add_argument(
-            '--skip_planning',
+            '--skip-planning',
             action='store_true',
             help='Whether to skip planning for approaching to the first position or not.')
         arg.completer = MotionNameCompleter()

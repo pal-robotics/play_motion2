@@ -51,9 +51,9 @@ MOTIONS_INFO = {
 }
 
 
-class PlayMotionServer(Node):
+class DummyPlayMotionServer(Node):
     def __init__(self):
-        super().__init__('play_motion2_server')
+        super().__init__('play_motion2')
         self.list_server = self.create_service(ListMotions, 'list_motions', self.list_callback)
         self.is_motion_ready_server = self.create_service(
             IsMotionReady, 'is_motion_ready', self.is_motion_ready_callback)
@@ -106,7 +106,7 @@ class PlayMotionServer(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    node = PlayMotionServer()
+    node = DummyPlayMotionServer()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

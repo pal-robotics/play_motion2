@@ -21,7 +21,7 @@ from ros2cli.node.strategy import add_arguments
 
 
 class InfoVerb(VerbExtension):
-    """Print information about a motion."""
+    """Display information about a motion."""
 
     def add_arguments(self, parser, cli_name):
         add_arguments(parser)
