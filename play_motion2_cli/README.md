@@ -11,7 +11,7 @@ Arguments:
 
 Usage:
 ```bash
-ros2 playmotion list [--motion-ready | -r ]
+ros2 play_motion list [--is-ready | -r ]
 ```
 
 ## info
@@ -24,7 +24,7 @@ Arguments:
 
 Usage:
 ```bash
-ros2 playmotion info <motion_name> [--verbose | -v ]
+ros2 play_motion info <motion_name> [--verbose | -v ]
 ```
 
 ## run
@@ -33,8 +33,9 @@ The `run` verb is used for execute a specified motion.
 
 Arguments:
 - `--motion_name` : The name of the motion to execute. This argument is required.
+- `--skip-planning`: Whether to skip planning for approaching to the first position or not.
 
 Usage:
 ```bash
-ros2 playmotion run <motion_name>
+ros2 play_motion run <motion_name> [--skip-planning]
 ```
