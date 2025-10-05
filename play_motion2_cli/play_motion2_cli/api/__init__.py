@@ -14,7 +14,9 @@
 
 import rclpy
 
+from argparse import ArgumentParser
 from play_motion2 import PlayMotion2ClientPy
+from contextlib import contextmanager
 
 
 class MotionNameCompleter:
@@ -22,10 +24,29 @@ class MotionNameCompleter:
 
     def __call__(self, prefix, parsed_args, **kwargs):
         try:
-            rclpy.init()
-            play_motion2_client = PlayMotion2ClientPy('cli_play_motion2_client_py_completer')
-            list_motions = play_motion2_client.list_motions()
-            rclpy.try_shutdown()
-            return list_motions
+            with cli_client_init("cli_play_motion2_client_py_completer") as play_motion2_client:
+                return play_motion2_client.list_motions()
         except Exception:
             return []
+
+
+def add_motion_name_argument(verb_subparser: ArgumentParser):
+    arg = verb_subparser.add_argument(
+        'motion_name',
+        help="Name of the motion to run (e.g. 'head_down')"
+    )
+    arg.completer = MotionNameCompleter()
+
+
+@contextmanager
+def cli_client_init(name):
+    try:
+        if not rclpy.ok():
+            rclpy.init()
+        node = PlayMotion2ClientPy(name)
+        yield node
+    except rclpy.exceptions.ROSInterruptException:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()

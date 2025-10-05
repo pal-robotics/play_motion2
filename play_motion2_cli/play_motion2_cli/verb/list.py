@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rclpy
-
 from ros2cli.node.strategy import add_arguments
-from play_motion2 import PlayMotion2ClientPy
+from play_motion2_cli.api import cli_client_init
 from play_motion2_cli.verb import VerbExtension
 
 
@@ -29,16 +27,12 @@ class ListVerb(VerbExtension):
             help='Additionally show if the motion is ready')
 
     def main(self, *, args):
-        rclpy.init()
-        play_motion2_client = PlayMotion2ClientPy('cli_play_motion2_client_py')
-        play_motion_list = sorted(play_motion2_client.list_motions())
+        with cli_client_init('cli_play_motion2_client_py') as play_motion2_client:
+            play_motion_list = sorted(play_motion2_client.list_motions())
 
-        for name in play_motion_list:
-            if args.is_ready:
-                motion = play_motion2_client.is_motion_ready(name)
-                print(f"{name} [{'Ready' if motion else 'Not ready'}]")
-            else:
-                print(name)
-
-        play_motion2_client.destroy_node()
-        rclpy.try_shutdown()
+            for name in play_motion_list:
+                if args.is_ready:
+                    motion = play_motion2_client.is_motion_ready(name)
+                    print(f"{name} [{'Ready' if motion else 'Not ready'}]")
+                else:
+                    print(name)
