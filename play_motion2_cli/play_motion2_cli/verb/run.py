@@ -47,8 +47,7 @@ class RunVerb(VerbExtension):
                 if play_motion2_client.goal_handle:
                     play_motion2_client.goal_handle.cancel_goal_async()
                     return
-            result_response = (play_motion2_client.last_succeeded if False else
-                               play_motion2_client.result_future.result())
+            result_response = play_motion2_client.result_future.result()
 
             if result_response.result.success:
                 print('The motion has been executed correctly')
