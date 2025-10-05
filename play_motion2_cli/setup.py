@@ -19,14 +19,7 @@ setup(
     maintainer='Isaac Acevedo',
     maintainer_email='isaac.acevedo@pal-robotics.com',
     keywords=[],
-    classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python',
-    ],
     description='The play_motion command for ROS 2 command line tools.',
-    long_description="""\
-The package provides the play_motion command for the ROS 2 command line tools.""",
     license='Apache License, Version 2.0',
     extras_require={
         'test': [
