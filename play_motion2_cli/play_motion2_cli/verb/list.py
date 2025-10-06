@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from ros2cli.node.strategy import add_arguments
-from play_motion2_cli.api import cli_client_init
+from play_motion2_cli.api import create_playmotion_client
 from play_motion2_cli.verb import VerbExtension
 
 
@@ -27,7 +27,7 @@ class ListVerb(VerbExtension):
             help='Additionally show if the motion is ready')
 
     def main(self, *, args):
-        with cli_client_init('cli_play_motion2_client_py') as play_motion2_client:
+        with create_playmotion_client('cli_play_motion2_client_py') as play_motion2_client:
             play_motion_list = sorted(play_motion2_client.list_motions())
 
             for name in play_motion_list:

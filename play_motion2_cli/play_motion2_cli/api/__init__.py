@@ -24,7 +24,7 @@ class MotionNameCompleter:
 
     def __call__(self, prefix, parsed_args, **kwargs):
         try:
-            with cli_client_init("cli_play_motion2_client_py_completer") as play_motion2_client:
+            with create_playmotion_client("cli_play_motion2_completer") as play_motion2_client:
                 return play_motion2_client.list_motions()
         except Exception:
             return []
@@ -33,13 +33,13 @@ class MotionNameCompleter:
 def add_motion_name_argument(verb_subparser: ArgumentParser):
     arg = verb_subparser.add_argument(
         'motion_name',
-        help="Name of the motion to run (e.g. 'head_down')"
+        help="Name of the motion (e.g. 'head_down')"
     )
     arg.completer = MotionNameCompleter()
 
 
 @contextmanager
-def cli_client_init(name):
+def create_playmotion_client(name):
     try:
         if not rclpy.ok():
             rclpy.init()

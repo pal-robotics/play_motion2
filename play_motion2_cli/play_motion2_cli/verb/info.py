@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from play_motion2_cli.api import add_motion_name_argument, cli_client_init
+from play_motion2_cli.api import add_motion_name_argument, create_playmotion_client
 from play_motion2_cli.verb import VerbExtension
 from ros2cli.node.strategy import add_arguments
 
@@ -31,7 +31,7 @@ class InfoVerb(VerbExtension):
                  'and Times from start')
 
     def main(self, *, args):
-        with cli_client_init('cli_play_motion2_client_py') as play_motion2_client:
+        with create_playmotion_client('cli_play_motion2_client_py') as play_motion2_client:
 
             motion = play_motion2_client.get_motion_info(args.motion_name)
             if not motion or not motion.key:

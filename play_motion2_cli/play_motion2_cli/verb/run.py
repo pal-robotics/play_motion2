@@ -16,7 +16,7 @@ import rclpy
 
 from ros2cli.node.strategy import add_arguments
 
-from play_motion2_cli.api import add_motion_name_argument, cli_client_init
+from play_motion2_cli.api import add_motion_name_argument, create_playmotion_client
 from play_motion2_cli.verb import VerbExtension
 
 
@@ -32,7 +32,7 @@ class RunVerb(VerbExtension):
             help='Whether to skip planning for approaching to the first position or not.')
 
     def main(self, *, args):
-        with cli_client_init('cli_play_motion2_client_py') as play_motion2_client:
+        with create_playmotion_client('cli_play_motion2_client_py') as play_motion2_client:
             if not play_motion2_client.is_motion_ready(args.motion_name):
                 print(f"Motion '{args.motion_name}' is not ready or does not exist")
                 return
