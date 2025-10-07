@@ -34,7 +34,9 @@ class InfoVerb(VerbExtension):
         with create_playmotion_client('cli_play_motion2_client_py') as play_motion2_client:
 
             motion = play_motion2_client.get_motion_info(args.motion_name)
-            if not motion or not motion.key:
+            if motion is None:
+                return
+            if not motion.key:
                 print(f"Unknown motion '{args.motion_name}'")
                 return
 

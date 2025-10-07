@@ -19,7 +19,7 @@ ros2 play_motion list [--is-ready | -r ]
 The `info` verb is used for displaying information about a motion. By default, it displays the key, the description and the joints. It can also display more specific information.
 
 Arguments:
-- `--motion_name` : The name of the motion to obtain the information. This argument is required.
+- `motion_name` : The name of the motion to obtain the information. This argument is required.
 - `--verbose`, `-v`: Prints detailed information like the motion name, usage, joint positions, and times from start.
 
 Usage:
@@ -32,7 +32,7 @@ ros2 play_motion info <motion_name> [--verbose | -v ]
 The `run` verb is used for execute a specified motion.
 
 Arguments:
-- `--motion_name` : The name of the motion to execute. This argument is required.
+- `motion_name` : The name of the motion to execute. This argument is required.
 - `--skip-planning`: Whether to skip planning for approaching to the first position or not.
 
 Usage:
