@@ -21,6 +21,19 @@
 
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 #include "play_motion2_msgs/msg/motion.hpp"
+#include "rclcpp/qos.hpp"
+
+namespace
+{
+inline auto get_services_qos()
+{
+  #if RCLCPP_VERSION_MAJOR >= 20
+  return rclcpp::QoS(rclcpp::ServicesQoS());
+  #else
+  return rmw_qos_profile_services_default;
+  #endif
+}
+}  // namespace
 
 namespace play_motion2
 {
