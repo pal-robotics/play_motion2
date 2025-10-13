@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import sys
-import rclpy
-from rclpy.node import Node
 
-from play_motion2_msgs.srv import GetMotionInfo, ListMotions, IsMotionReady
 from play_motion2_msgs.action import PlayMotion2
 from play_motion2_msgs.msg import Motion
+from play_motion2_msgs.srv import GetMotionInfo, IsMotionReady, ListMotions
+
+import rclpy
 from rclpy.action import ActionServer, GoalResponse
+from rclpy.node import Node
 
 EXPECTED_MOTIONS = {
     'nod': False,
@@ -28,25 +29,25 @@ EXPECTED_MOTIONS = {
 }
 
 MOTIONS_INFO = {
-    "nod": {
-        "key": "nod",
-        "name": "Nod Head",
-        "usage": "Affirmative gesture",
-        "description": "Moves head up and down like saying 'yes'",
+    'nod': {
+        'key': 'nod',
+        'name': 'Nod Head',
+        'usage': 'Affirmative gesture',
+        'description': "Moves head up and down like saying 'yes'",
 
-        "joints": ["neck_pitch"],
-        "positions": [0.2, -0.2, 0.2],
-        "times_from_start": [0.0, 1.0, 2.0]
+        'joints': ['neck_pitch'],
+        'positions': [0.2, -0.2, 0.2],
+        'times_from_start': [0.0, 1.0, 2.0]
     },
-    "wave": {
-        "key": "wave",
-        "name": "Wave Hand",
-        "usage": "Greeting",
-        "description": "Waves hand left and right",
+    'wave': {
+        'key': 'wave',
+        'name': 'Wave Hand',
+        'usage': 'Greeting',
+        'description': 'Waves hand left and right',
 
-        "joints": ["shoulder_joint", "elbow_joint"],
-        "positions": [0.0, 1.2],
-        "times_from_start": [0.2]
+        'joints': ['shoulder_joint', 'elbow_joint'],
+        'positions': [0.0, 1.2],
+        'times_from_start': [0.2]
     }
 }
 

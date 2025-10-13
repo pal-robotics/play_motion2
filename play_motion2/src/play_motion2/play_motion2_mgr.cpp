@@ -254,9 +254,9 @@ void PlayMotion2Mgr::handleAccepted(
   auto options =
     rclcpp_action::Client<play_motion2_msgs::action::PlayMotion2Raw>::SendGoalOptions();
   options.result_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      WrappedResult
-      result) {
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::WrappedResult
+    result) {
       auto result_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Result>();
       result_msg->success = result.result->success;
       result_msg->error = result.result->error;
@@ -289,16 +289,16 @@ void PlayMotion2Mgr::handleAccepted(
       current_goal_.reset();
     };
   options.feedback_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      SharedPtr, play_motion2_msgs::action::PlayMotion2Raw::Feedback::ConstSharedPtr feedback) {
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::SharedPtr,
+    play_motion2_msgs::action::PlayMotion2Raw::Feedback::ConstSharedPtr feedback) {
       auto feedback_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Feedback>();
       feedback_msg->current_time = feedback->current_time;
       goal_handle->publish_feedback(feedback_msg);
     };
   options.goal_response_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      SharedPtr
-      gh)
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::SharedPtr gh)
     {
       if (!gh) {
         RCLCPP_ERROR_STREAM(get_logger(), "Goal was rejected by server");

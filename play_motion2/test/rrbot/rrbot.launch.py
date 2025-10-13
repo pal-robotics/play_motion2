@@ -13,13 +13,13 @@
 # limitations under the License.
 
 import pathlib
-import xacro
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import xacro
 
 RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
@@ -66,8 +66,8 @@ def generate_launch_description():
     controller_1_low_constraints_spawner = define_controller_spawner(
         'controller_1_low_constraints', active=False)
     chained_controllers_spawner = define_controller_spawner(
-        'chained_controller', False, "passthrough_controller_j1",
-        "passthrough_controller_j2", "--activate-as-group")
+        'chained_controller', False, 'passthrough_controller_j1',
+        'passthrough_controller_j2', '--activate-as-group')
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
