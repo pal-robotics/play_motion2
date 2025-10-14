@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(play_motion2)
 
+add_compile_options(-Wno-cpp)
+
 find_package(ament_cmake_auto REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 ament_auto_find_build_dependencies()
