@@ -53,6 +53,7 @@ MOTIONS_INFO = {
 
 
 class DummyPlayMotionServer(Node):
+
     def __init__(self):
         super().__init__('play_motion2')
         self.list_server = self.create_service(ListMotions, 'list_motions', self.list_callback)
