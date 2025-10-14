@@ -38,9 +38,10 @@ if(BUILD_TESTING)
     test/rrbot/rrbot_system.cpp
   )
   # need to target because they are test dependencies
-  ament_target_dependencies(rrbot_system
-    hardware_interface
-    pluginlib
+  target_link_libraries(rrbot_system
+    hardware_interface::hardware_interface
+    hardware_interface::mock_components
+    pluginlib::pluginlib
   )
   pluginlib_export_plugin_description_file(hardware_interface test/rrbot/rrbot_system.xml)
 
@@ -53,8 +54,12 @@ if(BUILD_TESTING)
   )
 
   add_compile_definitions(HARDWARE_INTERFACE_VERSION_MAJOR=${hardware_interface_VERSION_MAJOR})
-  target_link_libraries(passthrough_controller PUBLIC passthrough_controller_parameters)
-  ament_target_dependencies(passthrough_controller PUBLIC controller_interface realtime_tools)
+  target_link_libraries(passthrough_controller
+    passthrough_controller_parameters
+    controller_interface::controller_interface
+    realtime_tools::realtime_tools
+    realtime_tools::thread_priority
+  )
   pluginlib_export_plugin_description_file(controller_interface test/controllers/passthrough_controller.xml)
 
   install(
@@ -72,13 +77,13 @@ if(BUILD_TESTING)
   ament_add_gtest_executable(play_motion2_node_test
     test/play_motion2_node_test.cpp
   )
-  ament_target_dependencies(play_motion2_node_test
-    controller_manager_msgs
-    launch_testing_ament_cmake
-    play_motion2_msgs
-    rclcpp
-    rclcpp_action
-    sensor_msgs
+  target_link_libraries(play_motion2_node_test
+    ${controller_manager_msgs_TARGETS}
+    ${play_motion2_msgs_TARGETS}
+    ${sensor_msgs_TARGETS}
+    rclcpp::rclcpp
+    rclcpp_action::rclcpp_action
+    sensor_msgs::sensor_msgs_library
   )
 
   install(
