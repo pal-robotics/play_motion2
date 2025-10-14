@@ -50,6 +50,31 @@ def generate_test_description(rmw_implementation):
         os.path.dirname(__file__), 'fixtures', 'play_motion_server.py'
     )
     additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
+
+    run_zenoh = (rmw_implementation == 'rmw_zenoh_cpp')
+
+    on_exit_actions = []
+    if run_zenoh:
+        on_exit_actions.extend([
+            ExecuteProcess(
+                cmd=['ros2', 'run', 'rmw_zenoh_cpp', 'rmw_zenohd'],
+                name='rmw-zenohd',
+                additional_env=additional_env,
+                output='screen',
+            )
+        ])
+
+    on_exit_actions.extend([
+        Node(
+            executable=sys.executable,
+            arguments=[path_to_play_motion_server_script],
+            name='play_motion_server',
+            namespace='play_motion2',
+            additional_env=additional_env,
+        ),
+        launch_testing.actions.ReadyToTest()
+    ])
+
     return LaunchDescription([
         # Always restart daemon to isolate tests.
         ExecuteProcess(
@@ -59,17 +84,7 @@ def generate_test_description(rmw_implementation):
                 ExecuteProcess(
                     cmd=['ros2', 'daemon', 'start'],
                     name='daemon-start',
-                    on_exit=[
-                        # Add test fixture actions.
-                        Node(
-                            executable=sys.executable,
-                            arguments=[path_to_play_motion_server_script],
-                            name='play_motion_server',
-                            namespace='play_motion2',
-                            additional_env=additional_env,
-                        ),
-                        launch_testing.actions.ReadyToTest()
-                    ],
+                    on_exit=on_exit_actions,
                     additional_env=additional_env,
                 )
             ]
