@@ -58,27 +58,27 @@ CallbackReturn PlayMotion2Mgr::on_activate(const rclcpp_lifecycle::State & /*sta
   list_motions_service_ = create_service<ListMotions>(
     "play_motion2/list_motions",
     std::bind(&PlayMotion2Mgr::listMotionsCallback, this, _1, _2),
-    rmw_qos_profile_services_default, srv_s_group_);
+    get_services_qos(), srv_s_group_);
 
   is_motion_ready_service_ = create_service<IsMotionReady>(
     "play_motion2/is_motion_ready",
     std::bind(&PlayMotion2Mgr::isMotionReadyCallback, this, _1, _2),
-    rmw_qos_profile_services_default, srv_s_group_);
+    get_services_qos(), srv_s_group_);
 
   get_motion_info_service_ = create_service<GetMotionInfo>(
     "play_motion2/get_motion_info",
     std::bind(&PlayMotion2Mgr::getMotionInfoCallback, this, _1, _2),
-    rmw_qos_profile_services_default, srv_s_group_);
+    get_services_qos(), srv_s_group_);
 
   add_motion_service_ = create_service<AddMotion>(
     "play_motion2/add_motion",
     std::bind(&PlayMotion2Mgr::addMotionCallback, this, _1, _2),
-    rmw_qos_profile_services_default, srv_s_group_);
+    get_services_qos(), srv_s_group_);
 
   remove_motion_service_ = create_service<RemoveMotion>(
     "play_motion2/remove_motion",
     std::bind(&PlayMotion2Mgr::removeMotionCallback, this, _1, _2),
-    rmw_qos_profile_services_default, srv_s_group_);
+    get_services_qos(), srv_s_group_);
 
   pm2_action_ = rclcpp_action::create_server<play_motion2_msgs::action::PlayMotion2>(
     shared_from_this(), "play_motion2",
@@ -91,8 +91,8 @@ CallbackReturn PlayMotion2Mgr::on_activate(const rclcpp_lifecycle::State & /*sta
 
   is_joint_list_ready_client_ = create_client<IsJointListReady>(
     "play_motion2/is_joint_list_ready",
-    rmw_qos_profile_services_default,
-    srv_c_group_);
+    get_services_qos(), srv_c_group_);
+
   if (!is_joint_list_ready_client_->wait_for_service(std::chrono::seconds(10))) {
     RCLCPP_ERROR(get_logger(), "Failed to connect to is_joint_list_ready service");
     return CallbackReturn::FAILURE;
@@ -254,9 +254,9 @@ void PlayMotion2Mgr::handleAccepted(
   auto options =
     rclcpp_action::Client<play_motion2_msgs::action::PlayMotion2Raw>::SendGoalOptions();
   options.result_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      WrappedResult
-      result) {
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::WrappedResult
+    result) {
       auto result_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Result>();
       result_msg->success = result.result->success;
       result_msg->error = result.result->error;
@@ -289,16 +289,16 @@ void PlayMotion2Mgr::handleAccepted(
       current_goal_.reset();
     };
   options.feedback_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      SharedPtr, play_motion2_msgs::action::PlayMotion2Raw::Feedback::ConstSharedPtr feedback) {
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::SharedPtr,
+    play_motion2_msgs::action::PlayMotion2Raw::Feedback::ConstSharedPtr feedback) {
       auto feedback_msg = std::make_shared<play_motion2_msgs::action::PlayMotion2::Feedback>();
       feedback_msg->current_time = feedback->current_time;
       goal_handle->publish_feedback(feedback_msg);
     };
   options.goal_response_callback =
-    [this, goal_handle](rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::
-      SharedPtr
-      gh)
+    [this, goal_handle](
+    rclcpp_action::ClientGoalHandle<play_motion2_msgs::action::PlayMotion2Raw>::SharedPtr gh)
     {
       if (!gh) {
         RCLCPP_ERROR_STREAM(get_logger(), "Goal was rejected by server");

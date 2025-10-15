@@ -22,7 +22,11 @@
 
 #include "play_motion2/types.hpp"
 
+#if MOVEIT_VERSION_MINOR < 7
 #include "moveit/move_group_interface/move_group_interface.h"
+#else
+#include "moveit_ros_planning_interface/moveit/move_group_interface/move_group_interface.hpp"
+#endif
 
 #include "rclcpp_action/client_goal_handle.hpp"
 #include "rclcpp_action/client.hpp"

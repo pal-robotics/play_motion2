@@ -17,6 +17,8 @@ import os
 import sys
 import unittest
 
+from fixtures.play_motion_server import EXPECTED_MOTIONS, MOTIONS_INFO
+
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
@@ -32,15 +34,13 @@ import pytest
 
 from rclpy.utilities import get_available_rmw_implementations
 
-from fixtures.play_motion_server import EXPECTED_MOTIONS, MOTIONS_INFO
-
 
 # Skip cli tests on Windows while they exhibit pathological behavior
 # https://github.com/ros2/build_farmer/issues/248
 if sys.platform.startswith('win'):
     pytest.skip(
-            'CLI tests can block for a pathological amount of time on Windows.',
-            allow_module_level=True)
+        'CLI tests can block for a pathological amount of time on Windows.',
+        allow_module_level=True)
 
 
 @pytest.mark.rostest
@@ -50,6 +50,31 @@ def generate_test_description(rmw_implementation):
         os.path.dirname(__file__), 'fixtures', 'play_motion_server.py'
     )
     additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
+
+    run_zenoh = (rmw_implementation == 'rmw_zenoh_cpp')
+
+    on_exit_actions = []
+    if run_zenoh:
+        on_exit_actions.extend([
+            ExecuteProcess(
+                cmd=['ros2', 'run', 'rmw_zenoh_cpp', 'rmw_zenohd'],
+                name='rmw-zenohd',
+                additional_env=additional_env,
+                output='screen',
+            )
+        ])
+
+    on_exit_actions.extend([
+        Node(
+            executable=sys.executable,
+            arguments=[path_to_play_motion_server_script],
+            name='play_motion_server',
+            namespace='play_motion2',
+            additional_env=additional_env,
+        ),
+        launch_testing.actions.ReadyToTest()
+    ])
+
     return LaunchDescription([
         # Always restart daemon to isolate tests.
         ExecuteProcess(
@@ -59,17 +84,7 @@ def generate_test_description(rmw_implementation):
                 ExecuteProcess(
                     cmd=['ros2', 'daemon', 'start'],
                     name='daemon-start',
-                    on_exit=[
-                        # Add test fixture actions.
-                        Node(
-                            executable=sys.executable,
-                            arguments=[path_to_play_motion_server_script],
-                            name='play_motion_server',
-                            namespace='play_motion2',
-                            additional_env=additional_env,
-                        ),
-                        launch_testing.actions.ReadyToTest()
-                    ],
+                    on_exit=on_exit_actions,
                     additional_env=additional_env,
                 )
             ]
@@ -149,7 +164,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
                 f"Description: {data['description']}",
                 '',
                 'Joints:'
-            ] + [f"  {joint}" for joint in data['joints']],
+            ] + [f'  {joint}' for joint in data['joints']],
             text=service_command.output,
             strict=True
         )
@@ -168,11 +183,11 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
                 f"Description: {data['description']}",
                 '',
                 'Joints and positions:',
-                "shoulder_joint   0.0000",
-                "elbow_joint      1.2000 ",
+                'shoulder_joint   0.0000',
+                'elbow_joint      1.2000 ',
                 'Times from start:',
             ] + [
-                f"  {t:.2f} s" for t in data['times_from_start']
+                f'  {t:.2f} s' for t in data['times_from_start']
             ],
             text=service_command.output,
             strict=False
@@ -195,7 +210,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
                 'Joint         pos1     pos2     pos3',
                 'neck_pitch   0.2000  -0.2000   0.2000',
                 'Times from start:',
-            ] + [f"  {t:.2f} s" for t in data['times_from_start']],
+            ] + [f'  {t:.2f} s' for t in data['times_from_start']],
             text=service_command.output,
             strict=False
         )
@@ -207,7 +222,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
         assert launch_testing.tools.expect_output(
             expected_lines=[
                 "Unknown motion 'unknown_motion'",
-                ],
+            ],
             text=service_command.output,
             strict=True
         )
@@ -219,7 +234,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
         assert launch_testing.tools.expect_output(
             expected_lines=[
                 "Motion 'unknown_motion' is not ready or does not exist",
-                ],
+            ],
             text=service_command.output,
             strict=True
         )
@@ -231,7 +246,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
         assert launch_testing.tools.expect_output(
             expected_lines=[
                 "Motion 'nod' is not ready or does not exist",
-                ],
+            ],
             text=service_command.output,
             strict=True
         )
@@ -245,7 +260,7 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
             expected_lines=[
                 "Executing motion 'wave'... (press Ctrl-C to cancel)",
                 'The motion has been executed correctly',
-                ],
+            ],
             text=service_command.output,
             strict=True
         )

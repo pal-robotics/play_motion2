@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rclpy import spin_until_future_complete
-from rclpy.node import Node
-from rclpy.action import ActionClient
-
-from play_motion2_msgs.msg import Motion
 from play_motion2_msgs.action import PlayMotion2
-from play_motion2_msgs.srv import ListMotions, IsMotionReady, GetMotionInfo, \
-    AddMotion, RemoveMotion
+from play_motion2_msgs.msg import Motion
+from play_motion2_msgs.srv import (
+    AddMotion, GetMotionInfo, IsMotionReady, ListMotions, RemoveMotion
+)
+
+from rclpy import spin_until_future_complete
+from rclpy.action import ActionClient
+from rclpy.node import Node
 
 
 class PlayMotion2ClientPy(Node):

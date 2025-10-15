@@ -88,9 +88,7 @@ CallbackReturn PlayMotion2Executor::on_activate(const rclcpp_lifecycle::State & 
   is_joint_list_ready_service_ = create_service<IsJointListReady>(
     "play_motion2/is_joint_list_ready",
     std::bind(&PlayMotion2Executor::isJointListReadyCb, this, _1, _2),
-    rmw_qos_profile_services_default,
-    srv_group_
-  );
+    get_services_qos(), srv_group_);
 
   pm2_action_ = rclcpp_action::create_server<Action>(
     shared_from_this(), "play_motion2/raw",

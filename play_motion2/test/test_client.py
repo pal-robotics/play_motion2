@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from threading import Thread
 import time
 import unittest
-from threading import Thread
-
-import rclpy
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.executors import SingleThreadedExecutor, MultiThreadedExecutor
-from rclpy.action import ActionServer
-
-from play_motion2_msgs.msg import Motion
-from play_motion2_msgs.action import PlayMotion2
-from play_motion2_msgs.srv import ListMotions, IsMotionReady, GetMotionInfo, \
-    AddMotion, RemoveMotion
 
 from play_motion2 import PlayMotion2ClientPy
+from play_motion2_msgs.action import PlayMotion2
+from play_motion2_msgs.msg import Motion
+from play_motion2_msgs.srv import (
+    AddMotion, GetMotionInfo, IsMotionReady, ListMotions, RemoveMotion
+)
+
+import rclpy
+from rclpy.action import ActionServer
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 
 
 class ClientTest(unittest.TestCase):

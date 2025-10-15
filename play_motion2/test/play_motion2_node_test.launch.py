@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import launch_testing
 import os
 import pathlib
 import unittest
@@ -23,6 +22,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+import launch_testing
 
 TEST_DIR = str(pathlib.Path(__file__).resolve().parent)
 

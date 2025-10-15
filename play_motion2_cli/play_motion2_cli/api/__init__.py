@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rclpy
-
 from argparse import ArgumentParser
-from play_motion2 import PlayMotion2ClientPy
 from contextlib import contextmanager
+
+from play_motion2 import PlayMotion2ClientPy
+import rclpy
 
 
 class MotionNameCompleter:
@@ -24,7 +24,7 @@ class MotionNameCompleter:
 
     def __call__(self, prefix, parsed_args, **kwargs):
         try:
-            with create_playmotion_client("cli_play_motion2_completer") as play_motion2_client:
+            with create_playmotion_client('cli_play_motion2_completer') as play_motion2_client:
                 return play_motion2_client.list_motions()
         except Exception:
             return []

@@ -40,37 +40,37 @@ class InfoVerb(VerbExtension):
                 print(f"Unknown motion '{args.motion_name}'")
                 return
 
-            print(f"Key: {motion.key}")
+            print(f'Key: {motion.key}')
             if args.verbose:
-                print(f"Name: {motion.name}")
-                print(f"Usage: {motion.usage}")
-            print(f"Description: {motion.description}")
+                print(f'Name: {motion.name}')
+                print(f'Usage: {motion.usage}')
+            print(f'Description: {motion.description}')
 
             if args.verbose:
                 max_joint_len = max(len(joint) for joint in motion.joints)
                 n_positions = len(motion.times_from_start)
-                header = f"{'Joint':<{max_joint_len + 3}} " + "     ".join(
-                    f"pos{i+1}" for i in range(n_positions))
-                separation = "-" * (len(header) + 1)
+                header = f"{'Joint':<{max_joint_len + 3}} " + '     '.join(
+                    f'pos{i+1}' for i in range(n_positions))
+                separation = '-' * (len(header) + 1)
 
-                print("\nJoints and positions:")
+                print('\nJoints and positions:')
                 print(separation)
                 if n_positions > 1:
                     print(header)
                     print(separation)
 
                 for j, joint in enumerate(motion.joints):
-                    row = f"{joint:<{max_joint_len}} "
+                    row = f'{joint:<{max_joint_len}} '
                     for i in range(n_positions):
                         pos = motion.positions[i * len(motion.joints) + j]
-                        row += f"{pos:8.4f} "
+                        row += f'{pos:8.4f} '
                     print(row)
             else:
-                print("\nJoints:")
+                print('\nJoints:')
                 for joint in motion.joints:
-                    print(f"  {joint}")
+                    print(f'  {joint}')
 
             if args.verbose:
-                print("\nTimes from start:")
+                print('\nTimes from start:')
                 for t in motion.times_from_start:
-                    print(f"  {t:.2f} s")
+                    print(f'  {t:.2f} s')

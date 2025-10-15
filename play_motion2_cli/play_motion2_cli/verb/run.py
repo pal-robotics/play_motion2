@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rclpy
-
-from ros2cli.node.strategy import add_arguments
-
 from play_motion2_cli.api import add_motion_name_argument, create_playmotion_client
 from play_motion2_cli.verb import VerbExtension
+
+import rclpy
+from ros2cli.node.strategy import add_arguments
 
 
 class RunVerb(VerbExtension):
