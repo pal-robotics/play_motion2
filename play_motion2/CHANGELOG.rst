@@ -2,6 +2,17 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove unused ordering of interfaces for passthrough_controller
+* Add -Wno-cpp to ignore warnings from dependencies
+* Replace ament_target_dependencies with target_link_libraries
+* Add condition for using services QoS
+* Use move_group_interface.hpp header instead of .h
+* Fix linters for jazzy
+* Add support for jazzy
+* Contributors: Noel Jimenez, Sai Kishor Kothakota
+
 1.7.0 (2025-09-10)
 ------------------
 * Fix ament_auto warning about headers install destination
