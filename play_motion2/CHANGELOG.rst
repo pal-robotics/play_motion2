@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2025-10-15)
+------------------
 * Remove unused ordering of interfaces for passthrough_controller
 * Add -Wno-cpp to ignore warnings from dependencies
 * Replace ament_target_dependencies with target_link_libraries
