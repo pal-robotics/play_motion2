@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.1 (2025-10-23)
+------------------
 * Set zero acceleration and velocity for trajectories
 * Contributors: Noel Jimenez
 
