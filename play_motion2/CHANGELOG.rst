@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set zero acceleration and velocity for trajectories
+* Contributors: Noel Jimenez
+
 1.8.0 (2025-10-15)
 ------------------
 * Remove unused ordering of interfaces for passthrough_controller
