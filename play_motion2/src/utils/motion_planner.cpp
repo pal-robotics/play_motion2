@@ -481,6 +481,8 @@ JointTrajectory MotionPlanner::create_trajectory(
       joint_positions.cbegin(), joint_positions.cend(),
       [&](const auto & j_pos) {
         jtc_point.positions.push_back(j_pos.second.at(i));
+        jtc_point.velocities.push_back(0.0);
+        jtc_point.accelerations.push_back(0.0);
       });
 
     jt.points.emplace_back(jtc_point);
