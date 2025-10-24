@@ -2,6 +2,20 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'fix/trajectory/set_zero_vel_and_acc' into 'humble-devel'
+  Set zero acceleration and velocity for trajectories
+  See merge request app-tools/play_motion2!87
+  (cherry picked from commit 62de9abbca7fab5064a953fb51fa9086cf080781)
+  61740098 Set zero acceleration and velocity for trajectories
+* Merge branch 'fix/ament_auto_headers_install_dst' into 'humble-devel'
+  Fix ament_auto warning about headers install destination
+  See merge request app-tools/play_motion2!83
+  (cherry picked from commit 6d4f66653383bc50530ab9704864bc67c7610fcd)
+  311e6f70 Fix ament_auto warning about headers install destination
+* Contributors: Jordan Palacios, Noel Jimenez
+
 1.6.1 (2025-06-27)
 ------------------
 * Capture the goal on the callback
