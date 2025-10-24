@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.2 (2025-10-24)
+------------------
 * Merge branch 'fix/trajectory/set_zero_vel_and_acc' into 'humble-devel'
   Set zero acceleration and velocity for trajectories
   See merge request app-tools/play_motion2!87
