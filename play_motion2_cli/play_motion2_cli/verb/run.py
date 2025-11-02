@@ -50,3 +50,6 @@ class RunVerb(VerbExtension):
 
             if result_response.result.success:
                 print('The motion has been executed correctly')
+            else:
+                rclpy.logging.get_logger('run_motion').error(
+                    f'The motion has failed with the error: {result_response.result.error}')

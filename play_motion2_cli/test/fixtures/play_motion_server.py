@@ -25,7 +25,8 @@ from rclpy.node import Node
 EXPECTED_MOTIONS = {
     'nod': False,
     'wave': True,
-    'bow': False
+    'bow': False,
+    'wave_crash': True,
 }
 
 MOTIONS_INFO = {
@@ -101,7 +102,13 @@ class DummyPlayMotionServer(Node):
 
     async def execute_callback(self, goal_handle):
         result = PlayMotion2.Result()
-        result.success = True
+
+        motion_name = goal_handle.request.motion_name
+        if motion_name == 'wave_crash':
+            result.error = 'Simulated failure.'
+            result.success = False
+        else:
+            result.success = True
         return result
 
 
