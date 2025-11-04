@@ -31,8 +31,14 @@ class RRBotSystem : public hardware_interface::SystemInterface
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RRBotSystem);
+
+#if HARDWARE_INTERFACE_VERSION_MAJOR >= 6
+  hardware_interface::CallbackReturn on_init(
+    const hardware_interface::HardwareComponentInterfaceParams & params) override;
+#else
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
+#endif
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 

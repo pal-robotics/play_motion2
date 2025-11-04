@@ -25,10 +25,17 @@
 namespace play_motion2
 {
 
+#if HARDWARE_INTERFACE_VERSION_MAJOR >= 6
+hardware_interface::CallbackReturn RRBotSystem::on_init(
+  const hardware_interface::HardwareComponentInterfaceParams & params)
+{
+  info_ = params.hardware_info;
+#else
 hardware_interface::CallbackReturn RRBotSystem::on_init(
   const hardware_interface::HardwareInfo & info)
 {
   info_ = info;
+#endif
   position_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   velocity_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   position_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
