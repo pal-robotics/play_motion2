@@ -264,3 +264,17 @@ class TestROS2PLayMotionCLI(unittest.TestCase):
             text=service_command.output,
             strict=True
         )
+
+    @launch_testing.markers.retry_on_failure(times=5, delay=1)
+    def test_playmotion2_action_fail(self):
+        with self.launch_service_command(arguments=['run', 'wave_crash']) as service_command:
+            assert service_command.wait_for_shutdown(timeout=10)
+
+        assert launch_testing.tools.expect_output(
+            expected_lines=[
+                "Executing motion 'wave_crash'... (press Ctrl-C to cancel)",
+                'The motion has failed with the error: Simulated failure.',
+            ],
+            text=service_command.output,
+            strict=False
+        )
