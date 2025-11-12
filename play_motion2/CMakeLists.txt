@@ -35,6 +35,8 @@ if(BUILD_TESTING)
   ament_auto_find_test_dependencies()
   ament_lint_auto_find_test_dependencies()
 
+  add_compile_definitions(HARDWARE_INTERFACE_VERSION_MAJOR=${hardware_interface_VERSION_MAJOR})
+
   # rrbot_system
   ament_auto_add_library(rrbot_system SHARED
     test/rrbot/rrbot_system.cpp
