@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.2 (2025-11-12)
+------------------
 * Changes for hardware_interface new API
 * Contributors: Noel Jimenez
 
