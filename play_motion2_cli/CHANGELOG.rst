@@ -2,6 +2,11 @@
 Changelog for package play_motion2_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Log an error when a motion fails
+* Contributors: Isaac Acevedo
+
 1.8.1 (2025-10-23)
 ------------------
 
