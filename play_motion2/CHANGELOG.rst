@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Log motion result error when it's not empty
+* Contributors: ileniaperrella
+
 1.8.2 (2025-11-12)
 ------------------
 * Changes for hardware_interface new API
