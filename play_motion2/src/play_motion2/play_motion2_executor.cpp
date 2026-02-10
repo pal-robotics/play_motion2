@@ -197,6 +197,10 @@ void PlayMotion2Executor::executeMotion(const std::shared_ptr<ActionGoalHandle> 
   // Execute motion
   const auto motion_result = motion_planner_->execute_motion(motion.first, goal->skip_planning);
 
+  if (!motion_result.error.empty()) {
+    RCLCPP_ERROR_STREAM(get_logger(), motion_result.error);
+  }
+
   // Evaluate and set result
   auto action_result = std::make_shared<ActionResult>();
   action_result->success = motion_result.state == Result::State::SUCCESS;
