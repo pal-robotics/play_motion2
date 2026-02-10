@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.3 (2026-02-10)
+------------------
 * Log motion result error when it's not empty
 * Contributors: ileniaperrella
 
