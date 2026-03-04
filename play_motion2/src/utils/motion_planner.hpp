@@ -17,7 +17,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "play_motion2/types.hpp"
@@ -62,7 +64,7 @@ class MotionPlanner
 {
 public:
   explicit MotionPlanner(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
-  ~MotionPlanner() = default;
+  ~MotionPlanner();
 
   bool is_executable(const MotionInfo & info, const bool skip_planning);
   bool is_executable(const JointNames & joints, const bool skip_planning);
@@ -128,6 +130,10 @@ private:
 
   bool needs_approach(const MotionInfo & approach_info);
 
+  bool validate_all_positions(
+    const MoveGroupInterfacePtr & move_group,
+    const MotionInfo & info);
+
   void cancel_all_goals();
 
 private:
@@ -158,6 +164,8 @@ private:
 
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
   rclcpp::Node::SharedPtr move_group_node_;
+  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> move_group_executor_;
+  std::thread move_group_spinner_;
 };
 
 }  // namespace play_motion2
