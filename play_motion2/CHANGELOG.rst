@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.4 (2026-03-05)
+------------------
 * Check all positions are safe when using planning
 * Contributors: Noel Jimenez
 
