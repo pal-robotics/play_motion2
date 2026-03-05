@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Check all positions are safe when using planning
+* Contributors: Noel Jimenez
+
 1.8.3 (2026-02-10)
 ------------------
 * Log motion result error when it's not empty
