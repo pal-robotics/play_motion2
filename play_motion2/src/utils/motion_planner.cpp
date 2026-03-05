@@ -30,6 +30,19 @@
 #include "rclcpp/version.h"
 
 #include "std_msgs/msg/string.hpp"
+
+namespace
+{
+inline auto get_trajectory_from_plan =
+  [](const moveit::planning_interface::MoveGroupInterface::Plan & plan) {
+    #if MOVEIT_VERSION_MINOR > 7
+    return plan.trajectory;
+    #else
+    return plan.trajectory_;
+    #endif
+  };
+}  // namespace
+
 namespace play_motion2
 {
 using namespace std::chrono_literals;
@@ -193,6 +206,20 @@ void MotionPlanner::check_parameters()
   for (const auto & group : planning_groups_) {
     move_groups_.emplace_back(std::make_shared<MoveGroupInterface>(move_group_node_, group));
   }
+
+  move_group_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  move_group_executor_->add_node(move_group_node_);
+  move_group_spinner_ = std::thread([this]() {move_group_executor_->spin();});
+}
+
+MotionPlanner::~MotionPlanner()
+{
+  if (move_group_executor_) {
+    move_group_executor_->cancel();
+  }
+  if (move_group_spinner_.joinable()) {
+    move_group_spinner_.join();
+  }
 }
 
 bool MotionPlanner::is_executable(const MotionInfo & info, const bool skip_planning)
@@ -309,9 +336,25 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
   }
 
   // Planned motion
-  auto move_groups = get_valid_move_groups(info.joints);
+  const auto all_valid_move_groups = get_valid_move_groups(info.joints);
+  if (all_valid_move_groups.empty()) {
+    return Result(
+      Result::State::ERROR,
+      "No valid move groups found for the given joints and positions");
+  }
+
+  // Validate all positions are reachable from the current configuration
+  std::vector<MoveGroupInterfacePtr> move_groups;
+  for (const auto & move_group : all_valid_move_groups) {
+    if (validate_all_positions(move_group, info)) {
+      move_groups.push_back(move_group);
+    }
+  }
+
   if (move_groups.empty()) {
-    return Result(Result::State::ERROR, "No valid move groups found for the given joints");
+    return Result(
+      Result::State::ERROR,
+      "Some positions of the motion are not reachable with the available move groups.");
   }
 
   if (!needs_approach(approach_info)) {
@@ -326,14 +369,6 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
 
     return perform_motion(info, JointTrajectory());
   }
-
-  auto get_trajectory_from_plan = [&](const MoveGroupInterface::Plan & plan) {
-    #if MOVEIT_VERSION_MINOR > 7
-      return plan.trajectory;
-    #else
-      return plan.trajectory_;
-    #endif
-    };
 
   MoveGroupInterface::Plan approach_plan;
   for (const auto & group : move_groups) {
@@ -846,6 +881,21 @@ MoveGroupInterface::Plan MotionPlanner::plan_approach(
   /// @todo Investigate if we can do it in moveit2 configuration
   group->setMaxVelocityScalingFactor(1.0);
 
+  // Initialize all joint targets to current values from our tracked joint states
+  // so that joints not involved in the motion keep their current positions.
+  {
+    std::unique_lock<std::mutex> lock(joint_states_mutex_);
+    joint_states_updated_ = false;
+    joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
+
+    for (const auto & joint_name : group->getJointNames()) {
+      const auto it = joint_states_.find(joint_name);
+      if (it != joint_states_.end()) {
+        group->setJointValueTarget(joint_name, it->second[0]);
+      }
+    }
+  }
+
   /// @pre sizes of joints and positions are the same
   for (auto i = 0u; i < approach_info.joints.size(); ++i) {
     if (std::find(
@@ -907,6 +957,43 @@ bool MotionPlanner::needs_approach(const MotionInfo & approach_info)
     }
   }
   return false;
+}
+
+bool MotionPlanner::validate_all_positions(
+  const MoveGroupInterfacePtr & move_group,
+  const MotionInfo & info)
+{
+  if (!move_group) {
+    RCLCPP_ERROR(node_->get_logger(), "No valid move group found for validation");
+    return false;
+  }
+
+  const size_t num_joints = info.joints.size();
+  const size_t num_positions = info.positions.size() / num_joints;
+
+  // Validate each position in the motion is reachable by attempting to plan to it
+  for (size_t pos_idx = 0; pos_idx < num_positions; pos_idx++) {
+    MotionInfo position_info = info;
+    position_info.positions = std::vector<double>(
+      info.positions.begin() + pos_idx * num_joints,
+      info.positions.begin() + (pos_idx + 1) * num_joints);
+
+    // Plan the approach trajectory to the position
+    const auto plan = plan_approach(move_group, position_info);
+    if (get_trajectory_from_plan(plan).joint_trajectory.points.empty()) {
+      RCLCPP_WARN(
+        node_->get_logger(),
+        "Position %zu of motion '%s' is not reachable using group '%s'",
+        pos_idx, info.key.c_str(), move_group->getName().c_str());
+      return false;
+    }
+  }
+
+  RCLCPP_INFO(
+    node_->get_logger(),
+    "All %zu positions validated for motion '%s' using group '%s'",
+    num_positions, info.key.c_str(), move_group->getName().c_str());
+  return true;
 }
 
 void MotionPlanner::cancel_all_goals()
