@@ -71,6 +71,11 @@ if(BUILD_TESTING)
     DESTINATION lib
   )
 
+  # client_test
+  ament_auto_add_gtest(client_test
+    test/client_test.cpp
+  )
+
   # motion_loader_test
   ament_auto_add_gtest(motion_loader_test
     test/motion_loader_test.cpp
