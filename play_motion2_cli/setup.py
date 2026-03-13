@@ -5,7 +5,7 @@ package_name = 'play_motion2_cli'
 
 setup(
     name=package_name,
-    version='1.8.4',
+    version='1.8.5',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/' + package_name, ['package.xml']),

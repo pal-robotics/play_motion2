@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.5 (2026-03-13)
+------------------
 * Add testing for the client library
 * Contributors: Noel Jimenez
 
