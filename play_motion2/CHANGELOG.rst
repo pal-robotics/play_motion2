@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.6 (2026-07-01)
+------------------
 * Fix mismatch between planned approach and controller joint order
 * Add effort and velocity limits for rrbot continuous joints
 * Contributors: Noel Jimenez
