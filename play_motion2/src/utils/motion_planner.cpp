@@ -550,13 +550,14 @@ JointTrajectory MotionPlanner::create_trajectory(
       // Remove the original approach time and position.
       jt.points.erase(jt.points.begin());
 
-      // Get the indexes of the respective controller joints
-      std::set<unsigned int> joint_positions_indexes;
-      for (const auto & joint : controller_joints) {
+      // Get the indexes of the controller joints within planned_approach, ordered to match
+      // jt.joint_names (i.e. the joint_positions map key order used below to fill joint_names).
+      std::vector<unsigned int> joint_positions_indexes;
+      for (const auto & j_pos : joint_positions) {
         const auto iterator = std::find(
-          planned_approach.joint_names.begin(), planned_approach.joint_names.end(), joint);
+          planned_approach.joint_names.begin(), planned_approach.joint_names.end(), j_pos.first);
         if (iterator != planned_approach.joint_names.end()) {
-          joint_positions_indexes.insert(
+          joint_positions_indexes.push_back(
             std::distance(planned_approach.joint_names.begin(), iterator));
         }
       }
