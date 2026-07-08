@@ -16,6 +16,7 @@
 #define PLAY_MOTION2__MOTION_LOADER_HPP_
 
 #include <string>
+#include <functional>
 
 #include "play_motion2/types.hpp"
 #include "play_motion2_msgs/msg/motion.hpp"
