@@ -2,6 +2,11 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump cmake_minimum_required to 3.10
+* Contributors: Noel Jimenez
+
 1.8.6 (2026-07-01)
 ------------------
 

@@ -2,6 +2,12 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump cmake_minimum_required to 3.10
+* Add missing header
+* Contributors: Khasreto, Noel Jimenez
+
 1.8.6 (2026-07-01)
 ------------------
 * Fix mismatch between planned approach and controller joint order
