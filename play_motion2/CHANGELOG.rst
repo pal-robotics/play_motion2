@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.7 (2026-09-22)
+------------------
 * Bump cmake_minimum_required to 3.10
 * Add missing header
 * Contributors: Khasreto, Noel Jimenez
