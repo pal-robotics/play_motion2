@@ -61,9 +61,11 @@ controller_interface::CallbackReturn PassthroughController::on_configure(
 
   // The names should be in the same order as for command interfaces for easier matching
   reference_interface_names_ = command_interface_names_;
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   // for any case make reference interfaces size of command interfaces
   reference_interfaces_.resize(
     reference_interface_names_.size(), std::numeric_limits<double>::quiet_NaN());
+#endif
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -73,9 +75,15 @@ controller_interface::CallbackReturn PassthroughController::on_activate(
 {
   RCLCPP_INFO(this->get_node()->get_logger(), "activate successful");
 
+#if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+  for (const auto & reference_interface : ordered_exported_reference_interfaces_) {
+    std::ignore = reference_interface->set_value(std::numeric_limits<double>::quiet_NaN());
+  }
+#else
   std::fill(
     reference_interfaces_.begin(), reference_interfaces_.end(),
     std::numeric_limits<double>::quiet_NaN());
+#endif
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -92,18 +100,38 @@ controller_interface::return_type PassthroughController::update_and_write_comman
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   for (size_t i = 0; i < command_interfaces_.size(); ++i) {
-    if (!std::isnan(reference_interfaces_[i])) {
-      #if HARDWARE_INTERFACE_VERSION_MAJOR > 2
-      std::ignore = command_interfaces_[i].set_value(reference_interfaces_[i]);
-      #else
-      command_interfaces_[i].set_value(reference_interfaces_[i]);
-      #endif
+    #if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+    const auto reference = ordered_exported_reference_interfaces_[i]->get_optional();
+    if (reference.has_value() && !std::isnan(*reference)) {
+      std::ignore = command_interfaces_[i].set_value(*reference);
     }
+    #else
+    if (!std::isnan(reference_interfaces_[i])) {
+      command_interfaces_[i].set_value(reference_interfaces_[i]);
+    }
+    #endif
   }
 
   return controller_interface::return_type::OK;
 }
 
+#if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+std::vector<hardware_interface::CommandInterface::SharedPtr>
+PassthroughController::on_export_reference_interfaces_list()
+{
+  std::vector<hardware_interface::CommandInterface::SharedPtr> reference_interfaces;
+
+  for (const auto & reference_interface_name : reference_interface_names_) {
+    hardware_interface::InterfaceInfo interface_info;
+    interface_info.name = reference_interface_name;
+    reference_interfaces.push_back(
+      std::make_shared<hardware_interface::CommandInterface>(
+        hardware_interface::InterfaceDescription(get_node()->get_name(), interface_info)));
+  }
+
+  return reference_interfaces;
+}
+#else
 std::vector<hardware_interface::CommandInterface>
 PassthroughController::on_export_reference_interfaces()
 {
@@ -117,6 +145,7 @@ PassthroughController::on_export_reference_interfaces()
 
   return reference_interfaces;
 }
+#endif
 
 controller_interface::return_type PassthroughController::update_reference_from_subscribers(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)

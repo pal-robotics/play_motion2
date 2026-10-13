@@ -40,9 +40,11 @@ public:
     const hardware_interface::HardwareInfo & info) override;
 #endif
 
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+#endif
 
   hardware_interface::return_type read(
     const rclcpp::Time & time,
@@ -53,9 +55,11 @@ public:
     const rclcpp::Duration & period) override;
 
 private:
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   std::vector<double> position_commands_;
   std::vector<double> position_states_;
   std::vector<double> velocity_states_;
+#endif
 };
 
 }  // namespace play_motion2

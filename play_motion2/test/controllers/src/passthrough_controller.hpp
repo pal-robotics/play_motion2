@@ -56,7 +56,12 @@ public:
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 protected:
+#if HARDWARE_INTERFACE_VERSION_MAJOR > 2
+  std::vector<hardware_interface::CommandInterface::SharedPtr>
+  on_export_reference_interfaces_list() override;
+#else
   std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
+#endif
 
   controller_interface::return_type update_reference_from_subscribers(
     const rclcpp::Time & time, const rclcpp::Duration & period);
