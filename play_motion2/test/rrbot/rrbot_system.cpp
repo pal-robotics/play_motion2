@@ -25,21 +25,8 @@
 namespace play_motion2
 {
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR >= 6
-hardware_interface::CallbackReturn RRBotSystem::on_init(
-  const hardware_interface::HardwareComponentInterfaceParams & params)
-{
-  if (SystemInterface::on_init(params) != CallbackReturn::SUCCESS) {
-    return CallbackReturn::ERROR;
-  }
-#elif HARDWARE_INTERFACE_VERSION_MAJOR > 2
-hardware_interface::CallbackReturn RRBotSystem::on_init(
-  const hardware_interface::HardwareInfo & info)
-{
-  if (SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
-    return CallbackReturn::ERROR;
-  }
-#else
+// newer versions parse the URDF and export the interfaces in the base class
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
 hardware_interface::CallbackReturn RRBotSystem::on_init(
   const hardware_interface::HardwareInfo & info)
 {
@@ -47,7 +34,6 @@ hardware_interface::CallbackReturn RRBotSystem::on_init(
   position_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   velocity_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   position_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-#endif
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints) {
     // rrbot_system has exactly one state and command interface on each joint
@@ -86,7 +72,6 @@ hardware_interface::CallbackReturn RRBotSystem::on_init(
     }
   }
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   // set some default values when starting the first time
   for (uint i = 0; i < position_states_.size(); i++) {
     if (std::isnan(position_states_[i])) {
@@ -97,14 +82,12 @@ hardware_interface::CallbackReturn RRBotSystem::on_init(
       position_commands_[i] = position_states_[i];
     }
   }
-#endif
 
 //  status_ = hardware_interface::status::CONFIGURED;
   RCLCPP_INFO_STREAM(rclcpp::get_logger("rrbot_system"), "rrbot_system configured");
   return CallbackReturn::SUCCESS;
 }
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
 std::vector<hardware_interface::StateInterface>
 RRBotSystem::export_state_interfaces()
 {

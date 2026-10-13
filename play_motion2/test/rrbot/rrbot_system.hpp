@@ -32,15 +32,11 @@ class RRBotSystem : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RRBotSystem);
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR >= 6
-  hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
-#else
+  // newer versions parse the URDF and export the interfaces in the base class
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
-#endif
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
