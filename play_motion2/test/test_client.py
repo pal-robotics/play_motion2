@@ -72,12 +72,12 @@ class ClientTest(unittest.TestCase):
             RemoveMotion, 'play_motion2/remove_motion', self.remove_motion_callback)
 
         self._executor_srv.add_node(self._node_srv)
-        self._runner_srv = Thread(target=lambda exec: exec.spin(),
+        self._runner_srv = Thread(target=lambda executor: executor.spin(),
                                   args=([self._executor_srv]), daemon=True).start()
 
         self.cli = PlayMotion2ClientPy()
         self._executor_cli.add_node(self.cli)
-        self._runner_cli = Thread(target=lambda exec: exec.spin(),
+        self._runner_cli = Thread(target=lambda executor: executor.spin(),
                                   args=([self._executor_cli]), daemon=True).start()
 
     def tearDown(self):
