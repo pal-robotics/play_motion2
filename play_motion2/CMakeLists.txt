@@ -61,8 +61,6 @@ if(BUILD_TESTING)
   target_link_libraries(passthrough_controller
     passthrough_controller_parameters
     controller_interface::controller_interface
-    realtime_tools::realtime_tools
-    realtime_tools::thread_priority
   )
   pluginlib_export_plugin_description_file(controller_interface test/controllers/passthrough_controller.xml)
 

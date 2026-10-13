@@ -50,7 +50,6 @@
   <test_depend>joint_trajectory_controller</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>pluginlib</test_depend>
-  <test_depend>realtime_tools</test_depend>
   <test_depend>robot_state_publisher</test_depend>
   <test_depend>sensor_msgs</test_depend>
   <test_depend>xacro</test_depend>

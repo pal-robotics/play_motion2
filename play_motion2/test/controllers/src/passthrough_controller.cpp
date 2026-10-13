@@ -54,20 +54,6 @@ controller_interface::CallbackReturn PassthroughController::on_configure(
   params_ = param_listener_->get_params();
   command_interface_names_ = params_.interfaces;
 
-  joints_cmd_sub_ = this->get_node()->create_subscription<DataType>(
-    "~/commands", rclcpp::SystemDefaultsQoS(),
-    [this](const DataType::SharedPtr msg)
-    {
-      // check if message is correct size, if not ignore
-      if (msg->data.size() == command_interface_names_.size()) {
-        rt_buffer_ptr_.writeFromNonRT(msg);
-      } else {
-        RCLCPP_ERROR(
-          this->get_node()->get_logger(), "Invalid command received of %zu size, expected %zu size",
-          msg->data.size(), command_interface_names_.size());
-      }
-    });
-
   // pre-reserve command interfaces
   command_interfaces_.reserve(command_interface_names_.size());
 
@@ -85,9 +71,6 @@ controller_interface::CallbackReturn PassthroughController::on_configure(
 controller_interface::CallbackReturn PassthroughController::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // reset command buffer if a command came through callback when controller was inactive
-  rt_buffer_ptr_ = realtime_tools::RealtimeBuffer<std::shared_ptr<DataType>>(nullptr);
-
   RCLCPP_INFO(this->get_node()->get_logger(), "activate successful");
 
   std::fill(
@@ -100,8 +83,6 @@ controller_interface::CallbackReturn PassthroughController::on_activate(
 controller_interface::CallbackReturn PassthroughController::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // reset command buffer
-  rt_buffer_ptr_ = realtime_tools::RealtimeBuffer<std::shared_ptr<DataType>>(nullptr);
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -140,19 +121,7 @@ PassthroughController::on_export_reference_interfaces()
 controller_interface::return_type PassthroughController::update_reference_from_subscribers(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  auto joint_commands = rt_buffer_ptr_.readFromRT();
-  // message is valid
-  if (!(!joint_commands || !(*joint_commands))) {
-    if (reference_interfaces_.size() != (*joint_commands)->data.size()) {
-      RCLCPP_ERROR_THROTTLE(
-        get_node()->get_logger(), *(get_node()->get_clock()), 1000,
-        "command size (%zu) does not match number of reference interfaces (%zu)",
-        (*joint_commands)->data.size(), reference_interfaces_.size());
-      return controller_interface::return_type::ERROR;
-    }
-    reference_interfaces_ = (*joint_commands)->data;
-  }
-
+  // only used in chained mode, references are written by the preceding controller
   return controller_interface::return_type::OK;
 }
 
