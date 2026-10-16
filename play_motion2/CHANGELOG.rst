@@ -2,8 +2,8 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.8 (2026-10-16)
+------------------
 * Drop rrbot_system on_init override for newer hardware_interface
 * Rename executor to avoid shadowing python exec
 * Pass controllers.yaml as param file for all the controllers
