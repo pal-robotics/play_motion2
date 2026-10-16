@@ -2,6 +2,15 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Drop rrbot_system on_init override for newer hardware_interface
+* Rename executor to avoid shadowing python exec
+* Pass controllers.yaml as param file for all the controllers
+* Support new export interfaces API in test plugins
+* Drop unused RealtimeBuffer from testing library passthrough_controller
+* Contributors: Noel Jimenez
+
 1.8.7 (2026-09-22)
 ------------------
 * Bump cmake_minimum_required to 3.10
