@@ -32,17 +32,15 @@ class RRBotSystem : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RRBotSystem);
 
-#if HARDWARE_INTERFACE_VERSION_MAJOR >= 6
-  hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
-#else
+  // newer versions parse the URDF and export the interfaces in the base class
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
-#endif
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+#endif
 
   hardware_interface::return_type read(
     const rclcpp::Time & time,
@@ -53,9 +51,11 @@ public:
     const rclcpp::Duration & period) override;
 
 private:
+#if HARDWARE_INTERFACE_VERSION_MAJOR <= 2
   std::vector<double> position_commands_;
   std::vector<double> position_states_;
   std::vector<double> velocity_states_;
+#endif
 };
 
 }  // namespace play_motion2

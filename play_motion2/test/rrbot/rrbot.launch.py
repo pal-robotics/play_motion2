@@ -30,6 +30,8 @@ def define_controller_spawner(name: str, active: bool = True, *args):
     for arg in args:
         arguments.append(arg)
 
+    arguments += ['--param-file', RRBOT_DIR + '/controllers.yaml']
+
     if not active:
         arguments.append('--inactive')
 
